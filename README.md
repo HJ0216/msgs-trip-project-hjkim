@@ -15,6 +15,7 @@ MySQL
 ReactJS, JavaScript, HTML, CSS
 
 ### Upcoming Refactorings
+- [ ] Local DB 연결
 - [ ] 프로젝트 구조
 - [ ] ERD 설계 재확인
 - [ ] JWT 코드 확인
