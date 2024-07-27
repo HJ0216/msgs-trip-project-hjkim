@@ -14,7 +14,8 @@ Java, SpringBoot
 MySQL  
 ReactJS, JavaScript, HTML, CSS
 
-### Upcoming Refactorings
+### Upcoming Refactorings 🫠
+- [x] ERD 수정
 - [ ] Local DB 연결
 - [ ] 프로젝트 구조
 - [ ] ERD 설계 재확인
@@ -26,3 +27,6 @@ ReactJS, JavaScript, HTML, CSS
 - [ ] Builder 패턴
 - [ ] Exception 처리
 - [ ] 테스트 코드
+
+#### Details Refactoring Notes 🤹
+[마실가실 리팰토링](https://hj0216.tistory.com/category/PlayGround/%EB%A7%88%EC%8B%A4%EA%B0%80%EC%8B%A4%20%EB%A6%AC%ED%8C%A9%ED%86%A0%EB%A7%81)
