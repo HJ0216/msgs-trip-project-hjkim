@@ -16,7 +16,8 @@ ReactJS, JavaScript, HTML, CSS
 
 ### Upcoming Refactorings 🫠
 - [x] ERD 수정
-- [ ] Local DB 연결
+- [x] Local DB 연결
+- [ ] DTO DB 구조에 맞춰서 재설정
 - [ ] 프로젝트 구조
 - [ ] ERD 설계 재확인
 - [ ] JWT 코드 확인
