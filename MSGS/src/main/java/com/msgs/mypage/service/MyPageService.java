@@ -8,7 +8,7 @@ import java.util.List;
 
 import com.msgs.msgs.dto.TripScheduleDTO;
 import com.msgs.msgs.dto.TripStoryMainDTO;
-import com.msgs.msgs.dto.UserEntityDTO;
+import com.msgs.msgs.dto.UserDTO;
 
 public interface MyPageService {
 
@@ -23,7 +23,7 @@ public interface MyPageService {
 
 	public List<MyPageReviewDTO> getReviewList(String id);
 
-	public UserEntityDTO getProfile(String id);
+	public UserDTO getProfile(String id);
 
 	public List<TripStoryMainDTO> getStoryList(String id);
 

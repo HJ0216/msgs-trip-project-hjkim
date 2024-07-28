@@ -1,7 +1,7 @@
 package com.msgs.msgs.entity.tripstory;
 
 
-import com.msgs.msgs.entity.user.UserEntity;
+import com.msgs.msgs.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +24,6 @@ public class StoryLikeCount {
     // join with user
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private UserEntity userStoryLike;
+    private User userStoryLike;
 
 }

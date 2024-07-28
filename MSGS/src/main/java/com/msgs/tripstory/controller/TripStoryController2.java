@@ -1,6 +1,5 @@
 package com.msgs.tripstory.controller;
 
-import com.msgs.msgs.dto.StoryResponseDTO;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -17,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.msgs.msgs.dto.StoryCommentDTO;
-import com.msgs.msgs.entity.tripstory.StoryComment;
-import com.msgs.msgs.entity.user.UserEntity;
 import com.msgs.tripstory.service.TripStoryService;
 
 @RestController // JSON 또는 XML 형식의 데이터를 반환

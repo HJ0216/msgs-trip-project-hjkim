@@ -1,17 +1,13 @@
 package com.msgs.msgs.entity.tripstory;
 
 import com.msgs.msgs.entity.tripschedule.TripSchedule;
-import com.msgs.msgs.entity.user.UserEntity;
-import com.vladmihalcea.hibernate.type.json.JsonType;
+import com.msgs.msgs.entity.user.User;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
-import org.hibernate.annotations.Type;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Entity
 @Table(name = "trip_story")
@@ -34,7 +30,7 @@ public class TripStory {
 	// join with user
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
-	private UserEntity userTripStory;
+	private User userTripStory;
 
 	@Column(length = 100)
 	private String title;

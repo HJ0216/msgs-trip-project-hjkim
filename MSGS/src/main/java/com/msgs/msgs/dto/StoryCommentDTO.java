@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StoryCommentDTO {
-	private String userId; // UserEntity의 userId
+	private Integer userId; // UserEntity의 userId
 	private String userName;
 	private String userImgPath; // UserImg
 

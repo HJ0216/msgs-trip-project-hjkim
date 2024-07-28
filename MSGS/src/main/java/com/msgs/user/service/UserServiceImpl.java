@@ -1,7 +1,7 @@
 package com.msgs.user.service;
 
-import com.msgs.msgs.dto.UserEntityDTO;
-import com.msgs.msgs.entity.user.UserEntity;
+import com.msgs.msgs.dto.UserDTO;
+import com.msgs.msgs.entity.user.User;
 import com.msgs.user.dao.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,38 +17,38 @@ public class UserServiceImpl implements UserService {
 
     // 회원가입
     @Override
-    public void signUp(UserEntity userEntity) {
-        userDAO.save(userEntity);
+    public void signUp(User user) {
+        userDAO.save(user);
     }
 
     // 회원 정보 검색(이메일)
 	@Override
-	public UserEntityDTO getUserInfo(String email) {
+	public UserDTO getUserInfo(String email) {
 		
 		System.out.println("!!!!!!!!!!!!!!!!!"+email);
-        Optional<UserEntity> userEntity = userDAO.findByEmail(email);
+        Optional<User> userEntity = userDAO.findByEmail(email);
         // id 제외 findBy 메서드 생성
 
         if (userEntity.isPresent()) {
-            UserEntity resultUserEntity = userEntity.get();
-            UserEntityDTO userEntityDTO = new UserEntityDTO(resultUserEntity);
+            User resultUser = userEntity.get();
+            UserDTO userDTO = new UserDTO(resultUser);
 
-            return userEntityDTO;
+            return userDTO;
         }
         
         return null;
 	}
 
 	@Override
-	public UserEntityDTO getUser(String id) {
-        Optional<UserEntity> userEntity = userDAO.findById(id);
+	public UserDTO getUser(String id) {
+        Optional<User> userEntity = userDAO.findById(id);
         // id 제외 findBy 메서드 생성
 
         if (userEntity.isPresent()) {
-            UserEntity resultUserEntity = userEntity.get();
-            UserEntityDTO userEntityDTO = new UserEntityDTO(resultUserEntity);
+            User resultUser = userEntity.get();
+            UserDTO userDTO = new UserDTO(resultUser);
 
-            return userEntityDTO;
+            return userDTO;
         }
         
         return null;

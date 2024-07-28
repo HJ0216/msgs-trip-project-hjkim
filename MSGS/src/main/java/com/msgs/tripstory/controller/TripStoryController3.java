@@ -2,17 +2,11 @@ package com.msgs.tripstory.controller;
 
 import lombok.RequiredArgsConstructor;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.msgs.msgs.entity.tripstory.StoryLikeCount;
-import com.msgs.msgs.entity.user.UserEntity;
 import com.msgs.tripstory.dto.StoryLikeCountDTO;
 import com.msgs.tripstory.service.TripStoryService;
 

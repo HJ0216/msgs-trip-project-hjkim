@@ -4,25 +4,18 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.msgs.msgs.dto.StoryCommentDTO;
 import com.msgs.msgs.dto.TripPlaceReviewDTO;
 import com.msgs.msgs.entity.placereview.PlaceReview;
 import com.msgs.msgs.entity.placereview.PlaceReviewImg;
-import com.msgs.msgs.entity.tripstory.StoryComment;
-import com.msgs.msgs.entity.tripstory.TripStory;
-import com.msgs.msgs.entity.user.UserEntity;
-import com.msgs.msgs.entity.user.UserImg;
+import com.msgs.msgs.entity.user.User;
 import com.msgs.tripplace.dao.PlaceReviewImageDAO;
 import com.msgs.tripplace.dao.TripPlaceDAO;
 import com.msgs.user.dao.UserDAO;
-
-import jakarta.persistence.PrePersist;
 
 @Service
 public class TripPlaceServiceImpl implements TripPlaceService {
@@ -42,10 +35,10 @@ public class TripPlaceServiceImpl implements TripPlaceService {
 		PlaceReview placeReview = new PlaceReview();
 		
 		// userId 이용한 UserEntity 엔티티 반환
-		Optional<UserEntity> userEntity = userDAO.findById(tripPlaceReviewDTO.getUserId());
+		Optional<User> userEntity = userDAO.findById(tripPlaceReviewDTO.getUserId().toString());
 		if(userEntity.isPresent()) {
-			UserEntity resultUserEntity = userEntity.get();
-			placeReview.setUserPlaceReview(resultUserEntity);
+			User resultUser = userEntity.get();
+			placeReview.setUserPlaceReview(resultUser);
 		}
 		
 		// seq 값은 자동 생성되므로 set 사용 X
@@ -92,7 +85,7 @@ public class TripPlaceServiceImpl implements TripPlaceService {
 	    
 	    for (TripPlaceReviewDTO review : reviewList) {
 	    	// 유저가 지금까지 작성한 리뷰 수 추가
-	        int userReviewCount = tripPlaceDAO.getUserReviewCount(review.getUserId());
+	        int userReviewCount = tripPlaceDAO.getUserReviewCount(review.getUserId().toString());
 	        review.setUserReviewCnt(userReviewCount);
 
 	        // 리뷰별 이미지 리스트 추가

@@ -3,10 +3,7 @@ package com.msgs.mypage.controller;
 import com.msgs.msgs.dto.MyPageReviewDTO;
 import com.msgs.msgs.dto.MyPageScheduleDTO;
 import com.msgs.msgs.dto.TripStoryMainDTO;
-import com.msgs.msgs.dto.UserEntityDTO;
-
-import com.msgs.msgs.dto.MyPageReviewDTO;
-import com.msgs.msgs.dto.MyPageScheduleDTO;
+import com.msgs.msgs.dto.UserDTO;
 
 import com.msgs.msgs.jwt.controller.UserController2;
 import com.msgs.mypage.service.MyPageService;
@@ -16,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -39,7 +35,7 @@ public class MyPageController3 {
     }
 
     @PostMapping("/profile")
-    public UserEntityDTO getProfile(@RequestBody Map<String, String> tokenValue) {
+    public UserDTO getProfile(@RequestBody Map<String, String> tokenValue) {
     	String token = tokenValue.get("tokenValue");
         JSONObject userInfo = getUserInfo(token);
         String id = userInfo.getString("id");

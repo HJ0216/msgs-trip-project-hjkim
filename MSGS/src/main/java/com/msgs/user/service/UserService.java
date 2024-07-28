@@ -1,15 +1,15 @@
 package com.msgs.user.service;
 
-import com.msgs.msgs.dto.UserEntityDTO;
-import com.msgs.msgs.entity.user.UserEntity;
+import com.msgs.msgs.dto.UserDTO;
+import com.msgs.msgs.entity.user.User;
 
 public interface UserService {
 
 
-    public void signUp(UserEntity userEntity);
+    public void signUp(User user);
 
-	public UserEntityDTO getUserInfo(String email);
+	public UserDTO getUserInfo(String email);
 
-	public UserEntityDTO getUser(String id);
+	public UserDTO getUser(String id);
     
 }

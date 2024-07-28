@@ -12,12 +12,11 @@ import org.springframework.stereotype.Service;
 
 import com.msgs.msgs.dto.TripScheduleDTO;
 import com.msgs.msgs.dto.TripStoryMainDTO;
-import com.msgs.msgs.dto.UserEntityDTO;
+import com.msgs.msgs.dto.UserDTO;
 import com.msgs.mypage.dao.MyPageDAO;
 import com.msgs.msgs.entity.tripstory.StoryImg;
 import com.msgs.msgs.entity.tripstory.TripStory;
-import com.msgs.msgs.entity.user.UserEntity;
-import com.msgs.msgs.entity.user.UserImg;
+import com.msgs.msgs.entity.user.User;
 import com.msgs.mypage.dto.MyPageUserDTO;
 import com.msgs.tripstory.dao.TripStoryDAO;
 import com.msgs.user.dao.UserDAO;
@@ -107,10 +106,8 @@ public class MyPageServiceImpl implements MyPageService {
 	public void updateMyInfo(String id) {
 		List<Object[]> queryResult = myPageDAO.findUserEntity(id);
 		
-		UserEntity userEntity = (UserEntity) queryResult.get(0)[0];
-		UserImg userImg = (UserImg) queryResult.get(0)[1];
-		
-		
+		User user = (User) queryResult.get(0)[0];
+
 		
 	}
 	
@@ -153,17 +150,17 @@ public class MyPageServiceImpl implements MyPageService {
 
 	// ========== 유저 이미지 불러오기 ==========
 	@Override
-	public UserEntityDTO getProfile(String id) {
-		Optional<UserEntity> userEntity = userDAO.findById(id);
+	public UserDTO getProfile(String id) {
+		Optional<User> userEntity = userDAO.findById(id);
 
 		if (userEntity.isPresent()) {
-			UserEntity resultUserEntity = userEntity.get();
-			UserEntityDTO userEntityDTO = new UserEntityDTO();
-			userEntityDTO.setImgPath(resultUserEntity.getUserImg().getImgPath());
+			User resultUser = userEntity.get();
+			UserDTO userDTO = new UserDTO();
+			userDTO.setImagePath(resultUser.getImagePath());
 
-			System.out.println("=======getProfile===========" + resultUserEntity.getUserImg().getImgPath());
+			System.out.println("=======getProfile===========" + resultUser.getImagePath());
 
-			return userEntityDTO;
+			return userDTO;
 		}
 		return null;
 	}
@@ -184,14 +181,13 @@ public class MyPageServiceImpl implements MyPageService {
 
 		for (Object[] result : queryResult) {
 			TripStory tripStory = (TripStory) result[0];
-			UserEntity userEntity = (UserEntity) result[1];
-			UserImg userImg = (UserImg) result[2];
+			User user = (User) result[1];
 			StoryImg storyImg = (StoryImg) result[3];
 
 			TripStoryMainDTO tripStoryMainDTO = new TripStoryMainDTO(); // TripStoryMainDTO 객체 생성
 
 			// 매개변수 id와 userEntity.getId()가 같은 데이터만 처리
-			if (!userEntity.getId().equals(id)) {
+			if (!user.getId().equals(id)) {
 				continue;
 			}
 
@@ -203,15 +199,15 @@ public class MyPageServiceImpl implements MyPageService {
 			tripStoryMainDTO.setComment(tripStory.getComment());
 			tripStoryMainDTO.setRegDate(tripStory.getRegDate());
 			tripStoryMainDTO.setModDate(tripStory.getModDate());
-			tripStoryMainDTO.setUserId(userEntity.getId());
-			tripStoryMainDTO.setUserName(userEntity.getName());
+			tripStoryMainDTO.setUserId(user.getId());
+			tripStoryMainDTO.setUserName(user.getNickname());
 
-			if (userImg != null && storyImg != null) {
-				tripStoryMainDTO.setUserImgPath(userImg.getImgPath());
+			if (user != null && storyImg != null) {
+				tripStoryMainDTO.setUserImgPath(user.getImagePath());
 				tripStoryMainDTO.setStoryImgOriginName(storyImg.getImgOriginName());
 				tripStoryMainDTO.setStoryImgPath(storyImg.getImgPath());
-			} else if (userImg != null) {
-				tripStoryMainDTO.setUserImgPath(userImg.getImgPath());
+			} else if (user != null) {
+				tripStoryMainDTO.setUserImgPath(user.getImagePath());
 			} else if (storyImg != null) {
 				tripStoryMainDTO.setStoryImgOriginName(storyImg.getImgOriginName());
 				tripStoryMainDTO.setStoryImgPath(storyImg.getImgPath());

@@ -1,8 +1,5 @@
 package com.msgs.tripstory.dto;
 
-import com.msgs.msgs.entity.tripstory.TripStory;
-import com.msgs.msgs.entity.user.UserEntity;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

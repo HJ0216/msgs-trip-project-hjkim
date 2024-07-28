@@ -1,9 +1,8 @@
 package com.msgs.msgs.dto;
 
-import com.msgs.msgs.entity.tripschedule.TripDailySchedule;
 import com.msgs.msgs.entity.tripschedule.TripDetailSchedule;
 import com.msgs.msgs.entity.tripschedule.TripSchedule;
-import com.msgs.msgs.entity.user.UserEntity;
+import com.msgs.msgs.entity.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,7 @@ import java.time.LocalDateTime;
 public class MyPageScheduleDTO {
     // Entity
     // User
-    private String userId;
+    private Integer userId;
 
     // trip schedule
     private int scheduleId;
@@ -30,8 +29,8 @@ public class MyPageScheduleDTO {
     //
     private int placeCnt;
 
-    public MyPageScheduleDTO(UserEntity userEntity) {
-        this.userId = userEntity.getId();
+    public MyPageScheduleDTO(User user) {
+        this.userId = user.getId();
     }
     public MyPageScheduleDTO(TripSchedule tripSchedule) {
         this.scheduleId = tripSchedule.getId();
@@ -41,8 +40,8 @@ public class MyPageScheduleDTO {
         this.modDate = tripSchedule.getModDate();
     }
 
-    public MyPageScheduleDTO(UserEntity userEntity, TripSchedule tripSchedule){
-        this.userId = userEntity.getId();
+    public MyPageScheduleDTO(User user, TripSchedule tripSchedule){
+        this.userId = user.getId();
         this.scheduleId = tripSchedule.getId();
         this.cityName = tripSchedule.getCityName();
         this.dateList = tripSchedule.getDateList();
@@ -50,8 +49,8 @@ public class MyPageScheduleDTO {
         this.modDate = tripSchedule.getModDate();
     }
 
-    public MyPageScheduleDTO(UserEntity userEntity, TripSchedule tripSchedule, TripDetailSchedule tripDetailSchedule){
-        this.userId = userEntity.getId();
+    public MyPageScheduleDTO(User user, TripSchedule tripSchedule, TripDetailSchedule tripDetailSchedule){
+        this.userId = user.getId();
         this.scheduleId = tripSchedule.getId();
         this.cityName = tripSchedule.getCityName();
         this.dateList = tripSchedule.getDateList();

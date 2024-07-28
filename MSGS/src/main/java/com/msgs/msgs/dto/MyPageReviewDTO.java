@@ -9,8 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.msgs.msgs.entity.placereview.PlaceReview;
-import com.msgs.msgs.entity.tripschedule.TripSchedule;
-import com.msgs.msgs.entity.user.UserEntity;
+import com.msgs.msgs.entity.user.User;
 
 @Getter
 @Setter
@@ -19,13 +18,13 @@ import com.msgs.msgs.entity.user.UserEntity;
 public class MyPageReviewDTO {
     // Entity
     // User
-    private String userId;
+    private int userId;
 
     // Like
     private String likeId;
 
     // place review
-    private int reviewId;
+    private Integer reviewId;
     private String contentId;
     private String title; // 장소 이름
     private String contentTypeId;
@@ -36,8 +35,8 @@ public class MyPageReviewDTO {
     private LocalDate regDate;
     private LocalDate modDate;
     
-    public MyPageReviewDTO(UserEntity userEntity, PlaceReview placeReview){
-        this.userId = userEntity.getId();
+    public MyPageReviewDTO(User user, PlaceReview placeReview){
+        this.userId = user.getId();
         this.reviewId = placeReview.getId();
         this.contentId = placeReview.getContentId();
         this.title = placeReview.getTitle();
