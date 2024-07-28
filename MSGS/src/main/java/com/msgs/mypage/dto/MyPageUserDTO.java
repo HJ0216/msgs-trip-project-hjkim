@@ -1,7 +1,6 @@
 package com.msgs.mypage.dto;
 
-import com.msgs.msgs.entity.user.UserEntity;
-import com.msgs.msgs.entity.user.UserImg;
+import com.msgs.msgs.entity.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,65 +23,20 @@ public class MyPageUserDTO {
     private String userPwd;
     private String userName;
     private String userGender;
+    private String imgPath;
     private String regDate;
     private String modDate;
-    private String locationConsent;
-    private String regUser;
-
-    private String profileImage;
-
-    // UserImg
-    private String imgOriginName;
-    private String imgPath;
-    private LocalDate imgRegDate;
 
 
     // entity 값 DTO 생성자 주입 - UserEntity
-    public MyPageUserDTO(UserEntity userEntity) {
-        this.userEmail = userEntity.getEmail();
-        this.userId = userEntity.getId();
-        this.userPhone = userEntity.getPhone();
-        this.userPwd = userEntity.getPassword();
-        this.userName = userEntity.getName();
-        this.regDate = userEntity.getRegDate().toString();
-        this.modDate = userEntity.getModDate().toString();
-        this.locationConsent = userEntity.getLocationConsent();
-        this.regUser = userEntity.getRegUser();
+    public MyPageUserDTO(User user) {
+        this.userEmail = user.getEmail();
+        this.userId = user.getId().toString();
+        this.userPhone = user.getPhone();
+        this.userPwd = user.getPassword();
+        this.userName = user.getNickname();
+        this.imgPath = user.getImagePath();
+        this.regDate = user.getCreatedDate().toString();
+        this.modDate = user.getUpdatedDate().toString();
     }
-
-   
-
-    // entity 값 DTO 생성자 주입 - UserImg
-    public MyPageUserDTO(UserImg userImg) {
-        this.imgOriginName = userImg.getImgOriginName();
-        this.imgPath = userImg.getImgPath();
-        this.imgRegDate = userImg.getRegDate();
-
-    }
-
-   
-
-    // entity 값 DTO 생성자 주입 - UserEntity and UserImg
-    public MyPageUserDTO(UserEntity userEntity, UserImg userImg) {
-        // UserDTO fields
-        this.userEmail = userEntity.getEmail();
-        this.userId = userEntity.getId();
-        this.userPhone = userEntity.getPhone();
-        this.userPwd = userEntity.getPassword();
-        this.userName = userEntity.getName();
-        this.regDate = userEntity.getRegDate().toString();
-        this.modDate = userEntity.getModDate().toString();
-        this.locationConsent = userEntity.getLocationConsent();
-        this.regUser = userEntity.getRegUser();
-
-        // UserImg fields
-        this.imgOriginName = userImg.getImgOriginName();
-        this.imgPath = userImg.getImgPath();
-        this.imgRegDate = userImg.getRegDate();
-    }
-
-    
-
-
-
 }

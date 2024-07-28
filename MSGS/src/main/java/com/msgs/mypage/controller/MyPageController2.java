@@ -1,29 +1,19 @@
 package com.msgs.mypage.controller;
 
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.msgs.msgs.dto.UserEntityDTO;
-import com.msgs.msgs.entity.user.UserEntity;
 import com.msgs.msgs.jwt.controller.UserController2;
 import com.msgs.mypage.dto.MyPageUserDTO;
 import com.msgs.mypage.service.MyPageService;
-
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("mypage")

@@ -16,6 +16,6 @@ public interface StoryCommentDAO extends JpaRepository<StoryComment, Integer> {
 //	@Query("SELECT sc, ue, ui FROM StoryComment sc LEFT JOIN sc.userStoryCmnt ue LEFT JOIN ue.userImg ui")
 //    List<Object[]> findAllWithUserAndImg();
     
-    @Query("SELECT sc, ue, ui FROM StoryComment sc LEFT JOIN sc.userStoryCmnt ue LEFT JOIN ue.userImg ui WHERE sc.tripStoryCmnt.id = :storyId")
+    @Query("SELECT sc, ue FROM StoryComment sc LEFT JOIN sc.userStoryCmnt ue WHERE sc.tripStoryCmnt.id = :storyId")
     List<Object[]> findAllWithUserAndImg(@Param("storyId") int storyId);
 }

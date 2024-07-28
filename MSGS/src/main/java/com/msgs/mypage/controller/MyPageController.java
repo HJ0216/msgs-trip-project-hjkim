@@ -70,7 +70,7 @@ public class MyPageController {
 	// Get userId, storyId data
 	String userName = profileUpdateDTO.getUserName();
 	String userEmail = profileUpdateDTO.getUserEmail();
-	String profileImage = profileUpdateDTO.getProfileImage();
+	String profileImage = profileUpdateDTO.getImgPath();
 	
 	// update db
 	System.out.println(userName);

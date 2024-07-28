@@ -1,13 +1,10 @@
 package com.msgs.msgs.dto;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 import com.msgs.msgs.entity.tripschedule.TripDailySchedule;
 import com.msgs.msgs.entity.tripschedule.TripSchedule;
-import com.msgs.msgs.entity.user.UserEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +17,7 @@ import lombok.Setter;
 public class TripScheduleDTO {
 
 	// TripSchedule Entity
-	private int scheduleId;
+	private Integer scheduleId;
 	private String cityName;
 	private String dateList;
 	private LocalDateTime regDate;

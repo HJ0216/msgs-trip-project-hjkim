@@ -1,8 +1,8 @@
 package com.msgs.user.controller;
 
 
-import com.msgs.msgs.dto.UserEntityDTO;
-import com.msgs.msgs.entity.user.UserEntity;
+import com.msgs.msgs.dto.UserDTO;
+import com.msgs.msgs.entity.user.User;
 import com.msgs.user.service.SmsService;
 import com.msgs.user.service.UserService;
 
@@ -48,21 +48,21 @@ public class UserController {
 
     // 회원가입
     @PostMapping("/signup")
-    public void userSignUp(@RequestBody UserEntity userEntity) {
-    	System.out.println("=================email=============" + userEntity.getEmail());
-        userService.signUp(userEntity);
+    public void userSignUp(@RequestBody User user) {
+    	System.out.println("=================email=============" + user.getEmail());
+        userService.signUp(user);
     }
     
     // 회원 정보 검색(이메일)
     @PostMapping("/getUserInfo")
-    public UserEntityDTO getUserInfo(@RequestParam("email") String email) {
+    public UserDTO getUserInfo(@RequestParam("email") String email) {
        System.out.println(email);
        return userService.getUserInfo(email);
     }
     
     // 회원 정보 검색(userId)
     @PostMapping("/getUser")
-    public UserEntityDTO getUser(@RequestParam("id") String id) {
+    public UserDTO getUser(@RequestParam("id") String id) {
     	System.out.println(id);
     	return userService.getUser(id);
     }

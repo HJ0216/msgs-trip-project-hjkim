@@ -5,7 +5,7 @@ import com.msgs.msgs.entity.tripschedule.DetailScheduleID;
 import com.msgs.msgs.entity.tripschedule.TripDailySchedule;
 import com.msgs.msgs.entity.tripschedule.TripDetailSchedule;
 import com.msgs.msgs.entity.tripschedule.TripSchedule;
-import com.msgs.msgs.entity.user.UserEntity;
+import com.msgs.msgs.entity.user.User;
 import com.msgs.tripschedule.dao.DailyScheduleDAO;
 import com.msgs.tripschedule.dao.DetailScheduleDAO;
 import com.msgs.tripschedule.dao.TripScheduleDAO;
@@ -222,18 +222,18 @@ public class TripScheduleServiceImpl implements TripScheduleService {
         try{
             /*TRIP_SCHEDULE*/
 //            Optional<UserEntity> userEntity = userDAO.findById("m000001"); // id 이용해서 UserEntity 엔티티 가져오기 */
-            Optional<UserEntity> userEntity = userDAO.findById("0f82a90f9f96402"); // id 이용해서 UserEntity 엔티티 가져오기 */
-            UserEntity resultUserEntity = userEntity.get();
+            Optional<User> userEntity = userDAO.findById("0f82a90f9f96402"); // id 이용해서 UserEntity 엔티티 가져오기 */
+            User resultUser = userEntity.get();
 
             //1. 여행일정 ID는 seq 값이 자동으로 들어감
             TripSchedule tripSchedule = new TripSchedule();
-            tripSchedule.setUserEntity(resultUserEntity);
+            tripSchedule.setUser(resultUser);
             tripSchedule.setCityName(cityName);
             tripSchedule.setDateList( String.join(",", dateList) );
             //3. 등록일자로 현재date 저장해야 함.
 
 
-            System.out.println(resultUserEntity.getId());
+            System.out.println(resultUser.getId());
 
             TripSchedule savedTripSchedule = null;
             TripDailySchedule savedDailySchedule = null;

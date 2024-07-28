@@ -1,19 +1,14 @@
 package com.msgs.tripstory.service;
 
 
-import com.msgs.msgs.dto.PlanBlockDTO;
 import com.msgs.msgs.dto.StoryBlockDTO;
-
-import com.msgs.msgs.entity.tripschedule.TripDetailSchedule;
 
 import com.msgs.msgs.dto.StoryResponseDTO;
 
 import com.msgs.msgs.entity.tripschedule.TripSchedule;
 import com.msgs.msgs.entity.tripstory.TripStory;
 import com.msgs.msgs.entity.tripstory.schedule.StoryDailySchedule;
-import com.msgs.msgs.entity.tripstory.schedule.StoryDetailImg;
 import com.msgs.msgs.entity.tripstory.schedule.StoryPlace;
-import com.msgs.msgs.entity.tripstory.schedule.StoryPlaceID;
 import com.msgs.tripschedule.dao.TripScheduleDAO;
 import com.msgs.tripstory.dao.StoryDailyDAO;
 import com.msgs.tripstory.dao.StoryDetailImgDAO;
@@ -23,9 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-import jdk.swing.interop.SwingInterOpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.msgs.msgs.dto.StoryCommentDTO;
@@ -39,8 +32,7 @@ import com.msgs.tripstory.dao.TripStoryImgDAO;
 import com.msgs.tripstory.dto.StoryLikeCountDTO;
 
 
-import com.msgs.msgs.entity.user.UserEntity;
-import com.msgs.msgs.entity.user.UserImg;
+import com.msgs.msgs.entity.user.User;
 import com.msgs.tripstory.dao.StoryCommentDAO;
 import com.msgs.user.dao.UserDAO;
 
@@ -164,7 +156,7 @@ public class TripStoryServiceImpl implements TripStoryService {
 		System.out.println("s11111111111111111111111111111111111111111111111111111111111111111111111");
 
 		/*TRIP_STORY 엔티티에 저장*/
-		Optional<UserEntity> userEntity = userDAO.findById("0f82a90f9f96402"); // id 이용해서 UserEntity 엔티티 가져오기 */
+		Optional<User> userEntity = userDAO.findById("0f82a90f9f96402"); // id 이용해서 UserEntity 엔티티 가져오기 */
 
 		//UserEntity resultUserEntity = userEntity.get();
 
@@ -173,7 +165,7 @@ public class TripStoryServiceImpl implements TripStoryService {
 	//	}
 System.out.println(userEntity);
 System.out.println(userEntity.get());
-		UserEntity resultUserEntity = userEntity.get();
+		User resultUser = userEntity.get();
 		System.out.println("S2222222222222222222222222222222222222222222222222222222222222222");
 
 		
@@ -186,14 +178,14 @@ System.out.println(storyData.get("schedule_id").toString());
 
 		System.out.println("S333333333333333333333333333333333333333333333333333333333333333");
 
-		System.out.println(resultUserEntity.getId());
+		System.out.println(resultUser.getId());
 		System.out.println(resultScheduleEntity.getId());
 		
 		Optional<TripStory> tripStoryData = storyDAO.findById(resultScheduleEntity.getId());
 		
-	System.out.println(resultUserEntity);
+	System.out.println(resultUser);
 	TripStory tripStory = tripStoryData.isEmpty() ? new TripStory():  tripStoryData.get();
-		tripStory.setUserTripStory(resultUserEntity);
+		tripStory.setUserTripStory(resultUser);
 		tripStory.setTripSchedule(resultScheduleEntity);
 		tripStory.setTitle(storyData.get("title").toString());
 		tripStory.setRating(Integer.parseInt(storyData.get("rating").toString()));
@@ -331,20 +323,19 @@ System.out.println(storyData.get("schedule_id").toString());
         
         for(Object[] result : queryResult) {
         	StoryComment storyComment = (StoryComment) result[0];
-        	UserEntity userEntity = (UserEntity) result[1];
-        	UserImg userImg = (UserImg) result[2];
+        	User user = (User) result[1];
         	System.out.println("=======getCommentList===========" + result);
         	
             StoryCommentDTO storyCommentDTO = new StoryCommentDTO(); // StoryCommentDTO 객체 생성
 
-            storyCommentDTO.setUserId(userEntity.getId());
-            storyCommentDTO.setUserName(userEntity.getName());
+            storyCommentDTO.setUserId(user.getId());
+            storyCommentDTO.setUserName(user.getNickname());
             storyCommentDTO.setSeq(storyComment.getSeq());
             storyCommentDTO.setContent(storyComment.getContent());
             storyCommentDTO.setStoryId(storyComment.getTripStoryCmnt().getId());
             
-            if(userImg != null) {
-        		storyCommentDTO.setUserImgPath(userImg.getImgPath());
+            if(user != null) {
+        		storyCommentDTO.setUserImgPath(user.getImagePath());
         	}
             // 리스트에 댓글 하나 더함
         	resultList.add(storyCommentDTO);
@@ -379,10 +370,10 @@ System.out.println(storyData.get("schedule_id").toString());
 		}
 		
 		// userId 이용한 UserEntity 엔티티 반환
-		Optional<UserEntity> userEntity = userDAO.findById(storyCommentDTO.getUserId());
+		Optional<User> userEntity = userDAO.findById(storyCommentDTO.getUserId().toString());
 		if(userEntity.isPresent()) {
-			UserEntity resultUserEntity = userEntity.get();
-			storyComment.setUserStoryCmnt(resultUserEntity);			
+			User resultUser = userEntity.get();
+			storyComment.setUserStoryCmnt(resultUser);
 		}
 
 		storyCommentDAO.save(storyComment);
@@ -399,8 +390,7 @@ System.out.println(storyData.get("schedule_id").toString());
 
         for(Object[] result : queryResult) {
         	TripStory tripStory = (TripStory) result[0];
-        	UserEntity userEntity = (UserEntity) result[1];
-        	UserImg userImg = (UserImg) result[2];
+        	User user = (User) result[1];
         	StoryImg storyImg = (StoryImg) result[3];
                                 	
         	TripStoryMainDTO tripStoryMainDTO = new TripStoryMainDTO(); // TripStoryMainDTO 객체 생성
@@ -410,15 +400,15 @@ System.out.println(storyData.get("schedule_id").toString());
         	tripStoryMainDTO.setTitle(tripStory.getTitle());
         	tripStoryMainDTO.setDateList(tripStory.getDateList());
         	tripStoryMainDTO.setComment(tripStory.getComment());
-        	tripStoryMainDTO.setUserId(userEntity.getId());
-        	tripStoryMainDTO.setUserName(userEntity.getName());
+        	tripStoryMainDTO.setUserId(user.getId());
+        	tripStoryMainDTO.setUserName(user.getNickname());
         	
-            if (userImg != null && storyImg != null) {
-                tripStoryMainDTO.setUserImgPath(userImg.getImgPath());
+            if (user != null && storyImg != null) {
+                tripStoryMainDTO.setUserImgPath(user.getImagePath());
                 tripStoryMainDTO.setStoryImgOriginName(storyImg.getImgOriginName());
                 tripStoryMainDTO.setStoryImgPath(storyImg.getImgPath());
-            } else if (userImg != null) {
-                tripStoryMainDTO.setUserImgPath(userImg.getImgPath());
+            } else if (user != null) {
+                tripStoryMainDTO.setUserImgPath(user.getImagePath());
             } else if (storyImg != null) {
                 tripStoryMainDTO.setStoryImgOriginName(storyImg.getImgOriginName());
                 tripStoryMainDTO.setStoryImgPath(storyImg.getImgPath());

@@ -1,12 +1,10 @@
 package com.msgs.msgs.entity.tripstory;
 
 
-import com.msgs.msgs.entity.user.UserEntity;
+import com.msgs.msgs.entity.user.User;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
-
-import java.time.LocalDate;
 
 @Entity
 @Table(name="story_comment", indexes = @Index(name = "story_comment_index", columnList = "seq"))
@@ -27,7 +25,7 @@ public class StoryComment {
 //    @JsonIgnore // recursive error로 null 처리x
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private UserEntity userStoryCmnt;
+    private User userStoryCmnt;
 
 
 

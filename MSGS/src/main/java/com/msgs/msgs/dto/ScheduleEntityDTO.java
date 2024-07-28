@@ -3,8 +3,8 @@ package com.msgs.msgs.dto;
 import com.msgs.msgs.entity.tripschedule.TripDailySchedule;
 import com.msgs.msgs.entity.tripschedule.TripDetailSchedule;
 import com.msgs.msgs.entity.tripschedule.TripSchedule;
-import com.msgs.msgs.entity.user.UserEntity;
-import java.time.LocalDate;
+import com.msgs.msgs.entity.user.User;
+
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,8 +18,8 @@ import lombok.Setter;
 public class ScheduleEntityDTO {
 
     //TripSchedule Entity
-    private int id;
-    private UserEntity userEntity; //String userId
+    private Integer id;
+    private User user; //String userId
     private String cityName;
     private String dateList;
     private LocalDateTime regDate;
@@ -43,7 +43,7 @@ public class ScheduleEntityDTO {
 
     public ScheduleEntityDTO(TripSchedule tripSchedule) {
         this.id = tripSchedule.getId();
-        this.userEntity = tripSchedule.getUserEntity();
+        this.user = tripSchedule.getUser();
         this.cityName = tripSchedule.getCityName();
         this.dateList = tripSchedule.getDateList();
         this.regDate = tripSchedule.getRegDate();

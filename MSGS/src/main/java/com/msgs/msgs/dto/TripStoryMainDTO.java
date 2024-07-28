@@ -1,12 +1,6 @@
 package com.msgs.msgs.dto;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-
-import com.msgs.msgs.entity.placereview.PlaceReview;
-import com.msgs.msgs.entity.user.UserEntity;
-import com.msgs.msgs.entity.user.UserImg;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +26,7 @@ public class TripStoryMainDTO {
     
     
     // private UserEntity userEntity;
-    private String userId;
+    private Integer userId;
     private String userName;
     
     // private UserImg userImg;

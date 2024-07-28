@@ -13,22 +13,19 @@ import com.msgs.msgs.entity.placereview.PlaceReviewImg;
 
 public interface TripPlaceDAO extends JpaRepository<PlaceReview, String> {
 
-	@Query("SELECT new com.msgs.msgs.dto.TripPlaceReviewDTO(pr, u, ui) " +
+	@Query("SELECT new com.msgs.msgs.dto.TripPlaceReviewDTO(pr, u) " +
 	        "FROM PlaceReview pr " +
 	        "JOIN pr.userPlaceReview u " +
-	        "LEFT JOIN u.userImg ui " +
 	        "WHERE pr.contentId = :contentId " +
 	        "ORDER BY pr.regDate DESC, pr.id DESC")
 	List<TripPlaceReviewDTO> findAllWithUserOrderDate(@Param("contentId") String contentId);
 	
-	@Query("SELECT new com.msgs.msgs.dto.TripPlaceReviewDTO(pr, u, ui) " +
+	@Query("SELECT new com.msgs.msgs.dto.TripPlaceReviewDTO(pr, u) " +
 	        "FROM PlaceReview pr " +
 	        "JOIN pr.userPlaceReview u " +
-	        "LEFT JOIN u.userImg ui " +
-	        "LEFT JOIN pr.userLikes l " +
 	        "WHERE pr.contentId = :contentId " +
-	        "GROUP BY pr, u, ui.imgPath " +
-	        "ORDER BY COUNT(l) DESC, pr.regDate DESC, pr.id DESC")
+	        "GROUP BY pr, u " +
+	        "ORDER BY pr.regDate DESC, pr.id DESC")
 	List<TripPlaceReviewDTO> findAllWithUserOrderLike(@Param("contentId") String contentId);
 
 	// 유저별 작성 리뷰수 조회
