@@ -1,6 +1,6 @@
 package com.msgs.msgs.entity.tripstory;
 
-import com.msgs.msgs.entity.tripschedule.TripSchedule;
+import com.msgs.msgs.entity.tripschedule.Trip;
 import com.msgs.msgs.entity.user.User;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -25,7 +25,7 @@ public class TripStory {
 	// join with trip schedule
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "schedule_id", nullable = false)
-	private TripSchedule tripSchedule;
+	private Trip trip;
 
 	// join with user
 	@ManyToOne(fetch = FetchType.LAZY)

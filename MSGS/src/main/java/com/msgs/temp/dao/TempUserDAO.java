@@ -1,7 +1,7 @@
 //package com.msgs.temp.dao;
 //
 //import com.msgs.msgs.dto.StoryCommentDTO;
-//import com.msgs.msgs.entity.tripschedule.TripSchedule;
+//import com.msgs.msgs.entity.tripschedule.Trip;
 //import com.msgs.msgs.entity.tripstory.StoryComment;
 //import com.msgs.msgs.entity.tripstory.TripStory;
 //
@@ -131,9 +131,9 @@
 //			storyComment.setTripStoryCmnt(resultTripStory);
 //
 //			// scheduleId 값 가져오기
-//			TripSchedule tripSchedule = resultTripStory.getTripSchedule();
+//			Trip trip = resultTripStory.getTrip();
 //
-//		    scheduleId = tripSchedule.getId();
+//		    scheduleId = trip.getId();
 //		    System.out.println("search===============" + scheduleId);
 //		}
 //

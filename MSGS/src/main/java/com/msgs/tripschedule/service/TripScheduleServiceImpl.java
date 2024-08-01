@@ -4,7 +4,7 @@ import com.msgs.msgs.dto.PlanBlockDTO;
 import com.msgs.msgs.entity.tripschedule.DetailScheduleID;
 import com.msgs.msgs.entity.tripschedule.TripDailySchedule;
 import com.msgs.msgs.entity.tripschedule.TripDetailSchedule;
-import com.msgs.msgs.entity.tripschedule.TripSchedule;
+import com.msgs.msgs.entity.tripschedule.Trip;
 import com.msgs.msgs.entity.user.User;
 import com.msgs.tripschedule.dao.DailyScheduleDAO;
 import com.msgs.tripschedule.dao.DetailScheduleDAO;
@@ -216,7 +216,7 @@ public class TripScheduleServiceImpl implements TripScheduleService {
 
     @Override
     @Transactional
-    //planList(tripSchedule 페이지에서 입력한 일정) 저장
+    //planList(trip 페이지에서 입력한 일정) 저장
     public Boolean saveSchedule(List<String> dateList, Map<Integer, List<PlanBlockDTO>> planList, String cityName){
 
         try{
@@ -226,24 +226,24 @@ public class TripScheduleServiceImpl implements TripScheduleService {
             User resultUser = userEntity.get();
 
             //1. 여행일정 ID는 seq 값이 자동으로 들어감
-            TripSchedule tripSchedule = new TripSchedule();
-            tripSchedule.setUser(resultUser);
-            tripSchedule.setCityName(cityName);
-            tripSchedule.setDateList( String.join(",", dateList) );
+            Trip trip = new Trip();
+            trip.setUser(resultUser);
+            trip.setCity(cityName);
+//            trip.setDateList( String.join(",", dateList) );
             //3. 등록일자로 현재date 저장해야 함.
 
 
             System.out.println(resultUser.getId());
 
-            TripSchedule savedTripSchedule = null;
+            Trip savedTrip = null;
             TripDailySchedule savedDailySchedule = null;
             //여기까진 잘 돌아감.
             try{
                 /*TRIP_SCHEDULE 에 저장*/
-                savedTripSchedule = scheduleDAO.saveAndFlush(tripSchedule); //DB에 저장 -> id 얻어오기 위함
+                savedTrip = scheduleDAO.saveAndFlush(trip); //DB에 저장 -> id 얻어오기 위함
 //              // 여기서 에러났었음.
             }catch(Exception e){
-                System.out.println("scheduleDAO.saveAndFlush(tripSchedule) 에서 에러남=================================");
+                System.out.println("scheduleDAO.saveAndFlush(trip) 에서 에러남=================================");
                 System.out.println(e);
             }
 
@@ -252,7 +252,7 @@ public class TripScheduleServiceImpl implements TripScheduleService {
             for (Map.Entry<Integer, List<PlanBlockDTO>> entry : planList.entrySet()) {
                 /*TRIP_DAILY_SCHEDULE 에 저장*/
                 TripDailySchedule tripDailySchedule = new TripDailySchedule();
-                tripDailySchedule.setTripSchedule(savedTripSchedule);
+                tripDailySchedule.setTrip(savedTrip);
                 savedDailySchedule = dailyScheduleDAO.saveAndFlush(tripDailySchedule); // DB에 저장
 
 
@@ -308,23 +308,23 @@ public class TripScheduleServiceImpl implements TripScheduleService {
         Map<String, Object> responseMap = new HashMap<>();
 
         /* schedule_id 이용해서 SchduleEntity 엔티티 가져오기 */
-        Optional<TripSchedule> scheduleEntity = scheduleDAO.findById(scheduleId);
-        TripSchedule resultScheduleEntity = scheduleEntity.get();
+        Optional<Trip> scheduleEntity = scheduleDAO.findById(scheduleId);
+        Trip resultScheduleEntity = scheduleEntity.get();
 
         System.out.println("Sche111111111111111111111111111111111111111111111111");
         /* [1] areaTitle */
-        String areaTitle = resultScheduleEntity.getCityName();
+        String areaTitle = resultScheduleEntity.getCity();
         System.out.println("areaTitle" + areaTitle);
         responseMap.put("areaTitle", areaTitle);
 
         /* [2] dateList */
-        List<String> dateList = new ArrayList<String>(Arrays.asList(
-            resultScheduleEntity.getDateList().split(",")));
-        responseMap.put("dateList", dateList);
+//        List<String> dateList = new ArrayList<String>(Arrays.asList(
+//            resultScheduleEntity.getDateList().split(",")));
+//        responseMap.put("dateList", dateList);
 
         /* [3] planList */
         Map<Integer, List<PlanBlockDTO>> planList = new HashMap<>();
-        List<TripDailySchedule> dailyScheList = dailyScheduleDAO.findAllByTripSchedule_Id(scheduleId);
+        List<TripDailySchedule> dailyScheList = dailyScheduleDAO.findAllByTrip_Id(scheduleId);
 
         for (TripDailySchedule dailySchedule: dailyScheList){
             int dailyId = dailySchedule.getDailyId();
@@ -379,16 +379,16 @@ public class TripScheduleServiceImpl implements TripScheduleService {
 
     @Override
     @Transactional
-//    planList(tripSchedule 페이지에서 수정한 일정) 업데이트
+//    planList(trip 페이지에서 수정한 일정) 업데이트
     public Boolean updateSchedule(List<String> dateList, Map<Integer, List<PlanBlockDTO>> planList, String scheduleId){
 
         try{
 
             /*TRIP_SCHEDULE 업데이트 -> mod_date(수정 시간) 컬럼 추가하기 위함*/
-            Optional<TripSchedule> tripSchedule = scheduleDAO.findById(Integer.valueOf(scheduleId)); // id 이용해서 TripSchedule 엔티티 가져오기 */
-            TripSchedule resultScheduleEntity = tripSchedule.get();
+            Optional<Trip> tripSchedule = scheduleDAO.findById(Integer.valueOf(scheduleId)); // id 이용해서 Trip 엔티티 가져오기 */
+            Trip resultScheduleEntity = tripSchedule.get();
 
-            resultScheduleEntity.setModDate(LocalDateTime.now());
+            resultScheduleEntity.setUpdatedDate(LocalDateTime.now());
 
             /*TRIP_SCHEDULE 에 저장*/
             scheduleDAO.saveAndFlush(resultScheduleEntity); //DB에 update해서 수정시간(mod_date)컬럼을 저장함.
@@ -398,7 +398,7 @@ public class TripScheduleServiceImpl implements TripScheduleService {
             for (Map.Entry<Integer, List<PlanBlockDTO>> entry : planList.entrySet()) {
 
                 /*scheduleId 를 외래키로 갖고 있는 TRIP_DAILY_SCHEDULE의 레코드들을 갖고와서 daily_id를 얻는다*/
-                List<TripDailySchedule> dailyScheList = dailyScheduleDAO.findAllByTripSchedule_Id(
+                List<TripDailySchedule> dailyScheList = dailyScheduleDAO.findAllByTrip_Id(
                     Integer.parseInt(scheduleId));
 
                 for (TripDailySchedule dailySchedule: dailyScheList){

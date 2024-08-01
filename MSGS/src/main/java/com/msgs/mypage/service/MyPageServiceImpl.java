@@ -10,7 +10,7 @@ import com.msgs.msgs.dto.MyPageScheduleDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.msgs.msgs.dto.TripScheduleDTO;
+import com.msgs.msgs.dto.TripDTO;
 import com.msgs.msgs.dto.TripStoryMainDTO;
 import com.msgs.msgs.dto.UserDTO;
 import com.msgs.mypage.dao.MyPageDAO;
@@ -73,11 +73,11 @@ public class MyPageServiceImpl implements MyPageService {
 //		myPageDAO.save(userDTO);
 //	}
 
-	// tripSchedule List 조회
+	// trip List 조회
 	@Override
-	public List<TripScheduleDTO> tripListAll(String id) {
+	public List<TripDTO> tripListAll(String id) {
 //        List<Object[]> queryResult = myPageDAO.findAllWithTripAndDetail();
-		List<TripScheduleDTO> resultList = new ArrayList<>(); // 반환받을 DTO
+		List<TripDTO> resultList = new ArrayList<>(); // 반환받을 DTO
 		return resultList;
 	}
 
@@ -140,7 +140,7 @@ public class MyPageServiceImpl implements MyPageService {
 		List<MyPageScheduleDTO> scheduleList = myPageDAO.findMyPageTripSchedule(id);
 		System.out.println(scheduleList.size());
 		for (int i = 0; i < scheduleList.size(); i++) {
-			int cnt = myPageDAO.countMyPageTripSchedule(id, scheduleList.get(i).getScheduleId());
+			int cnt = myPageDAO.countMyPageTripSchedule(id, scheduleList.get(i).getTripId());
 			System.out.println(cnt);
 			scheduleList.get(i).setPlaceCnt(cnt);
 
@@ -192,7 +192,7 @@ public class MyPageServiceImpl implements MyPageService {
 			}
 
 			tripStoryMainDTO.setStoryId(tripStory.getId());
-			tripStoryMainDTO.setScheduleId(tripStory.getTripSchedule().getId());
+			tripStoryMainDTO.setScheduleId(tripStory.getTrip().getId());
 			tripStoryMainDTO.setCityName(tripStory.getCityName());
 			tripStoryMainDTO.setTitle(tripStory.getTitle());
 			tripStoryMainDTO.setDateList(tripStory.getDateList());

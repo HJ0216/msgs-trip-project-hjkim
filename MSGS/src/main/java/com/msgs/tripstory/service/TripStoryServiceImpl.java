@@ -5,7 +5,7 @@ import com.msgs.msgs.dto.StoryBlockDTO;
 
 import com.msgs.msgs.dto.StoryResponseDTO;
 
-import com.msgs.msgs.entity.tripschedule.TripSchedule;
+import com.msgs.msgs.entity.tripschedule.Trip;
 import com.msgs.msgs.entity.tripstory.TripStory;
 import com.msgs.msgs.entity.tripstory.schedule.StoryDailySchedule;
 import com.msgs.msgs.entity.tripstory.schedule.StoryPlace;
@@ -170,11 +170,11 @@ System.out.println(userEntity.get());
 
 		
 System.out.println(storyData.get("schedule_id").toString());
-		Optional<TripSchedule> scheduleEntity = scheduleDAO.findById(
+		Optional<Trip> scheduleEntity = scheduleDAO.findById(
 			Integer.parseInt(storyData.get("schedule_id").toString())
 		); // schedule_id 이용해서 SchduleEntity 엔티티 가져오기 */
 
-		TripSchedule resultScheduleEntity = scheduleEntity.get();
+		Trip resultScheduleEntity = scheduleEntity.get();
 
 		System.out.println("S333333333333333333333333333333333333333333333333333333333333333");
 
@@ -186,7 +186,7 @@ System.out.println(storyData.get("schedule_id").toString());
 	System.out.println(resultUser);
 	TripStory tripStory = tripStoryData.isEmpty() ? new TripStory():  tripStoryData.get();
 		tripStory.setUserTripStory(resultUser);
-		tripStory.setTripSchedule(resultScheduleEntity);
+		tripStory.setTrip(resultScheduleEntity);
 		tripStory.setTitle(storyData.get("title").toString());
 		tripStory.setRating(Integer.parseInt(storyData.get("rating").toString()));
 		tripStory.setComment(storyData.get("comment").toString());
@@ -396,7 +396,7 @@ System.out.println(storyData.get("schedule_id").toString());
         	TripStoryMainDTO tripStoryMainDTO = new TripStoryMainDTO(); // TripStoryMainDTO 객체 생성
         	
         	tripStoryMainDTO.setStoryId(tripStory.getId());
-        	tripStoryMainDTO.setScheduleId(tripStory.getTripSchedule().getId());
+        	tripStoryMainDTO.setScheduleId(tripStory.getTrip().getId());
         	tripStoryMainDTO.setTitle(tripStory.getTitle());
         	tripStoryMainDTO.setDateList(tripStory.getDateList());
         	tripStoryMainDTO.setComment(tripStory.getComment());

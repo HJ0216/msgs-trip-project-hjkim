@@ -1,7 +1,7 @@
 package com.msgs.msgs.entity.user;
 
 import com.msgs.msgs.entity.placereview.PlaceReview;
-import com.msgs.msgs.entity.tripschedule.TripSchedule;
+import com.msgs.msgs.entity.tripschedule.Trip;
 import com.msgs.msgs.entity.tripstory.StoryComment;
 import com.msgs.msgs.entity.tripstory.StoryLikeCount;
 import com.msgs.msgs.entity.tripstory.TripStory;
@@ -57,7 +57,7 @@ public class User implements UserDetails {
    // mapping
    // trip schedule
    @OneToMany(mappedBy = "user")
-   private List<TripSchedule> tripSchedule = new ArrayList<>();
+   private List<Trip> trip = new ArrayList<>();
 
    // place review
    @OneToMany(mappedBy = "userPlaceReview")
