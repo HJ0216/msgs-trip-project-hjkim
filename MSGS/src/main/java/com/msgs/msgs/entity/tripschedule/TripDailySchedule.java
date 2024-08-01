@@ -24,10 +24,9 @@ public class TripDailySchedule {
     @Column(name = "daily_id")
     private int dailyId;
 
-//    @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_id", nullable = false)
-    private TripSchedule tripSchedule;
+    @JoinColumn(name = "trip_id", nullable = false)
+    private Trip trip;
 
     //mapping
     @OneToMany(mappedBy = "tripDailySchedule", fetch = FetchType.LAZY)

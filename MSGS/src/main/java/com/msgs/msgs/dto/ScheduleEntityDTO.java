@@ -2,9 +2,10 @@ package com.msgs.msgs.dto;
 
 import com.msgs.msgs.entity.tripschedule.TripDailySchedule;
 import com.msgs.msgs.entity.tripschedule.TripDetailSchedule;
-import com.msgs.msgs.entity.tripschedule.TripSchedule;
+import com.msgs.msgs.entity.tripschedule.Trip;
 import com.msgs.msgs.entity.user.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,17 +18,18 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ScheduleEntityDTO {
 
-    //TripSchedule Entity
+    //Trip Entity
     private Integer id;
-    private User user; //String userId
-    private String cityName;
-    private String dateList;
-    private LocalDateTime regDate;
-    private LocalDateTime modDate;
+    private User user;
+    private String city;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
 
     //TripDailySchedule Entity
     private int dailyId;
-    private TripSchedule tripSchedule; //int id
+    private Trip trip; //int id
 
     //TripDetailSchedule Entity
     private int orderDay;
@@ -41,18 +43,19 @@ public class ScheduleEntityDTO {
     private Double mapy;
     private String contentid;
 
-    public ScheduleEntityDTO(TripSchedule tripSchedule) {
-        this.id = tripSchedule.getId();
-        this.user = tripSchedule.getUser();
-        this.cityName = tripSchedule.getCityName();
-        this.dateList = tripSchedule.getDateList();
-        this.regDate = tripSchedule.getRegDate();
-        this.modDate = tripSchedule.getModDate();
+    public ScheduleEntityDTO(Trip trip) {
+        this.id = trip.getId();
+        this.user = trip.getUser();
+        this.city = trip.getCity();
+        this.startDate = trip.getStartDate();
+        this.endDate = trip.getEndDate();
+        this.createdDate = trip.getCreatedDate();
+        this.updatedDate = trip.getUpdatedDate();
     }
 
     public ScheduleEntityDTO(TripDailySchedule tripDailySchedule) {
         this.dailyId = tripDailySchedule.getDailyId();
-        this.tripSchedule = tripDailySchedule.getTripSchedule();
+        this.trip = tripDailySchedule.getTrip();
     }
 
     public ScheduleEntityDTO(TripDetailSchedule tripDetailSchedule) {

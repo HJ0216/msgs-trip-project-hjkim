@@ -1,6 +1,5 @@
 package com.msgs.tripstory.dao;
 
-import com.msgs.msgs.entity.tripschedule.TripSchedule;
 import com.msgs.msgs.entity.tripstory.schedule.StoryDailySchedule;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -18,14 +18,14 @@ public interface MyPageDAO extends JpaRepository<User, String>{
 
     @Query("SELECT new com.msgs.msgs.dto.MyPageScheduleDTO(u, ts) " +
             "FROM User u " +
-            "JOIN u.tripSchedule ts " +
+            "JOIN u.trip ts " +
             "WHERE u.id = :id")
     List<MyPageScheduleDTO> findMyPageTripSchedule(@Param("id") String id);
 
     // 메소드 시그니처와 JPQL 쿼리를 사용하여 MyPageScheduleDTO 리스트를 가져오는 메소드
     @Query("SELECT count(*)" +
             "FROM User u " +
-            "JOIN u.tripSchedule ts " +
+            "JOIN u.trip ts " +
             "JOIN ts.tripDailySchedules tds " +
             "JOIN tds.tripDetailSchedules tdsDetail " +
             "WHERE u.id = :id and ts.id = :scheduleId")

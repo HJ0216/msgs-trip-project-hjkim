@@ -74,7 +74,7 @@ public class TripScheduleController {
 
 
 
-    // Edit TripSchedule 하기 위해, 해당 schedule_id 에 해당하는 여행일정 정보 반환함
+    // Edit Trip 하기 위해, 해당 schedule_id 에 해당하는 여행일정 정보 반환함
     @GetMapping("/info")
     public Map<String, Object> getSchedule(@RequestParam int scheduleId) {
         return tripScheduleService.getSchedule(scheduleId);

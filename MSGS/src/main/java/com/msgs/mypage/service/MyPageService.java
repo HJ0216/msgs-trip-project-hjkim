@@ -6,13 +6,13 @@ import com.msgs.mypage.dto.MyPageUserDTO;
 
 import java.util.List;
 
-import com.msgs.msgs.dto.TripScheduleDTO;
+import com.msgs.msgs.dto.TripDTO;
 import com.msgs.msgs.dto.TripStoryMainDTO;
 import com.msgs.msgs.dto.UserDTO;
 
 public interface MyPageService {
 
-	public List<TripScheduleDTO> tripListAll(String id);
+	public List<TripDTO> tripListAll(String id);
   
 	// 회원 정보 불러오기
 	public MyPageUserDTO getMyInfo(String userId);
