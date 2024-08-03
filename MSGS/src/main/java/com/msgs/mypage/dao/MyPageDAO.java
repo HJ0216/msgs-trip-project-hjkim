@@ -26,8 +26,8 @@ public interface MyPageDAO extends JpaRepository<User, String>{
     @Query("SELECT count(*)" +
             "FROM User u " +
             "JOIN u.trip ts " +
-            "JOIN ts.tripDailySchedules tds " +
-            "JOIN tds.tripDetailSchedules tdsDetail " +
+            "JOIN ts.tripDays tds " +
+            "JOIN tds.dayDestinations tdsDestination " +
             "WHERE u.id = :id and ts.id = :scheduleId")
     int countMyPageTripSchedule(@Param("id") String id, @Param("scheduleId") int scheduleId);
 

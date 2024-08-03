@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.msgs.msgs.entity.tripschedule.Trip;
-import com.msgs.msgs.entity.tripschedule.TripDailySchedule;
+import com.msgs.msgs.entity.tripschedule.TripDay;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,11 +26,11 @@ public class TripDTO {
 	private LocalDateTime createdDate;
 	private LocalDateTime updatedDate;
 	
-	// TripDailySchedule Entity
+	// TripDay Entity
 	private int dailyId;
 	
-	// TripDetailSchedule Entity
-	private List<TripDailySchedule> tripDailySchedule;
+	// DayDestination Entity
+	private List<TripDay> tripDay;
 	
 	// entity 값 DTO 생성자 주입 - Trip
 	public TripDTO(Trip trip) {

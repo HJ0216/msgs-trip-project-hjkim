@@ -1,9 +1,7 @@
 package com.msgs.msgs.dto;
 
-import com.msgs.msgs.entity.tripschedule.TripDetailSchedule;
 import com.msgs.msgs.entity.tripschedule.Trip;
 import com.msgs.msgs.entity.user.User;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
