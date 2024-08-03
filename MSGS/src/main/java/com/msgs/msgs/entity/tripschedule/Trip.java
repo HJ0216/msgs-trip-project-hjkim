@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import lombok.*;
@@ -55,7 +54,5 @@ public class Trip {
     private TripStory tripStory;
 
     @OneToMany(mappedBy = "trip", fetch = FetchType.LAZY)
-    private  List<TripDailySchedule> tripDailySchedules = new ArrayList<>();
+    private  List<TripDay> tripDays = new ArrayList<>();
 }
-
-
