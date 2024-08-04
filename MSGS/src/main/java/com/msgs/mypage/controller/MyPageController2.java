@@ -3,6 +3,7 @@ package com.msgs.mypage.controller;
 
 import java.util.Map;
 
+import com.msgs.msgs.jwt.controller.JwtController;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.msgs.msgs.jwt.controller.UserController2;
 import com.msgs.mypage.dto.MyPageUserDTO;
 import com.msgs.mypage.service.MyPageService;
 
@@ -23,7 +23,7 @@ public class MyPageController2 {
     private MyPageService myPageService;
 	
     @Autowired
-    private UserController2 userController2;
+    private JwtController userController2;
 
     public JSONObject getUserInfo(String token) {
         ResponseEntity<?> userInfoResponse = userController2.getUserInfo(token);

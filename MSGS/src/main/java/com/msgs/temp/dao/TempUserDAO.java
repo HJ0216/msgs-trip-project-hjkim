@@ -1,9 +1,9 @@
 //package com.msgs.temp.dao;
 //
 //import com.msgs.msgs.dto.StoryCommentDTO;
-//import com.msgs.msgs.entity.tripschedule.Trip;
-//import com.msgs.msgs.entity.tripstory.StoryComment;
-//import com.msgs.msgs.entity.tripstory.TripStory;
+//import com.msgs.msgs.entity.schedule.Trip;
+//import com.msgs.msgs.entity.destination.StoryComment;
+//import com.msgs.msgs.entity.destination.TripStory;
 //
 //import com.msgs.msgs.entity.user.UserEntity;
 //import com.msgs.msgs.entity.user.UserImg;

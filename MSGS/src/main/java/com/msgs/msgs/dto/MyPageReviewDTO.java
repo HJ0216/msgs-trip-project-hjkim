@@ -1,14 +1,13 @@
 package com.msgs.msgs.dto;
 
+import com.msgs.msgs.entity.review.Review;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-import com.msgs.msgs.entity.placereview.PlaceReview;
 import com.msgs.msgs.entity.user.User;
 
 @Getter
@@ -25,28 +24,16 @@ public class MyPageReviewDTO {
 
     // place review
     private Integer reviewId;
-    private String contentId;
-    private String title; // 장소 이름
-    private String contentTypeId;
-    private String contentTypeName; // 장소 타입
-    private String cityName; // 위치
-    private String comment; // 내용
-    private BigDecimal rate;
-    private LocalDate regDate;
-    private LocalDate modDate;
+    private String comments; // 내용
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
     
-    public MyPageReviewDTO(User user, PlaceReview placeReview){
+    public MyPageReviewDTO(User user, Review review){
         this.userId = user.getId();
-        this.reviewId = placeReview.getId();
-        this.contentId = placeReview.getContentId();
-        this.title = placeReview.getTitle();
-        this.contentTypeId = placeReview.getContentTypeId();
-        this.contentTypeName = placeReview.getContentTypeName();
-        this.cityName = placeReview.getCityName();
-        this.comment = placeReview.getComment();
-        this.rate = placeReview.getRate();
-        this.regDate = placeReview.getRegDate();
-        this.modDate = placeReview.getModDate();
+        this.reviewId = review.getId();
+        this.comments = review.getComments();
+        this.createdDate = review.getCreatedDate();
+        this.updatedDate = review.getUpdatedDate();
     }
 
 

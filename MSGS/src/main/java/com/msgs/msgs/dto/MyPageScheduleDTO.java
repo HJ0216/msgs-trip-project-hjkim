@@ -1,6 +1,6 @@
 package com.msgs.msgs.dto;
 
-import com.msgs.msgs.entity.tripschedule.Trip;
+import com.msgs.msgs.entity.schedule.Trip;
 import com.msgs.msgs.entity.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,7 +36,6 @@ public class MyPageScheduleDTO {
     public MyPageScheduleDTO(Trip trip) {
         this.tripId = trip.getId();
         this.title = trip.getTitle();
-        this.city = trip.getCity();
         this.startDate = trip.getStartDate();
         this.endDate = trip.getEndDate();
         this.createdDate = trip.getCreatedDate();
@@ -47,7 +46,6 @@ public class MyPageScheduleDTO {
         this.userId = user.getId();
         this.tripId = trip.getId();
         this.title = trip.getTitle();
-        this.city = trip.getCity();
         this.startDate = trip.getStartDate();
         this.endDate = trip.getEndDate();
         this.createdDate = trip.getCreatedDate();

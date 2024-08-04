@@ -15,15 +15,15 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserDAO userDAO;
 
-    // 회원가입
     @Override
-    public void signUp(User user) {
-        userDAO.save(user);
+    public String create(User user){
+        User createdUser = userDAO.save(user);
+
+        return createdUser.getId().toString();
     }
 
-    // 회원 정보 검색(이메일)
 	@Override
-	public UserDTO getUserInfo(String email) {
+	public UserDTO getUserFromEmail(String email) {
 		
 		System.out.println("!!!!!!!!!!!!!!!!!"+email);
         Optional<User> userEntity = userDAO.findByEmail(email);
@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserDTO getUser(String id) {
+	public UserDTO getUserFromId(Integer id) {
         Optional<User> userEntity = userDAO.findById(id);
         // id 제외 findBy 메서드 생성
 

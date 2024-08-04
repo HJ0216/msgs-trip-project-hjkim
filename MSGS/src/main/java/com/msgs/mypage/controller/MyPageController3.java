@@ -5,7 +5,7 @@ import com.msgs.msgs.dto.MyPageScheduleDTO;
 import com.msgs.msgs.dto.TripStoryMainDTO;
 import com.msgs.msgs.dto.UserDTO;
 
-import com.msgs.msgs.jwt.controller.UserController2;
+import com.msgs.msgs.jwt.controller.JwtController;
 import com.msgs.mypage.service.MyPageService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class MyPageController3 {
 
     @Autowired
-    private UserController2 userController2;
+    private JwtController userController2;
 
     @Autowired
     private MyPageService myPageService;

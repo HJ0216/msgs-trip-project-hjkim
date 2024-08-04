@@ -4,8 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.msgs.msgs.entity.tripschedule.Trip;
-import com.msgs.msgs.entity.tripschedule.TripDay;
+import com.msgs.msgs.entity.schedule.Trip;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,14 +28,10 @@ public class TripDTO {
 	// TripDay Entity
 	private int dailyId;
 	
-	// DayDestination Entity
-	private List<TripDay> tripDay;
-	
 	// entity 값 DTO 생성자 주입 - Trip
 	public TripDTO(Trip trip) {
 		this.id = trip.getId();
 		this.title = trip.getTitle();
-		this.city = trip.getCity();
 		this.startDate = trip.getStartDate();
 		this.endDate = trip.getEndDate();
 		this.createdDate = trip.getCreatedDate();

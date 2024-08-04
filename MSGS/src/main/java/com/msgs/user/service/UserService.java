@@ -5,11 +5,10 @@ import com.msgs.msgs.entity.user.User;
 
 public interface UserService {
 
+    public String create(User user);
 
-    public void signUp(User user);
+	public UserDTO getUserFromEmail(String email);
 
-	public UserDTO getUserInfo(String email);
-
-	public UserDTO getUser(String id);
+	public UserDTO getUserFromId(Integer id);
     
 }

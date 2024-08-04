@@ -1,16 +1,13 @@
 package com.msgs.msgs.entity.user;
 
-import com.msgs.msgs.entity.placereview.PlaceReview;
-import com.msgs.msgs.entity.tripschedule.Trip;
-import com.msgs.msgs.entity.tripstory.StoryComment;
-import com.msgs.msgs.entity.tripstory.StoryLikeCount;
-import com.msgs.msgs.entity.tripstory.TripStory;
+import com.msgs.msgs.entity.schedule.Trip;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -22,7 +19,10 @@ import java.util.List;
 
 @Entity
 @Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
 
    @Id @GeneratedValue
@@ -53,27 +53,6 @@ public class User implements UserDetails {
    @Column(nullable = false)
    @LastModifiedDate
    private LocalDateTime updatedDate;
-
-   // mapping
-   // trip schedule
-   @OneToMany(mappedBy = "user")
-   private List<Trip> trip = new ArrayList<>();
-
-   // place review
-   @OneToMany(mappedBy = "userPlaceReview")
-   private List<PlaceReview> placeReviews = new ArrayList<>();
-
-   // trip story
-   @OneToMany(mappedBy = "userTripStory")
-   private List<TripStory> tripStories = new ArrayList<>();
-
-   @OneToMany(mappedBy = "userStoryCmnt")
-   private List<StoryComment> storyComment = new ArrayList<>();
-
-   @OneToMany(mappedBy = "userStoryLike")
-   private List<StoryLikeCount> storyLikeCount = new ArrayList<>();
-
-
 
    //jwt
    @Override
