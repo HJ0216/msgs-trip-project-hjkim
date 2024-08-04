@@ -16,36 +16,36 @@ import com.msgs.mypage.dto.MyPageUserDTO;
 @Repository
 public interface MyPageDAO extends JpaRepository<User, String>{
 
-    @Query("SELECT new com.msgs.msgs.dto.MyPageScheduleDTO(u, ts) " +
-            "FROM User u " +
-            "JOIN u.trip ts " +
-            "WHERE u.id = :id")
-    List<MyPageScheduleDTO> findMyPageTripSchedule(@Param("id") String id);
+//    @Query("SELECT new com.msgs.msgs.dto.MyPageScheduleDTO(u, ts) " +
+//            "FROM User u " +
+//            "JOIN u.trip ts " +
+//            "WHERE u.id = :id")
+//    List<MyPageScheduleDTO> findMyPageTripSchedule(@Param("id") String id);
 
     // 메소드 시그니처와 JPQL 쿼리를 사용하여 MyPageScheduleDTO 리스트를 가져오는 메소드
-    @Query("SELECT count(*)" +
-            "FROM User u " +
-            "JOIN u.trip ts " +
-            "JOIN ts.tripDays tds " +
-            "JOIN tds.dayDestinations tdsDestination " +
-            "WHERE u.id = :id and ts.id = :scheduleId")
-    int countMyPageTripSchedule(@Param("id") String id, @Param("scheduleId") int scheduleId);
-
-    @Query("SELECT new com.msgs.msgs.dto.MyPageReviewDTO(u, pr) " +
-            "FROM User u " +
-            "JOIN u.placeReviews pr " +
-            "WHERE u.id = :id")
-    List<MyPageReviewDTO> findMyPageTripLocReview(@Param("id") String id);
+//    @Query("SELECT count(*)" +
+//            "FROM User u " +
+//            "JOIN u.trip ts " +
+//            "JOIN ts.tripDays tds " +
+//            "JOIN tds.dayDestinations tdsDestination " +
+//            "WHERE u.id = :id and ts.id = :scheduleId")
+//    int countMyPageTripSchedule(@Param("id") String id, @Param("scheduleId") int scheduleId);
+//
+//    @Query("SELECT new com.msgs.msgs.dto.MyPageReviewDTO(u, pr) " +
+//            "FROM User u " +
+//            "JOIN u.destinationReviews pr " +
+//            "WHERE u.id = :id")
+//    List<MyPageReviewDTO> findMyPageTripLocReview(@Param("id") String id);
     
-    @Query("SELECT new com.msgs.mypage.dto.MyPageUserDTO(u) " +
-            "FROM User u " +
-            "WHERE u.id = :id")
-    MyPageUserDTO findMyInfo(@Param("id") String id);
-    
-    @Query("SELECT u " +
-            "FROM User u " +
-            "WHERE u.id = :id")
-    List<Object[]> findUserEntity(@Param("id") String id);    
+//    @Query("SELECT new com.msgs.mypage.dto.MyPageUserDTO(u) " +
+//            "FROM User u " +
+//            "WHERE u.id = :id")
+//    MyPageUserDTO findMyInfo(@Param("id") String id);
+//
+//    @Query("SELECT u " +
+//            "FROM User u " +
+//            "WHERE u.id = :id")
+//    List<Object[]> findUserEntity(@Param("id") String id);
 
 //    @Query("SELECT new com.msgs.mypage.dto.MyPageUserDTO(ue, ui) " +
 //            "FROM User u " +

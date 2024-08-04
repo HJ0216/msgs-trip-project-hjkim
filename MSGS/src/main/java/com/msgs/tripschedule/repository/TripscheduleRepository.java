@@ -16,7 +16,7 @@ public class TripscheduleRepository {
         em.persist(tripDaily);
     }
 
-    public void saveTripDetail(DayDestination tripDetail){
+    public void saveTripDetail(Destination tripDetail){
         em.persist(tripDetail);
     }
 

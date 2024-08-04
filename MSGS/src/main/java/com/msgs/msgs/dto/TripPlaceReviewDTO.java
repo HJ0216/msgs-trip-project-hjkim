@@ -1,11 +1,10 @@
 package com.msgs.msgs.dto;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 
-import com.msgs.msgs.entity.placereview.PlaceReview;
+import com.msgs.msgs.entity.review.Review;
 import com.msgs.msgs.entity.user.User;
 
 import lombok.AllArgsConstructor;
@@ -21,15 +20,9 @@ public class TripPlaceReviewDTO {
 	// PLACE_REVIEW
 	private int reviewId;
 	private Integer userId;
-	private String contentId;
-	private String title;
-	private String contentTypeId;
-	private String contentTypeName;
-	private String cityName;
-	private BigDecimal rate;
-	private String comment;
-	private LocalDate regDate;
-	private LocalDate modDate;
+	private String comments;
+	private LocalDateTime createdDate;
+	private LocalDateTime updatedDate;
 	
 	// PLACE_REVIEW_IMAGE
 	// 이미지 넣을 때
@@ -49,19 +42,12 @@ public class TripPlaceReviewDTO {
     private String userImgPath;
     
     // DTO 생성자로 entity 값 주입 - 리뷰 이미지 제외
-//	public TripPlaceReviewDTO(PlaceReview placeReview, UserEntity userEntity, UserImg userImg, Long userReviewCnt) {
-	public TripPlaceReviewDTO(PlaceReview placeReview, User user) {
-	    this.reviewId = placeReview.getId();
-	    this.userId = placeReview.getUserPlaceReview().getId();
-	    this.contentId = placeReview.getContentId();
-	    this.title = placeReview.getTitle();
-	    this.contentTypeId = placeReview.getContentTypeId();
-	    this.contentTypeName = placeReview.getContentTypeName();
-	    this.cityName = placeReview.getCityName();
-	    this.rate = placeReview.getRate();
-	    this.comment = placeReview.getComment();
-	    this.regDate = placeReview.getRegDate();
-	    this.modDate = placeReview.getModDate();
+//	public TripPlaceReviewDTO(Review destinationReview, UserEntity userEntity, UserImg userImg, Long userReviewCnt) {
+	public TripPlaceReviewDTO(Review review, User user) {
+	    this.reviewId = review.getId();
+	    this.comments = review.getComments();
+	    this.createdDate = review.getCreatedDate();
+	    this.updatedDate = review.getUpdatedDate();
 
 	    this.userName = user.getNickname();
 	    this.userImgPath = user.getImagePath();

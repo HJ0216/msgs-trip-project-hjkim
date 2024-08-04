@@ -1,13 +1,10 @@
-package com.msgs.msgs.entity.tripschedule;
+package com.msgs.msgs.entity.schedule;
 
-import com.msgs.msgs.entity.tripstory.TripStory;
 import com.msgs.msgs.entity.user.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -32,9 +29,6 @@ public class Trip {
     @Column(length = 100)
     private String title;
 
-    @Column(length = 30)
-    private String city;
-
     @Column(nullable = false)
     private LocalDate startDate;
 
@@ -49,10 +43,4 @@ public class Trip {
     @LastModifiedDate
     private LocalDateTime updatedDate;
 
-    //mapping
-    @OneToOne(mappedBy = "trip", fetch = FetchType.LAZY)
-    private TripStory tripStory;
-
-    @OneToMany(mappedBy = "trip", fetch = FetchType.LAZY)
-    private  List<TripDay> tripDays = new ArrayList<>();
 }

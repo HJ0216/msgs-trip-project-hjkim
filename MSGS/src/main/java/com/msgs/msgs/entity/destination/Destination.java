@@ -1,4 +1,4 @@
-package com.msgs.msgs.entity.tripschedule;
+package com.msgs.msgs.entity.destination;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,19 +12,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DayDestination {
+public class Destination {
 
     @Id @GeneratedValue
-    @Column(name="destination_id")
+    @Column(name = "destination_id")
     private Integer id;
-
-    //join with trip schedule
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "day_id", nullable = false)
-    private TripDay tripDay;
-
-    @Column(name = "orders", nullable = false)
-    private int order;
 
     @Column(length = 100, nullable = false)
     private String name;
@@ -32,7 +24,9 @@ public class DayDestination {
     @Column(length = 15, nullable = false)
     private String type;
 
-    @Column(length = 255)
+    @Column(length = 30, nullable = false)
+    private String city;
+
     private String address;
 
     @Column(columnDefinition = "decimal(10, 6)")
@@ -41,8 +35,7 @@ public class DayDestination {
     @Column(columnDefinition = "decimal(10, 6)")
     private Double latitude;
 
-    @Column(length = 255)
-    private String memo;
+    private String comments;
 
     @Column(nullable = false)
     @CreatedDate

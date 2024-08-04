@@ -11,7 +11,7 @@ import com.msgs.tripstory.dto.StoryLikeCountDTO;
 import com.msgs.tripstory.service.TripStoryService;
 
 @RestController // JSON 또는 XML 형식의 데이터를 반환
-@RequestMapping("/tripstory")
+@RequestMapping("/destination")
 @RequiredArgsConstructor // final variable에 대한 생성자 생성
 public class TripStoryController3 {
 

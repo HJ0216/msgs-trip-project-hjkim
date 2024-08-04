@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController  // JSON 형식의 데이터 반환
-@RequestMapping("/tripschedule")
+@RequestMapping("/schedule")
 @CrossOrigin(origins={"localhost:3000"})
 public class TripScheduleController {
 

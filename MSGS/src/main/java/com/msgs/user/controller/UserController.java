@@ -47,24 +47,24 @@ public class UserController {
 
 
     // 회원가입
-    @PostMapping("/signup")
-    public void userSignUp(@RequestBody User user) {
-    	System.out.println("=================email=============" + user.getEmail());
-        userService.signUp(user);
-    }
+//    @PostMapping("/signup")
+//    public void userSignUp(@RequestBody User user) {
+//    	System.out.println("=================email=============" + user.getEmail());
+//        userService.signUp(user);
+//    }
     
     // 회원 정보 검색(이메일)
     @PostMapping("/getUserInfo")
     public UserDTO getUserInfo(@RequestParam("email") String email) {
        System.out.println(email);
-       return userService.getUserInfo(email);
+       return userService.getUserFromEmail(email);
     }
     
     // 회원 정보 검색(userId)
     @PostMapping("/getUser")
     public UserDTO getUser(@RequestParam("id") String id) {
     	System.out.println(id);
-    	return userService.getUser(id);
+    	return userService.getUserFromId(Integer.parseInt(id));
     }
 
 

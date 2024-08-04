@@ -10,13 +10,11 @@ import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
-public class UserController2 {
+public class JwtController {
 
     private final UserService userService;
     private JwtTokenProvider jwtTokenProvider;

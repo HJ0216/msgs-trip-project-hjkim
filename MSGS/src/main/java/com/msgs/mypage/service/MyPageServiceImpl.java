@@ -14,11 +14,8 @@ import com.msgs.msgs.dto.TripDTO;
 import com.msgs.msgs.dto.TripStoryMainDTO;
 import com.msgs.msgs.dto.UserDTO;
 import com.msgs.mypage.dao.MyPageDAO;
-import com.msgs.msgs.entity.tripstory.StoryImg;
-import com.msgs.msgs.entity.tripstory.TripStory;
 import com.msgs.msgs.entity.user.User;
 import com.msgs.mypage.dto.MyPageUserDTO;
-import com.msgs.tripstory.dao.TripStoryDAO;
 import com.msgs.user.dao.UserDAO;
 
 @Service
@@ -30,8 +27,6 @@ public class MyPageServiceImpl implements MyPageService {
 	@Autowired
 	private UserDAO userDAO;
 
-	@Autowired
-	private TripStoryDAO tripStoryDAO;
 
 	// 유저 정보 불러오기
 //	@Override
@@ -97,15 +92,17 @@ public class MyPageServiceImpl implements MyPageService {
 	// ========== 유저 정보 불러오기 ==========
 	@Override
 	public MyPageUserDTO getMyInfo(String userId) {
-		MyPageUserDTO myInfo = myPageDAO.findMyInfo(userId);
+		MyPageUserDTO myInfo = new MyPageUserDTO();
+//		MyPageUserDTO myInfo = myPageDAO.findMyInfo(userId);
 		return myInfo;
 	}
 	
 	// ========== 유저 정보 업데이트 ==========
 	@Override
 	public void updateMyInfo(String id) {
-		List<Object[]> queryResult = myPageDAO.findUserEntity(id);
-		
+//		List<Object[]> queryResult = myPageDAO.findUserEntity(id);
+		List<Object[]> queryResult = new ArrayList<>();
+
 		User user = (User) queryResult.get(0)[0];
 
 		
@@ -137,21 +134,22 @@ public class MyPageServiceImpl implements MyPageService {
 	// ========== 여행 일정 불러오기 ==========
 	@Override
 	public List<MyPageScheduleDTO> getScheduleList(String id) {
-		List<MyPageScheduleDTO> scheduleList = myPageDAO.findMyPageTripSchedule(id);
+//		List<MyPageScheduleDTO> scheduleList = myPageDAO.findMyPageTripSchedule(id);
+		List<MyPageScheduleDTO> scheduleList = new ArrayList<>();
 		System.out.println(scheduleList.size());
-		for (int i = 0; i < scheduleList.size(); i++) {
-			int cnt = myPageDAO.countMyPageTripSchedule(id, scheduleList.get(i).getTripId());
-			System.out.println(cnt);
-			scheduleList.get(i).setPlaceCnt(cnt);
-
-		}
+//		for (int i = 0; i < scheduleList.size(); i++) {
+//			int cnt = myPageDAO.countMyPageTripSchedule(id, scheduleList.get(i).getTripId());
+//			System.out.println(cnt);
+//			scheduleList.get(i).setPlaceCnt(cnt);
+//
+//		}
 		return scheduleList;
 	}
 
 	// ========== 유저 이미지 불러오기 ==========
 	@Override
 	public UserDTO getProfile(String id) {
-		Optional<User> userEntity = userDAO.findById(id);
+		Optional<User> userEntity = userDAO.findById(Integer.parseInt(id));
 
 		if (userEntity.isPresent()) {
 			User resultUser = userEntity.get();
@@ -165,62 +163,18 @@ public class MyPageServiceImpl implements MyPageService {
 		return null;
 	}
 
+	@Override
+	public List<TripStoryMainDTO> getStoryList(String id) {
+		return null;
+	}
+
 	// ========== 리뷰 리스트 불러오기 ==========
 	@Override
 	public List<MyPageReviewDTO> getReviewList(String id) {
-		List<MyPageReviewDTO> getReviewList = myPageDAO.findMyPageTripLocReview(id);
+		List<MyPageReviewDTO> getReviewList = new ArrayList<>();
+//		List<MyPageReviewDTO> getReviewList = myPageDAO.findMyPageTripLocReview(id);
+
 		return getReviewList;
-	}
-
-	// ========== 여행 이야기 불러오기 ==========
-	@Override
-	public List<TripStoryMainDTO> getStoryList(String id) {
-		List<Object[]> queryResult = tripStoryDAO.findAllWithStoryImgsAndUserAndImg(); // 반환받은 Entity
-
-		List<TripStoryMainDTO> resultList = new ArrayList<>(); // 반환받을 DTO
-
-		for (Object[] result : queryResult) {
-			TripStory tripStory = (TripStory) result[0];
-			User user = (User) result[1];
-			StoryImg storyImg = (StoryImg) result[3];
-
-			TripStoryMainDTO tripStoryMainDTO = new TripStoryMainDTO(); // TripStoryMainDTO 객체 생성
-
-			// 매개변수 id와 userEntity.getId()가 같은 데이터만 처리
-			if (!user.getId().equals(id)) {
-				continue;
-			}
-
-			tripStoryMainDTO.setStoryId(tripStory.getId());
-			tripStoryMainDTO.setScheduleId(tripStory.getTrip().getId());
-			tripStoryMainDTO.setCityName(tripStory.getCityName());
-			tripStoryMainDTO.setTitle(tripStory.getTitle());
-			tripStoryMainDTO.setDateList(tripStory.getDateList());
-			tripStoryMainDTO.setComment(tripStory.getComment());
-			tripStoryMainDTO.setRegDate(tripStory.getRegDate());
-			tripStoryMainDTO.setModDate(tripStory.getModDate());
-			tripStoryMainDTO.setUserId(user.getId());
-			tripStoryMainDTO.setUserName(user.getNickname());
-
-			if (user != null && storyImg != null) {
-				tripStoryMainDTO.setUserImgPath(user.getImagePath());
-				tripStoryMainDTO.setStoryImgOriginName(storyImg.getImgOriginName());
-				tripStoryMainDTO.setStoryImgPath(storyImg.getImgPath());
-			} else if (user != null) {
-				tripStoryMainDTO.setUserImgPath(user.getImagePath());
-			} else if (storyImg != null) {
-				tripStoryMainDTO.setStoryImgOriginName(storyImg.getImgOriginName());
-				tripStoryMainDTO.setStoryImgPath(storyImg.getImgPath());
-			} else {
-				System.out.println("하이!");
-			}
-
-			resultList.add(tripStoryMainDTO);
-
-		}
-
-		return resultList;
-
 	}
 
 }

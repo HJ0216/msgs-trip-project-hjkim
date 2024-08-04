@@ -1,11 +1,9 @@
 package com.msgs.tripschedule.service;
 
 import com.msgs.msgs.dto.PlanBlockDTO;
-import com.msgs.msgs.entity.tripschedule.TripDay;
-import com.msgs.msgs.entity.tripschedule.DayDestination;
-import com.msgs.msgs.entity.tripschedule.Trip;
+import com.msgs.msgs.entity.destination.Destination;
+import com.msgs.msgs.entity.schedule.Trip;
 import com.msgs.msgs.entity.user.User;
-import com.msgs.tripschedule.dao.DailyScheduleDAO;
 import com.msgs.tripschedule.dao.DetailScheduleDAO;
 import com.msgs.tripschedule.dao.TripScheduleDAO;
 import com.msgs.user.dao.UserDAO;
@@ -51,8 +49,6 @@ public class TripScheduleServiceImpl implements TripScheduleService {
     private UserDAO userDAO;
     @Autowired
     private TripScheduleDAO scheduleDAO;
-    @Autowired
-    private DailyScheduleDAO dailyScheduleDAO;
     @Autowired
     private DetailScheduleDAO detailScheduleDAO;
 
@@ -221,13 +217,12 @@ public class TripScheduleServiceImpl implements TripScheduleService {
         try{
             /*TRIP_SCHEDULE*/
 //            Optional<UserEntity> userEntity = userDAO.findById("m000001"); // id 이용해서 UserEntity 엔티티 가져오기 */
-            Optional<User> userEntity = userDAO.findById("0f82a90f9f96402"); // id 이용해서 UserEntity 엔티티 가져오기 */
+            Optional<User> userEntity = userDAO.findById(1); // id 이용해서 UserEntity 엔티티 가져오기 */
             User resultUser = userEntity.get();
 
             //1. 여행일정 ID는 seq 값이 자동으로 들어감
             Trip trip = new Trip();
             trip.setUser(resultUser);
-            trip.setCity(cityName);
 //            trip.setDateList( String.join(",", dateList) );
             //3. 등록일자로 현재date 저장해야 함.
 
@@ -235,8 +230,6 @@ public class TripScheduleServiceImpl implements TripScheduleService {
             System.out.println(resultUser.getId());
 
             Trip savedTrip = null;
-            TripDay savedDailySchedule = null;
-            //여기까진 잘 돌아감.
             try{
                 /*TRIP_SCHEDULE 에 저장*/
                 savedTrip = scheduleDAO.saveAndFlush(trip); //DB에 저장 -> id 얻어오기 위함
@@ -250,31 +243,23 @@ public class TripScheduleServiceImpl implements TripScheduleService {
             /*TRIP_DAILY_SCHEDULE*/
             for (Map.Entry<Integer, List<PlanBlockDTO>> entry : planList.entrySet()) {
                 /*TRIP_DAILY_SCHEDULE 에 저장*/
-                TripDay tripDay = new TripDay();
-                tripDay.setTrip(savedTrip);
-                savedDailySchedule = dailyScheduleDAO.saveAndFlush(tripDay); // DB에 저장
-
 
                 int day = entry.getKey(); // DAY1
                 List<PlanBlockDTO> planBlocks = entry.getValue(); // PlanBlockDTO 목록
 
 
                     /*TRIP_DETAIL_SCHEDULE 에 저장*/
-                    // 각 PlanBlockDTO를  DayDestination Entity로 변환하여 저장
+                    // 각 PlanBlockDTO를  Destination Entity로 변환하여 저장
                     for(PlanBlockDTO planBlockDTO : planBlocks) {  //planBlocks = List<PlanBlockDTO>>
 
 
-                        // PlanBlockDTO의 필드 값을 전달하여 DayDestination Entity를 생성
-                        DayDestination destination = new DayDestination();
-                        destination.setTripDay(savedDailySchedule);
-                        destination.setOrder(day);
-                        destination.setId(planBlockDTO.getOrder());
+                        // PlanBlockDTO의 필드 값을 전달하여 Destination Entity를 생성
+                        Destination destination = new Destination();
                         destination.setName(planBlockDTO.getTitle());
                         destination.setType(planBlockDTO.getType());
                         destination.setAddress(planBlockDTO.getLocation());
                         destination.setLongitude(planBlockDTO.getMapx());
                         destination.setLatitude(planBlockDTO.getMapy());
-                        destination.setMemo(planBlockDTO.getContentid());
 
                         //엔티티를 분리(detach)하고, 변경된 상태를 영속성 컨텍스트에 반영
                         //entityManager.merge(tripDetail);
@@ -309,11 +294,6 @@ public class TripScheduleServiceImpl implements TripScheduleService {
         Optional<Trip> scheduleEntity = scheduleDAO.findById(scheduleId);
         Trip resultScheduleEntity = scheduleEntity.get();
 
-        System.out.println("Sche111111111111111111111111111111111111111111111111");
-        /* [1] areaTitle */
-        String areaTitle = resultScheduleEntity.getCity();
-        System.out.println("areaTitle" + areaTitle);
-        responseMap.put("areaTitle", areaTitle);
 
         /* [2] dateList */
 //        List<String> dateList = new ArrayList<String>(Arrays.asList(
@@ -322,38 +302,36 @@ public class TripScheduleServiceImpl implements TripScheduleService {
 
         /* [3] planList */
         Map<Integer, List<PlanBlockDTO>> planList = new HashMap<>();
-        List<TripDay> dailyScheList = dailyScheduleDAO.findAllByTrip_Id(scheduleId);
-
-        for (TripDay tripDay: dailyScheList){
-            int dailyId = tripDay.getId();
-            System.out.println("dailyId" + dailyId);
-            System.out.println("sche222222222222222222222222222222222222222222222222222222222222222222");
-            List<DayDestination> detailScheList = detailScheduleDAO.findAllByTripDay_Id(dailyId);
-
-
-            List<PlanBlockDTO> planBlockList = new ArrayList<>();
-
-            for (DayDestination destination : detailScheList){
-
-                PlanBlockDTO planblock = new PlanBlockDTO();
-                planblock.setOrder(destination.getId());
-                planblock.setTitle(destination.getName());
-                planblock.setType(destination.getType());
-                planblock.setLocation(destination.getAddress());
-
-                planblock.setMapx(destination.getLongitude());
-                planblock.setMapy(destination.getLatitude());
-                planblock.setContentid(destination.getMemo());
-
-                // 리스트에 PlanBlockDTO 객체 추가
-                planBlockList.add(planblock);
-
-                // Map에 Key(몇일차)와 함께 리스트(일정블록 객체들이 있는 배열)를 추가
-                planList.put(destination.getOrder(), planBlockList);
-
-            }
-
-        }
+//        for (TripDay tripDay: dailyScheList){
+//            int dailyId = tripDay.getId();
+//            System.out.println("dailyId" + dailyId);
+//            System.out.println("sche222222222222222222222222222222222222222222222222222222222222222222");
+//            List<Destination> detailScheList = detailScheduleDAO.findAllByTripDay_Id(dailyId);
+//
+//
+//            List<PlanBlockDTO> planBlockList = new ArrayList<>();
+//
+//            for (Destination destination : detailScheList){
+//
+//                PlanBlockDTO planblock = new PlanBlockDTO();
+//                planblock.setOrder(destination.getId());
+//                planblock.setTitle(destination.getName());
+//                planblock.setType(destination.getType());
+//                planblock.setLocation(destination.getAddress());
+//
+//                planblock.setMapx(destination.getLongitude());
+//                planblock.setMapy(destination.getLatitude());
+//                planblock.setContentid(destination.getMemo());
+//
+//                // 리스트에 PlanBlockDTO 객체 추가
+//                planBlockList.add(planblock);
+//
+//                // Map에 Key(몇일차)와 함께 리스트(일정블록 객체들이 있는 배열)를 추가
+//                planList.put(destination.getOrder(), planBlockList);
+//
+//            }
+//
+//        }
         responseMap.put("planList", planList);
 
         return responseMap;
@@ -390,10 +368,10 @@ public class TripScheduleServiceImpl implements TripScheduleService {
             for (Map.Entry<Integer, List<PlanBlockDTO>> entry : planList.entrySet()) {
 
                 /*scheduleId 를 외래키로 갖고 있는 TRIP_DAILY_SCHEDULE의 레코드들을 갖고와서 daily_id를 얻는다*/
-                List<TripDay> dailyScheList = dailyScheduleDAO.findAllByTrip_Id(
-                    Integer.parseInt(scheduleId));
-
-                for (TripDay dailySchedule: dailyScheList){
+//                List<TripDay> dailyScheList = dailyScheduleDAO.findAllByTrip_Id(
+//                    Integer.parseInt(scheduleId));
+//
+//                for (TripDay dailySchedule: dailyScheList){
 //                    int dailyId = dailySchedule.getDailyId();
 
 
@@ -401,37 +379,37 @@ public class TripScheduleServiceImpl implements TripScheduleService {
                     int day = entry.getKey(); // DAY1
                     List<PlanBlockDTO> planBlocks = entry.getValue(); // PlanBlockDTO 목록
 
-//                  List<DayDestination> detailScheList = detailScheduleDAO.findAllByTripDailySchedule_DailyId(dailyId);
+//                  List<Destination> detailScheList = detailScheduleDAO.findAllByTripDailySchedule_DailyId(dailyId);
 
 
 
                     /*TRIP_DETAIL_SCHEDULE 에 저장(=Update)*/
-                    // 각 PlanBlockDTO를  DayDestination Entity로 변환하여 저장
-                    for(PlanBlockDTO planBlockDTO : planBlocks) {
+                    // 각 PlanBlockDTO를  Destination Entity로 변환하여 저장
+//                    for(PlanBlockDTO planBlockDTO : planBlocks) {
+//
+//                        Optional<Destination> detailSche = detailScheduleDAO.findById(1);
+//                        Destination destination = detailSche.get();
+//
+//                        // PlanBlockDTO의 필드 값을 전달하여 Destination Entity를 생성
+//
+//                        destination.setTripDay(dailySchedule);
+//                        destination.setOrder(day);
+//                        destination.setId(planBlockDTO.getOrder());
+//                        destination.setName(planBlockDTO.getTitle());
+//                        destination.setType(planBlockDTO.getType());
+//                        destination.setAddress(planBlockDTO.getLocation());
+//                        destination.setLongitude(planBlockDTO.getMapx());
+//                        destination.setLatitude(planBlockDTO.getMapy());
+//                        destination.setMemo(planBlockDTO.getContentid());
+//
+//                        detailScheduleDAO.saveAndFlush(destination);
+//
+//
+//                    }
 
-                        Optional<DayDestination> detailSche = detailScheduleDAO.findById(1);
-                        DayDestination destination = detailSche.get();
-
-                        // PlanBlockDTO의 필드 값을 전달하여 DayDestination Entity를 생성
-
-                        destination.setTripDay(dailySchedule);
-                        destination.setOrder(day);
-                        destination.setId(planBlockDTO.getOrder());
-                        destination.setName(planBlockDTO.getTitle());
-                        destination.setType(planBlockDTO.getType());
-                        destination.setAddress(planBlockDTO.getLocation());
-                        destination.setLongitude(planBlockDTO.getMapx());
-                        destination.setLatitude(planBlockDTO.getMapy());
-                        destination.setMemo(planBlockDTO.getContentid());
-
-                        detailScheduleDAO.saveAndFlush(destination);
 
 
-                    }
-
-
-
-                }
+//                }
 
 
 
