@@ -48,15 +48,16 @@ public class UserServiceTest {
         userA.setStatus("M");
         userA.setEmail("test@email.com");
         userA.setPhone("01023456789");
-        userService.create(userA);
 
         String existingEmail = "test@email.com";
 
         // when
+        userService.create(userA);
 
-        // then
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.emailDuplicateCheck(existingEmail));
+
+        // then
         assertEquals(DUPLICATED_EMAIL, exception.getErrorCode());
     }
 }

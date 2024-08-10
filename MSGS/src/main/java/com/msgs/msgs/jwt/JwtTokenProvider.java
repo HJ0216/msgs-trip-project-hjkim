@@ -15,7 +15,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,17 +26,17 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
     private final Key key;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+    private final Key secretKey;
+
+    public JwtTokenProvider(@Value("${jwt.secretKey}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
+
+        this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     // 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
     public TokenInfo generateToken(Authentication authentication) {
-        // 권한 가져오기
-//        String authorities = authentication.getAuthorities().stream()
-//                .map(GrantedAuthority::getAuthority)
-//                .collect(Collectors.joining(","));
         String authorities = "USER";
         String[] userInfo = authentication.getName().split(",");
 
@@ -122,6 +124,35 @@ public class JwtTokenProvider {
 
 
         return jsonObject;
+    }
+
+
+    // ========================================================================
+
+    public String createToken(String subject){
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + Duration.ofMinutes(1).toMillis());
+
+        return Jwts.builder()
+                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                .setIssuer("test")
+                .setIssuedAt(now)
+                .setExpiration(expiration)
+                .setSubject(subject)
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public Claims parseJwtToken(String token) {
+        token = bearerRemove(token);
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    private String bearerRemove(String token) {
+        return token.substring("Bearer ".length());
     }
 
 }
