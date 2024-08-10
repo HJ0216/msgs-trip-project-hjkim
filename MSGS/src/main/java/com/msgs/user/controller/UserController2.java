@@ -2,6 +2,7 @@ package com.msgs.user.controller;
 
 import com.msgs.msgs.entity.user.User;
 import com.msgs.user.service.UserService2;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController2 {
     private final UserService2 userService;
+
+    @PostMapping("/exist")
+    public void emailDuplicateCheck(@RequestParam @NonNull String email){
+        System.out.println("UserController2.checkEmail");
+
+        userService.emailDuplicateCheck(email);
+    }
+
     @PostMapping("/new")
     public String create(@RequestBody User user){
         System.out.println("UserController2.create");
@@ -17,4 +26,5 @@ public class UserController2 {
         Integer id = userService.create(user);
         return id.toString();
     }
+
 }
