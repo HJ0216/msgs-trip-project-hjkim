@@ -12,13 +12,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController2 {
     private final UserService2 userService;
 
-    @PostMapping("/exist")
-    public void emailDuplicateCheck(@RequestParam @NonNull String email){
-        System.out.println("UserController2.checkEmail");
-
-        userService.emailDuplicateCheck(email);
-    }
-
     @PostMapping("/new")
     public String create(@RequestBody User user){
         System.out.println("UserController2.create");

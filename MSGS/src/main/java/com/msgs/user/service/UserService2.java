@@ -16,17 +16,17 @@ public class UserService2 {
 
     private final UserRepository userRepository;
 
-    public void emailDuplicateCheck(String email){
-        if(!userRepository.findByEmail(email).isEmpty()){
-            throw new BusinessException(DUPLICATED_EMAIL);
-        }
-    }
-
     @Transactional
     public Integer create(User user){
         emailDuplicateCheck(user.getEmail());
         userRepository.save(user);
 
         return user.getId();
+    }
+
+    public void emailDuplicateCheck(String email){
+        if(!userRepository.findByEmail(email).isEmpty()){
+            throw new BusinessException(DUPLICATED_EMAIL);
+        }
     }
 }
