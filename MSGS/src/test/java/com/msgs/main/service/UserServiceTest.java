@@ -1,5 +1,9 @@
 package com.msgs.main.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.msgs.msgs.dto.LoginRequestDTO;
+import com.msgs.msgs.dto.TokenInfo;
+import com.msgs.msgs.entity.user.LoginType;
 import com.msgs.msgs.entity.user.User;
 import com.msgs.msgs.error.BusinessException;
 import com.msgs.msgs.error.ErrorCode;
@@ -25,7 +29,7 @@ public class UserServiceTest {
     UserRepository userRepository;
 
     @Test
-    @DisplayName("회원 가입을 한다.")
+    @DisplayName("회원 가입")
     public void userSignUp() throws Exception {
         // given
         User user = new User();
@@ -37,7 +41,7 @@ public class UserServiceTest {
         Integer createdId = userService.create(user);
 
         // then
-        assertThat(user).isEqualTo(userRepository.findOne(createdId));
+        assertThat(user).isEqualTo(userRepository.findById(createdId));
     }
 
     @Test
@@ -46,7 +50,7 @@ public class UserServiceTest {
         // given
         User userA = new User();
         userA.setStatus("M");
-        userA.setEmail("test@email.com");
+        userA.setEmail("");
         userA.setPhone("01023456789");
 
         String existingEmail = "test@email.com";
@@ -59,5 +63,27 @@ public class UserServiceTest {
 
         // then
         assertEquals(DUPLICATED_EMAIL, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("카카오 로그인")
+    void kakaoLogin() throws JsonProcessingException {
+        //given
+        User user = new User();
+        user.setStatus("K");
+        user.setLoginType(LoginType.KAKAO);
+        user.setEmail("test@email.com");
+        user.setPhone("01023456789");
+
+        LoginRequestDTO loginRequestDTO = new LoginRequestDTO("test@email.com", 1, "1234", LoginType.KAKAO);
+
+        //when
+        TokenInfo returnTokenInfo = userService.login(loginRequestDTO);
+
+        //then
+        assertThat(returnTokenInfo).isNotNull();
+        assertThat(returnTokenInfo.getGrantType()).isEqualTo("Bearer");
+        assertThat(returnTokenInfo.getAccessToken()).isNotEmpty();
+        assertThat(returnTokenInfo.getRefreshToken()).isNotEmpty();
     }
 }
