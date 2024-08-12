@@ -1,5 +1,6 @@
 package com.msgs.msgs.entity.user;
 
+import com.msgs.msgs.dto.LoginRequestDTO;
 import com.msgs.msgs.entity.schedule.Trip;
 
 import jakarta.persistence.*;
@@ -31,6 +32,9 @@ public class User implements UserDetails {
 
    @Column(nullable = false, columnDefinition="char(1)")
    private String status;
+
+   @Enumerated(EnumType.STRING)
+   private LoginType loginType;
 
    @Column(nullable = false, unique = true, length = 50)
    private String email;
@@ -83,5 +87,17 @@ public class User implements UserDetails {
    @Override
    public boolean isEnabled() {
       return true;
+   }
+
+   // 카카오 로그인 -> 회원 생성
+   public static User kakaoCreate(LoginRequestDTO loginRequestDTO) {
+      return User.builder()
+              .status("K")
+              .loginType(LoginType.KAKAO)
+              .email(loginRequestDTO.getEmail())
+              .phone("")
+              .nickname(loginRequestDTO.getId().toString())
+              .password(loginRequestDTO.getPassword())
+              .build();
    }
 }
