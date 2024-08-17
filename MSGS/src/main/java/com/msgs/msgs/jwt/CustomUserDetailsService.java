@@ -1,35 +1,45 @@
 package com.msgs.msgs.jwt;
 
+import com.msgs.msgs.dto.UserPrinciple;
 import com.msgs.msgs.entity.user.User;
+import com.msgs.msgs.error.BusinessException;
 import com.msgs.user.repository.UserRepository;
+import com.msgs.user.service.UserService2;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
+import static com.msgs.msgs.error.ErrorCode.NOT_FOUND_MEMBER;
+
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
+    // UserDetailsService: Spring Security에서 유저 정보를 가져오는 Interface
+    // 기본 Override Method: loadUserByUsername
+    // loadUserByUsername: 유저 정보를 가져와 UserDetails로 return
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
-//        return userRepository.findByEmail(userEmail)
-//                .map(this::createUserDetails)
-//                .orElseThrow(() -> new UsernameNotFoundException("해당하는 유저를 찾을 수 없습니다."));
-        return null;
-    }
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email).orElseThrow(()->
+                new BusinessException(NOT_FOUND_MEMBER));
 
-    // 해당하는 User 의 데이터가 존재한다면 UserDetails 객체로 만들어서 리턴
-    private UserDetails createUserDetails(User user) {
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
+        //user의 role을 스프링시큐리티의 GrantedAuthority로 바꿔준다. 여러개의 role을 가질수 있으므로 Set
+        Set<GrantedAuthority> authorities = Set.of(SecurityUtils.convertToAuthority(user.getRole()));
+
+        return UserPrinciple.builder()
+                .email(user.getEmail())
                 .password(passwordEncoder.encode(user.getPassword()))
-                //.roles(user.getRoles().toArray(new String[0]))
+                .user(user)
+                .authorities(authorities)
                 .build();
     }
 }

@@ -1,9 +1,15 @@
 package com.msgs.user.controller;
 
+import com.msgs.msgs.dto.LoginRequestDTO;
+import com.msgs.msgs.dto.TokenInfo;
+import com.msgs.msgs.dto.UserDTO;
+import com.msgs.msgs.dto.UserLoginRequestDto;
 import com.msgs.msgs.entity.user.User;
 import com.msgs.user.service.UserService2;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +24,18 @@ public class UserController2 {
 
         Integer id = userService.create(user);
         return id.toString();
+    }
+
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public TokenInfo login(@RequestBody LoginRequestDTO loginRequestDto){
+        return userService.login(loginRequestDto);
+    }
+
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDTO findMyInfo(){
+        return userService.findMyInfo();
     }
 
 }

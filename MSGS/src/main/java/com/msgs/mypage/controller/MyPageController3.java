@@ -5,7 +5,7 @@ import com.msgs.msgs.dto.MyPageScheduleDTO;
 import com.msgs.msgs.dto.TripStoryMainDTO;
 import com.msgs.msgs.dto.UserDTO;
 
-import com.msgs.msgs.jwt.controller.JwtController;
+import com.msgs.msgs.jwt.controller.AuthController;
 import com.msgs.mypage.service.MyPageService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,49 +23,49 @@ import java.util.Map;
 public class MyPageController3 {
 
     @Autowired
-    private JwtController userController2;
+    private AuthController userController2;
 
     @Autowired
     private MyPageService myPageService;
 
-    public JSONObject getUserInfo(String token) {
-        ResponseEntity<?> userInfoResponse = userController2.getUserInfo(token);
-        JSONObject userInfo = new JSONObject((String) userInfoResponse.getBody());
-        return userInfo;
-    }
+//    public JSONObject getUserInfo(String token) {
+//        ResponseEntity<?> userInfoResponse = userController2.getUserInfo(token);
+//        JSONObject userInfo = new JSONObject((String) userInfoResponse.getBody());
+//        return userInfo;
+//    }
 
-    @PostMapping("/profile")
-    public UserDTO getProfile(@RequestBody Map<String, String> tokenValue) {
-    	String token = tokenValue.get("tokenValue");
-        JSONObject userInfo = getUserInfo(token);
-        String id = userInfo.getString("id");
-        return myPageService.getProfile(id);
-    }
+//    @PostMapping("/profile")
+//    public UserDTO getProfile(@RequestBody Map<String, String> tokenValue) {
+//    	String token = tokenValue.get("tokenValue");
+//        JSONObject userInfo = getUserInfo(token);
+//        String id = userInfo.getString("id");
+//        return myPageService.getProfile(id);
+//    }
 
-    @PostMapping("/scheduleList")
-    public List<MyPageScheduleDTO> getScheduleList(@RequestBody Map<String, String> tokenValue) {
-    	String token = tokenValue.get("tokenValue");
-        JSONObject userInfo = getUserInfo(token);
-        String id = userInfo.getString("id");
-        return myPageService.getScheduleList(id);
-    }
-
-    @PostMapping("/reviewList")
-    public List<MyPageReviewDTO> getReviewList(@RequestBody Map<String, String> tokenValue) {
-    	String token = tokenValue.get("tokenValue");
-        JSONObject userInfo = getUserInfo(token);
-        String id = userInfo.getString("id");
-        return myPageService.getReviewList(id);
-    }
-    
-    
-  @PostMapping("/storyList")
-  public List<TripStoryMainDTO> getStoryList(@RequestBody Map<String, String> tokenValue) {
-	  String token = tokenValue.get("tokenValue");
-      JSONObject userInfo = getUserInfo(token);
-      String id = userInfo.getString("id");
-      return myPageService.getStoryList(id);
-  }
+//    @PostMapping("/scheduleList")
+//    public List<MyPageScheduleDTO> getScheduleList(@RequestBody Map<String, String> tokenValue) {
+//    	String token = tokenValue.get("tokenValue");
+//        JSONObject userInfo = getUserInfo(token);
+//        String id = userInfo.getString("id");
+//        return myPageService.getScheduleList(id);
+//    }
+//
+//    @PostMapping("/reviewList")
+//    public List<MyPageReviewDTO> getReviewList(@RequestBody Map<String, String> tokenValue) {
+//    	String token = tokenValue.get("tokenValue");
+//        JSONObject userInfo = getUserInfo(token);
+//        String id = userInfo.getString("id");
+//        return myPageService.getReviewList(id);
+//    }
+//
+//
+//  @PostMapping("/storyList")
+//  public List<TripStoryMainDTO> getStoryList(@RequestBody Map<String, String> tokenValue) {
+//	  String token = tokenValue.get("tokenValue");
+//      JSONObject userInfo = getUserInfo(token);
+//      String id = userInfo.getString("id");
+//      return myPageService.getStoryList(id);
+//  }
   
 
 }

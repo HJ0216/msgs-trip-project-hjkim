@@ -34,8 +34,8 @@ public class UserService {
 
         return tokenInfo;
     }
-    @Transactional
-    public JSONObject getUserInfo(String accessToken) {
-        return jwtTokenProvider.getUserInfo(accessToken);
-    }
+//    @Transactional
+//    public JSONObject getUserInfo(String accessToken) {
+//        return jwtTokenProvider.getUserInfo(accessToken);
+//    }
 }

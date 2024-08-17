@@ -1,5 +1,6 @@
 package com.msgs.msgs.entity.review;
 
+import com.msgs.msgs.entity.BaseEntity;
 import com.msgs.msgs.entity.destination.Destination;
 import com.msgs.msgs.entity.schedule.Schedule;
 import com.msgs.msgs.entity.schedule.Trip;
@@ -18,14 +19,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Review {
+public class Review extends BaseEntity {
 
-	@Id @GeneratedValue
-	@Column(name = "review_id")
-	private Integer id;
+    @Id
+    @GeneratedValue
+    @Column(name = "review_id")
+    private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="trip_id", insertable = false, updatable = false)
+    @JoinColumn(name = "trip_id", insertable = false, updatable = false)
     private Trip trip;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -40,12 +42,4 @@ public class Review {
 
     @Column(length = 1000)
     private String comments;
-
-    @Column(nullable = false)
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @Column(nullable = false)
-    @LastModifiedDate
-    private LocalDateTime updatedDate;
 }

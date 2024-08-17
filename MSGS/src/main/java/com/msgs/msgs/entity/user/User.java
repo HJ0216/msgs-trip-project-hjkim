@@ -1,6 +1,7 @@
 package com.msgs.msgs.entity.user;
 
 import com.msgs.msgs.dto.LoginRequestDTO;
+import com.msgs.msgs.entity.BaseEntity;
 import com.msgs.msgs.entity.schedule.Trip;
 
 import jakarta.persistence.*;
@@ -23,8 +24,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EntityListeners(AuditingEntityListener.class)
-public class User implements UserDetails {
+public class User extends BaseEntity {
 
    @Id @GeneratedValue
    @Column(name = "user_id")
@@ -35,6 +35,8 @@ public class User implements UserDetails {
 
    @Enumerated(EnumType.STRING)
    private LoginType loginType;
+
+   private String role;
 
    @Column(nullable = false, unique = true, length = 50)
    private String email;
@@ -50,50 +52,14 @@ public class User implements UserDetails {
 
    private String imagePath;
 
-   @Column(nullable = false)
-   @CreatedDate
-   private LocalDateTime createdDate;
 
-   @Column(nullable = false)
-   @LastModifiedDate
-   private LocalDateTime updatedDate;
-
-   //jwt
-   @Override
-   public Collection<? extends GrantedAuthority> getAuthorities() {
-      return null;
-   }
-
-   @Override
-   public String getUsername() {
-      return id+","+email;
-   }
-
-   @Override
-   public boolean isAccountNonExpired() {
-      return true;
-   }
-
-   @Override
-   public boolean isAccountNonLocked() {
-      return true;
-   }
-
-   @Override
-   public boolean isCredentialsNonExpired() {
-      return true;
-   }
-
-   @Override
-   public boolean isEnabled() {
-      return true;
-   }
 
    // 카카오 로그인 -> 회원 생성
    public static User kakaoCreate(LoginRequestDTO loginRequestDTO) {
       return User.builder()
               .status("K")
               .loginType(LoginType.KAKAO)
+              .role(loginRequestDTO.getRole())
               .email(loginRequestDTO.getEmail())
               .phone("")
               .nickname(loginRequestDTO.getId().toString())

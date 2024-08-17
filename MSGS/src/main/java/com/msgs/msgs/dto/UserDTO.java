@@ -1,21 +1,23 @@
 package com.msgs.msgs.dto;
 
+import com.msgs.msgs.entity.user.LoginType;
 import com.msgs.msgs.entity.user.User;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserDTO {
 	
     // UserEntity
     private Integer id;
     private String status;
+    private LoginType loginType;
+    private String role;
     private String email;
     private String phone;
     private String nickname;
@@ -24,15 +26,20 @@ public class UserDTO {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
-    public UserDTO(User user) {
-        this.id = user.getId();
-        this.status = user.getStatus();
-        this.email = user.getEmail();
-        this.phone = user.getPhone();
-        this.nickname = user.getNickname();
-        this.password = user.getPassword();
-        this.imagePath = user.getImagePath();
-        this.createdDate = user.getCreatedDate();
-        this.updatedDate = user.getUpdatedDate();
+    public static UserDTO toUserDTO(User u){
+        return UserDTO.builder()
+                .id(u.getId())
+                .status(u.getStatus())
+                .loginType(u.getLoginType())
+                .role(u.getRole())
+                .email(u.getEmail())
+                .phone(u.getPhone())
+                .nickname(u.getNickname())
+                .password(u.getPassword())
+                .imagePath(u.getImagePath())
+                .createdDate(u.getCreatedDate())
+                .updatedDate(u.getUpdatedDate())
+                .build();
     }
+
 }

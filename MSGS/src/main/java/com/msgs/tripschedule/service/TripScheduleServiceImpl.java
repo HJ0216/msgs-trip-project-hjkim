@@ -358,8 +358,6 @@ public class TripScheduleServiceImpl implements TripScheduleService {
             Optional<Trip> tripSchedule = scheduleDAO.findById(Integer.valueOf(scheduleId)); // id 이용해서 Trip 엔티티 가져오기 */
             Trip resultScheduleEntity = tripSchedule.get();
 
-            resultScheduleEntity.setUpdatedDate(LocalDateTime.now());
-
             /*TRIP_SCHEDULE 에 저장*/
             scheduleDAO.saveAndFlush(resultScheduleEntity); //DB에 update해서 수정시간(mod_date)컬럼을 저장함.
 

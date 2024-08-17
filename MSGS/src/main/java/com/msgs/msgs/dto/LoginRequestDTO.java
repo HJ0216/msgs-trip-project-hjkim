@@ -20,6 +20,9 @@ public class LoginRequestDTO {
     @NotNull(message = "비밀번호는 필수값입니다.")
     private String password;
 
-    @NotNull(message = "로그인타입은 필수값입니다.")
+    @NotNull(message = "로그인 타입은 필수값입니다.")
     private LoginType loginType; // GOOGLE, KAKAO, MSGS, NAVER
+
+    @NotNull(message = "Role 타입은 필수값입니다.")
+    private String role;
 }

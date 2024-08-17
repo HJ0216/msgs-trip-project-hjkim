@@ -4,9 +4,6 @@ import com.msgs.msgs.dto.TokenInfo;
 import com.msgs.msgs.dto.UserLoginRequestDto;
 import com.msgs.msgs.jwt.JwtTokenProvider;
 import com.msgs.msgs.jwt.service.UserService;
-import io.jsonwebtoken.Claims;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -17,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/token")
-public class JwtController {
+public class AuthController {
 
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -30,18 +27,18 @@ public class JwtController {
         String password = userLoginRequestDto.getPassword();
         System.out.println(userEmail);
         System.out.println(password);
-        
+
         TokenInfo tokenInfo = userService.login(userEmail, password);
         System.out.println("jjjjjjjjjjjjjjjjjjjj"+ tokenInfo);
 
         return tokenInfo;
     }
 
-    @PostMapping("/info")
-    public ResponseEntity<?> getUserInfo(@RequestParam String accessToken) {
-        JSONObject userInfo = userService.getUserInfo(accessToken);
-        return ResponseEntity.ok().body(userInfo.toString());
-    }
+//    @GetMapping
+//    public ResponseEntity<?> getUserInfo(@RequestParam String accessToken) {
+//        JSONObject userInfo = userService.getUserInfo(accessToken);
+//        return ResponseEntity.ok().body(userInfo.toString());
+//    }
 }
 
 
