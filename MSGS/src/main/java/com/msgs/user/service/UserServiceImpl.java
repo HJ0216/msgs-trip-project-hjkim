@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
 
         if (userEntity.isPresent()) {
             User resultUser = userEntity.get();
-            UserDTO userDTO = new UserDTO(resultUser);
+            UserDTO userDTO = UserDTO.toUserDTO(resultUser);
 
             return userDTO;
         }
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
         if (userEntity.isPresent()) {
             User resultUser = userEntity.get();
-            UserDTO userDTO = new UserDTO(resultUser);
+            UserDTO userDTO = UserDTO.toUserDTO(resultUser);
 
             return userDTO;
         }

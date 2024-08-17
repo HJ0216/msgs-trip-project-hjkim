@@ -25,7 +25,7 @@ spring:
     # Application 구동할 때마다, Entity로 정의된 테이블을 생성
     generate-ddl: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     # 실행 sql문 콘솔에서 확인
     show-sql: true
     # formatter

@@ -1,5 +1,6 @@
 package com.msgs.msgs.entity.review;
 
+import com.msgs.msgs.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class ReviewImage {
+public class ReviewImage extends BaseEntity {
 
     @Id @GeneratedValue
     @Column(name = "review_image_id")
@@ -25,13 +26,4 @@ public class ReviewImage {
     private Review review;
 
     private String imagePath;
-
-    @Column(nullable = false)
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @Column(nullable = false)
-    @LastModifiedDate
-    private LocalDateTime updatedDate;
-
 }

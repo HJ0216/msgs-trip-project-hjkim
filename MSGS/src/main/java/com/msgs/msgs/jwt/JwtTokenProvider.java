@@ -1,17 +1,14 @@
 package com.msgs.msgs.jwt;
 
-import com.msgs.msgs.dto.LoginRequestDTO;
 import com.msgs.msgs.dto.TokenInfo;
-import com.msgs.msgs.entity.user.User;
+import com.msgs.msgs.dto.UserPrinciple;
 import com.msgs.msgs.error.BusinessException;
-import com.msgs.msgs.error.ErrorCode;
 import com.msgs.user.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.NoArgsConstructor;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,37 +24,35 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.msgs.msgs.error.ErrorCode.NOT_FOUND_AUTHORITY;
+import static com.msgs.msgs.error.ErrorCode.NOT_FOUND_MEMBER;
 
-@Slf4j
-@Component
+
+@Component // Spring이 이 클래스를 자동으로 스캔하고 빈으로 등록
+@RequiredArgsConstructor
 public class JwtTokenProvider {
-    private static final String AUTHORITIES_KEY  = "auth";
-    private static final String AUTHORITIES_VALUE_USER  = "USER";
-    private static final String LOGIN_TYPE_KEY  = "auth";
+    private static final String AUTHORITIES_KEY  = "roles";
     private static final String BEARER_TYPE = "Bearer";
 
-    private final UserRepository userRepository;
-    private final Key secretKey;
+    @Value("${jwt.secretKey}")
+    private String JWT_SECRET;
 
-    public JwtTokenProvider(UserRepository userRepository, @Value("${jwt.secretKey}") String secretKey) {
-        this.userRepository = userRepository;
-        this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-    }
+    private final UserRepository userRepository;
 
     // 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
-    public TokenInfo generateToken(LoginRequestDTO loginRequestDTO) {
+    public TokenInfo generateToken(UserPrinciple auth) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + Duration.ofMinutes(1).toMillis());
 
-        User user = userRepository.findById(loginRequestDTO.getId())
-                .orElseThrow(
-                        () -> new BusinessException(ErrorCode.NOT_FOUND_MEMBER));
+        String authorites = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
 
         // Access Token 생성
         String accessToken = Jwts.builder()
-                .setSubject(loginRequestDTO.getEmail())
-                .claim(AUTHORITIES_KEY, AUTHORITIES_VALUE_USER)
-                .claim(LOGIN_TYPE_KEY, loginRequestDTO.getLoginType())
+                .setSubject(auth.getEmail())
+                .claim(AUTHORITIES_KEY, authorites)
                 .setExpiration(expiration)
                 .signWith(secretKey)
                 .compact();
@@ -76,77 +71,87 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
-    public Authentication getAuthentication(String accessToken) {
-        // 토큰 복호화
-        Claims claims = parseClaims(accessToken);
+    public Authentication getAuthentication(HttpServletRequest request) {
+        //유저 정보 부분만 가져옴
+        Claims claims = parseClaims(request);
+        if(claims == null)
+            throw new BusinessException(NOT_FOUND_MEMBER);
 
-        if (claims.get(AUTHORITIES_KEY) == null) {
+        if(claims.getSubject() == null)
+            throw new BusinessException(NOT_FOUND_MEMBER);
+
+        if (claims.get(AUTHORITIES_KEY) == null)
             throw new BusinessException(NOT_FOUND_AUTHORITY);
-        }
+
 
         // 클레임에서 권한 정보 가져오기
-        Collection<? extends GrantedAuthority> authorities =
+        Set<GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY)
                         .toString()
                         .split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+                        .map(SecurityUtils::convertToAuthority) // 스트림의 각 요소를 다른 형태로 변환하는 데 사용
+                        .collect(Collectors.toSet());
+
 
         // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal =
-                new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+        UserDetails userDetails = UserPrinciple.builder()
+                .email(claims.getSubject())
+                .authorities(authorities)
+                .build();
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
     }
+    /**
+     * UsernamePasswordAuthenticationToken
+     * userDetails: 사용자의 정보(예: 이메일, 권한)를 담고 있는 객체
+     * null: 이 위치에 보통은 비밀번호나 인증 토큰이 들어가지만, 여기서는 이미 인증이 된 상태이므로 필요하지 않아 null로 설정
+     * authorities: 사용자가 가지고 있는 권한 목록
+     * */
 
     // 토큰 정보를 검증하는 메서드
-    public boolean validateToken(String token) {
+    public boolean isValidToken(HttpServletRequest request) {
+        Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+
+        Claims claims = parseClaims(request);
+
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token);
+//            Jwts.parserBuilder()
+//                    .setSigningKey(secretKey)
+//                    .build()
+//                    .parseClaimsJws(accessToken);
+            //토큰에 claims 데이터가 없으면 사용불가 false 리턴
+            if(claims == null)
+                return false;
+            //토큰사용기간 만료시에도 사용불가 false 리턴
+            if (claims.getExpiration().before(new Date())) return false;
 
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
+            System.out.println("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다. ");
+            System.out.println("만료된 JWT 토큰입니다.");
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
+            System.out.println("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalStateException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
+            System.out.println("JWT 토큰이 잘못되었습니다.");
         }
 
         return false;
     }
 
-    // 복호화 메서드
-    private Claims parseClaims(String accessToken) {
-        try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(accessToken)
-                    .getBody();
-        } catch (ExpiredJwtException e) {
-            return e.getClaims();
-        }
+    // 리퀘스트의 토큰에서 암호풀어 Claims 가져오기
+    private Claims parseClaims(HttpServletRequest request) {
+        String accessToken = SecurityUtils.resolveToken(request);
+
+        if(accessToken == null)
+            return null;
+
+        Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(accessToken)
+                .getBody();
     }
-
-    public JSONObject getUserInfo(String accessToken) {
-        Claims claims = parseClaims(accessToken);
-
-        // 클레임에서 권한 정보 가져오기
-        String userId = claims.get("jti").toString();
-        String userEmail = claims.get("sub").toString();
-
-        // user 정보 Json 에 담기
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id", userId);
-        jsonObject.put("email", userEmail);
-
-
-        return jsonObject;
-    }
-
 }

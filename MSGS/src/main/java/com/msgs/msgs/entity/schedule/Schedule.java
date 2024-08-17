@@ -1,5 +1,6 @@
 package com.msgs.msgs.entity.schedule;
 
+import com.msgs.msgs.entity.BaseEntity;
 import com.msgs.msgs.entity.destination.Destination;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,12 +12,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @IdClass(ScheduleId.class)
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Schedule {
+public class Schedule extends BaseEntity {
 
     @Id
     @GeneratedValue
@@ -40,13 +40,4 @@ public class Schedule {
     private int sequence;
 
     private String memo;
-
-    @Column(nullable = false)
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @Column(nullable = false)
-    @LastModifiedDate
-    private LocalDateTime updatedDate;
-
 }

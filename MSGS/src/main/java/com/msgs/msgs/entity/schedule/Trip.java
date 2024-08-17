@@ -1,5 +1,6 @@
 package com.msgs.msgs.entity.schedule;
 
+import com.msgs.msgs.entity.BaseEntity;
 import com.msgs.msgs.entity.user.User;
 import jakarta.persistence.*;
 
@@ -16,7 +17,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Trip {
+public class Trip extends BaseEntity {
 
     @Id @GeneratedValue
     @Column(name = "trip_id")
@@ -34,13 +35,4 @@ public class Trip {
 
     @Column(nullable = false)
     private LocalDate endDate;
-
-    @Column(nullable = false)
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @Column(nullable = false)
-    @LastModifiedDate
-    private LocalDateTime updatedDate;
-
 }

@@ -36,12 +36,4 @@ public class Destination {
     private Double latitude;
 
     private String comments;
-
-    @Column(nullable = false)
-    @CreatedDate
-    private LocalDateTime createdDate;
-
-    @Column(nullable = false)
-    @LastModifiedDate
-    private LocalDateTime updatedDate;
 }
