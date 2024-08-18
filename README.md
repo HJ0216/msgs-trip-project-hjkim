@@ -147,5 +147,29 @@ public class UserServiceTest {
 
 
 
+### Spring Security, JWT 학습
+>SpringSecurity와 JWT가 동작하는 과정
+
+>1. 애플리케이션 시작 → SpringConfig: Spring Security의 초기화 및 설정 과정  
+>\* JwtAuthenticationFilter 등
+>2. API 호출 → JwtAuthenticationFilter 요청 처리  
+>\* 필터 통과: 요청을 다음 필터로 전달  
+>\* 필터 통과 X: 오류 반환
+>3. 필터 체인을 모두 통과한 요청은 Controller로 전달
+>4. Controller → UserService 호출
+>5. UserService에서 AuthenticationManager은 UserDetailsService 호출
+>6. AuthenticationManagerBuilder 동작
+>7. AuthenticationManagerBuilder에서 사용자가 제공한 정보(이메일과 비밀번호)를 확인  
+>\* 사용자가 입력한 이메일과 비밀번호를 담은 인증 토큰 생성 
+>8. AuthenticationManagerBuilder에서 authentificate() 호출하여 인증 시도  
+>내부적으로 CustomUserDetailsService의 loadUserByUsername() 호출  
+>\* 주어진 이메일로 데이터베이스에서 사용자를 찾아서 그 정보를 UserDetails 객체로 반환
+>9. AuthenticationManagerBuilder에서 6과 7의 객체 비교  
+>\* 인증 성공: Authentication 객체는 SecurityContext에 저장, 이후의 요청에서 사용자 정보를 참조할 수 있음  
+>\* 인증 실패: BadCredentialsException 발생
+>10. UserService에서 JwtTokenProvider의 generateToken() 호출
+
+
+
 ## 🤹마실가실 리팩토링 블로그
 [🔗마실가실 리팰토링](https://hj0216.tistory.com/category/PlayGround/%EB%A7%88%EC%8B%A4%EA%B0%80%EC%8B%A4%20%EB%A6%AC%ED%8C%A9%ED%86%A0%EB%A7%81)
