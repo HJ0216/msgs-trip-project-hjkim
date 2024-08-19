@@ -1,5 +1,6 @@
 package com.msgs.msgs.jwt;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -35,16 +37,26 @@ public class SecurityConfig {
     // 스프링 시큐리티의 세부 설정
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.httpBasic(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
-                .authorizeRequests((auth) -> auth
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )                .authorizeRequests((auth) -> auth
                                 .requestMatchers("/api/v2/users/login").permitAll()
                                 .requestMatchers("/api/v2/users/me") .permitAll()
 //                    .requestMatchers("/mypage/**").hasRole("USER")
 //                    .requestMatchers("/admin/**").hasRole("ADMIN")
 //                    .anyRequest().authenticated() // 이 외의 접근은 인증이 필요
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
+                        // 로그아웃 성공 핸들러 추가 (리다이렉션 처리)
+                        .logoutSuccessHandler((request, response, authentication) ->
+                                response.sendRedirect("/"))
+                );
 
         return http.build();
     }

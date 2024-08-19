@@ -37,7 +37,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return UserPrinciple.builder()
                 .email(user.getEmail())
-                .password(passwordEncoder.encode(user.getPassword()))
+                .password(passwordEncoder.encode(user.getPassword())) // PasswordEncoder를 통해 UserDetails 객체를 생성할 때 encoding
                 .user(user)
                 .authorities(authorities)
                 .build();
