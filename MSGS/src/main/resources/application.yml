@@ -39,6 +39,15 @@ spring:
     # mysql 상세 지정
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
+  # Redis
+  redis:
+    pool:
+      min-idle: 0
+      max-idle: 8
+      max-active: 8
+    port: 6379
+    host: 127.0.0.1
+
   # api key include
   profiles:
     include: api

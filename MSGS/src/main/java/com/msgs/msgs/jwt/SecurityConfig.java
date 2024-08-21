@@ -53,7 +53,6 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
-                        // 로그아웃 성공 핸들러 추가 (리다이렉션 처리)
                         .logoutSuccessHandler((request, response, authentication) ->
                                 response.sendRedirect("/"))
                 );
