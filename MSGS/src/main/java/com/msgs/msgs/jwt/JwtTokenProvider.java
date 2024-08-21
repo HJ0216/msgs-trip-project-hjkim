@@ -38,7 +38,7 @@ public class JwtTokenProvider {
 
     private final UserRepository userRepository;
 
-    // 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
+    // 유저 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
     public TokenInfo generateToken(UserPrinciple auth) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + Duration.ofMinutes(1).toMillis());
