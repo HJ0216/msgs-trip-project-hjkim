@@ -38,7 +38,7 @@ public class UserServiceTest {
         user.setPhone("01023456789");
 
         // when
-        Integer createdId = userService.create(user);
+        userService.create(user);
 
         // then
         assertThat(user).isEqualTo(userRepository.findById(createdId));

@@ -1,17 +1,17 @@
 package com.msgs.user.service;
 
 import com.amazonaws.util.ImmutableMapParameter;
-import com.msgs.msgs.dto.LoginRequestDTO;
-import com.msgs.msgs.dto.TokenInfo;
-import com.msgs.msgs.dto.UserDTO;
-import com.msgs.msgs.dto.UserPrinciple;
+import com.msgs.msgs.dto.*;
 import com.msgs.msgs.entity.user.LoginType;
 import com.msgs.msgs.entity.user.User;
 import com.msgs.msgs.error.BusinessException;
 import com.msgs.msgs.jwt.JwtTokenProvider;
 import com.msgs.msgs.jwt.SecurityUtils;
+import com.msgs.msgs.redis.RedisUtil;
 import com.msgs.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -20,9 +20,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.msgs.msgs.error.ErrorCode.*;
 
@@ -35,6 +37,8 @@ public class UserService2 {
 
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisUtil redisUtil;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional
     public Integer create(User user){
@@ -51,29 +55,6 @@ public class UserService2 {
     }
 
     public TokenInfo login(LoginRequestDTO loginRequestDTO){
-        if(loginRequestDTO.getLoginType() == LoginType.KAKAO){
-            User user = User.kakaoCreate(loginRequestDTO);
-
-            Authentication authentication = authenticationManagerBuilder
-                    .getObject()
-                    .authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
-//            Authentication authentication = authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
-//            );
-
-            UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
-
-            // 동일한 Email , LoginID 일 경우 토큰만 발급 후 리턴
-            if (userRepository.findByEmail(loginRequestDTO.getEmail()).isPresent()) {
-                jwtTokenProvider.generateToken(userPrinciple);
-            }
-
-            userRepository.save(user);
-
-            return jwtTokenProvider.generateToken(userPrinciple);
-        }
-
-        // 일반
         User user = userRepository.findByEmail(loginRequestDTO.getEmail()).orElseThrow(
                 () -> new BusinessException(NOT_FOUND_MEMBER));
 
@@ -86,12 +67,9 @@ public class UserService2 {
         Authentication authentication = authenticationManagerBuilder
                 .getObject()
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
-//        Authentication authentication = authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
-//        );
 
-
-        //user의 role을 스프링시큐리티의 GrantedAuthority로 바꿔준다. 여러개의 role을 가질수 있으므로 Set
+        // User의 role -> 스프링시큐리티의 GrantedAuthority로 변경
+        // 여러개의 role을 가질수 있으므로 Set
         Set<GrantedAuthority> authorities = Set.of(SecurityUtils.convertToAuthority(user.getRole()));
 
         UserPrinciple userPrinciple = UserPrinciple.builder()
@@ -101,7 +79,18 @@ public class UserService2 {
                 .user(user)
                 .build();
 
-        return jwtTokenProvider.generateToken(userPrinciple);
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(userPrinciple);
+
+        storeRefreshToken(user.getEmail(), tokenInfo.getRefreshToken());
+
+        return tokenInfo;
+    }
+
+    private void storeRefreshToken(String email, String refreshToken){
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        // opsForValue: Strings를 쉽게 Serialize / Deserialize 해주는 interface
+        Long expiration = jwtTokenProvider.getExpiration(refreshToken);
+        valueOperations.set("RT:" + email, refreshToken, expiration, TimeUnit.MILLISECONDS);
     }
 
     public UserDTO findMyInfo(){
@@ -111,5 +100,70 @@ public class UserService2 {
                 () -> new BusinessException(NOT_FOUND_MEMBER));
 
         return UserDTO.toUserDTO(user);
+    }
+
+    public void logout(LogoutRequestDTO logoutRequestDto) {
+        // 1. Access Token 검증
+        if (!jwtTokenProvider.isValidToken(logoutRequestDto.getAccessToken())) {
+            throw new BusinessException(INVALID_ACCESS_TOKEN);
+        }
+
+        // 2. Access Token 에서 User email 을 가져옵니다.
+        Authentication authentication = jwtTokenProvider.getAuthentication(logoutRequestDto.getAccessToken());
+
+        // 3. Redis 에서 해당 User email 로 저장된 Refresh Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
+        if (redisTemplate.opsForValue().get("RT:" + authentication.getName()) != null) {
+            // Refresh Token 삭제
+            redisTemplate.delete("RT:" + authentication.getName());
+        }
+
+        // 4. 해당 Access Token 유효시간 가지고 와서 BlackList 로 저장하기
+        Long expiration = jwtTokenProvider.getExpiration(logoutRequestDto.getAccessToken());
+        redisTemplate.opsForValue()
+                .set(logoutRequestDto.getAccessToken(), "logout", expiration, TimeUnit.MILLISECONDS);
+    }
+
+    public TokenInfo reissue(LogoutRequestDTO reIssueDto) {
+        // 1. Refresh Token 검증
+        if (!jwtTokenProvider.isValidToken(reIssueDto.getRefreshToken())) {
+            throw new BusinessException(INVALID_REFRESH_TOKEN);
+        }
+
+        // 2. Access Token 에서 User email 을 가져옵니다.
+        Authentication authentication = jwtTokenProvider.getAuthentication(reIssueDto.getAccessToken());
+
+        // 3. Redis에서 User email을 기반으로 저장된 Refresh Token 값을 가져옵니다.
+        String refreshToken = (String)redisTemplate.opsForValue().get("RT:" + authentication.getName());
+        // (추가) 로그아웃되어 Redis 에 RefreshToken 이 존재하지 않는 경우 처리
+        if(ObjectUtils.isEmpty(refreshToken)) {
+            throw new BusinessException(LOGOUT_MEMBER);
+        }
+
+        if(!refreshToken.equals(reIssueDto.getRefreshToken())) {
+            throw new BusinessException(INVALID_REFRESH_TOKEN);
+        }
+
+        // 4. 새로운 토큰 생성
+        User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
+                () -> new BusinessException(NOT_FOUND_MEMBER));
+
+        Set<GrantedAuthority> authorities = Set.of(SecurityUtils.convertToAuthority(user.getRole()));
+
+        UserPrinciple userPrinciple = UserPrinciple.builder()
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .authorities(authorities)
+                .user(user)
+                .build();
+
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(userPrinciple);
+
+        // 5. RefreshToken Redis 업데이트
+        redisTemplate.opsForValue()
+                .set("RT:" + authentication.getName()
+                        , tokenInfo.getRefreshToken()
+                        , 5, TimeUnit.MINUTES);
+
+        return tokenInfo;
     }
 }

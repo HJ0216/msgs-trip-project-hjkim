@@ -1,9 +1,6 @@
 package com.msgs.user.controller;
 
-import com.msgs.msgs.dto.LoginRequestDTO;
-import com.msgs.msgs.dto.TokenInfo;
-import com.msgs.msgs.dto.UserDTO;
-import com.msgs.msgs.dto.UserLoginRequestDto;
+import com.msgs.msgs.dto.*;
 import com.msgs.msgs.entity.user.User;
 import com.msgs.user.service.UserService2;
 import lombok.NonNull;
@@ -20,8 +17,6 @@ public class UserController2 {
 
     @PostMapping("/new")
     public String create(@RequestBody User user){
-        System.out.println("UserController2.create");
-
         Integer id = userService.create(user);
         return id.toString();
     }
@@ -36,6 +31,18 @@ public class UserController2 {
     @ResponseStatus(HttpStatus.OK)
     public UserDTO findMyInfo(){
         return userService.findMyInfo();
+    }
+
+    @PostMapping("/re-issue")
+    @ResponseStatus(HttpStatus.OK)
+    public TokenInfo reissue(@RequestBody LogoutRequestDTO logoutRequestDto) {
+        return userService.reissue(logoutRequestDto);
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.OK)
+    public void logout(@RequestBody LogoutRequestDTO logoutRequestDto){
+        userService.logout(logoutRequestDto);
     }
 
 }
