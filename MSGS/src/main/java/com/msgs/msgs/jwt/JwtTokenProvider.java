@@ -3,6 +3,7 @@ package com.msgs.msgs.jwt;
 import com.msgs.msgs.dto.TokenInfo;
 import com.msgs.msgs.dto.UserPrinciple;
 import com.msgs.msgs.error.BusinessException;
+import com.msgs.msgs.redis.RedisUtil;
 import com.msgs.user.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -23,8 +24,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.msgs.msgs.error.ErrorCode.NOT_FOUND_AUTHORITY;
-import static com.msgs.msgs.error.ErrorCode.NOT_FOUND_MEMBER;
+import static com.msgs.msgs.error.ErrorCode.*;
 
 
 @Component // Spring이 이 클래스를 자동으로 스캔하고 빈으로 등록
@@ -36,12 +36,14 @@ public class JwtTokenProvider {
     @Value("${jwt.secretKey}")
     private String JWT_SECRET;
 
+    private final RedisUtil redisUtil;
     private final UserRepository userRepository;
 
     // 유저 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
     public TokenInfo generateToken(UserPrinciple auth) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + Duration.ofMinutes(1).toMillis());
+
+        Date expiration = new Date(now.getTime() + Duration.ofMinutes(5).toMillis());
 
         String authorites = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -53,12 +55,15 @@ public class JwtTokenProvider {
         String accessToken = Jwts.builder()
                 .setSubject(auth.getEmail())
                 .claim(AUTHORITIES_KEY, authorites)
+                .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(secretKey)
                 .compact();
 
         // Refresh Token 생성
+        // 아무런 정보도 토큰에 넣지 않고, 단순히 IssuedAt과 Expiration만을 입력한 후 서명
         String refreshToken = Jwts.builder()
+                .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(secretKey)
                 .compact();
@@ -71,9 +76,9 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
-    public Authentication getAuthentication(HttpServletRequest request) {
+    public Authentication getAuthentication(String accessToken) {
         //유저 정보 부분만 가져옴
-        Claims claims = parseClaims(request);
+        Claims claims = parseClaims(accessToken);
         if(claims == null)
             throw new BusinessException(NOT_FOUND_MEMBER);
 
@@ -109,10 +114,10 @@ public class JwtTokenProvider {
      * */
 
     // 토큰 정보를 검증하는 메서드
-    public boolean isValidToken(HttpServletRequest request) {
+    public boolean isValidToken(String accessToken) {
         Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
 
-        Claims claims = parseClaims(request);
+        Claims claims = parseClaims(accessToken);
 
         try {
 //            Jwts.parserBuilder()
@@ -140,8 +145,11 @@ public class JwtTokenProvider {
     }
 
     // 리퀘스트의 토큰에서 암호풀어 Claims 가져오기
-    private Claims parseClaims(HttpServletRequest request) {
-        String accessToken = SecurityUtils.resolveToken(request);
+    private Claims parseClaims(String accessToken) {
+
+        if(redisUtil.hasKeyBlackList(accessToken)){
+            throw new BusinessException(LOGOUT_MEMBER);
+        }
 
         if(accessToken == null)
             return null;
@@ -153,5 +161,22 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(accessToken)
                 .getBody();
+    }
+
+    public Long getExpiration(String token) {
+        Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+
+        // accessToken 남은 유효시간
+        Date expiration = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+
+        // 현재 시간
+        Long now = new Date().getTime();
+
+        return (expiration.getTime() - now);
     }
 }
