@@ -1,21 +1,20 @@
 package com.msgs.main.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.msgs.msgs.dto.LoginRequestDTO;
-import com.msgs.msgs.dto.TokenInfo;
-import com.msgs.msgs.entity.user.LoginType;
-import com.msgs.msgs.entity.user.User;
-import com.msgs.msgs.error.BusinessException;
-import com.msgs.msgs.error.ErrorCode;
-import com.msgs.user.repository.UserRepository;
-import com.msgs.user.service.UserService2;
+import com.msgs.domain.user.dto.LoginRequestDTO;
+import com.msgs.global.common.jwt.dto.TokenInfo;
+import com.msgs.domain.user.domain.LoginType;
+import com.msgs.domain.user.domain.User;
+import com.msgs.global.common.error.BusinessException;
+import com.msgs.domain.user.repository.UserRepository;
+import com.msgs.domain.user.service.UserService2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.msgs.msgs.error.ErrorCode.*;
+import static com.msgs.global.common.error.ErrorCode.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
