@@ -17,11 +17,7 @@ public class UserRepository{
         List<User> users = em.createQuery("select u from User u where u.email = :email", User.class)
                 .setParameter("email", email)
                 .getResultList();
-        if (users.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(users.get(0));
-        }
+        return users.stream().findFirst();
     }
 
     public void save(User user) {

@@ -1,15 +1,12 @@
 package com.msgs.domain.tripschedule.service;
 
 import com.msgs.domain.tripschedule.dto.PlanBlockDTO;
-import com.msgs.domain.tripplace.domain.Destination;
 import com.msgs.domain.tripschedule.domain.Trip;
-import com.msgs.domain.user.domain.User;
-import com.msgs.domain.tripschedule.dao.DetailScheduleDAO;
 import com.msgs.domain.tripschedule.dao.TripScheduleDAO;
 
 import java.util.Arrays;
 import com.google.gson.Gson;
-import com.msgs.domain.tripplace.dto.PlaceInfoDTO;
+import com.msgs.domain.tripstory.dto.PlaceInfoDTO;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,9 +43,6 @@ public class TripScheduleServiceImpl implements TripScheduleService {
 
     @Autowired
     private TripScheduleDAO scheduleDAO;
-    @Autowired
-    private DetailScheduleDAO detailScheduleDAO;
-
 
 
     @Override

@@ -1,7 +1,7 @@
 package com.msgs.domain.tripschedule.controller;
 
 
-import com.msgs.domain.tripplace.dto.PlaceInfoDTO;
+import com.msgs.domain.tripstory.dto.PlaceInfoDTO;
 import com.msgs.domain.tripschedule.dto.PlanBlockDTO;
 import com.msgs.domain.tripschedule.dto.ScheduleRequestDTO;
 import com.msgs.domain.tripschedule.service.TripScheduleService;

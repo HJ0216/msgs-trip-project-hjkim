@@ -10,8 +10,6 @@ import com.msgs.domain.tripstory.dto.TripStoryMainDTO;
 import com.msgs.domain.tripstory.dto.StoryLikeCountDTO;
 
 public interface TripStoryService {
-
-
     // 이야기 상세페이지 내용 가져오기
     StoryResponseDTO getStoryDetail(int storyId);
 
@@ -22,10 +20,6 @@ public interface TripStoryService {
 
     Boolean saveStory(Map<String, Object> storyData, List<String> dateList, Map<Integer, String> dailyComment, Map<Integer, List<StoryBlockDTO>> storyList);
   
- 
-    // 이야기 좋아요
-    public void storyLike(StoryLikeCountDTO storyLikeCountDTO);
-
     // 이야기 목록 가져오기
 	public List<TripStoryMainDTO> getStoryList();
 }

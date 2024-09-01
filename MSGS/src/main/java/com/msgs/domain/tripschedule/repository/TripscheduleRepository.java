@@ -1,6 +1,13 @@
 package com.msgs.domain.tripschedule.repository;
 
-/*
+
+import com.msgs.domain.tripschedule.domain.Trip;
+import com.msgs.domain.tripstory.domain.Destination;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 @Repository
 //@RequiredArgsConstructor
 @Transactional(readOnly = false)
@@ -12,13 +19,5 @@ public class TripscheduleRepository {
         em.persist(trip);
     }
 
-    public void saveTripDaily(TripDay tripDaily){
-        em.persist(tripDaily);
-    }
-
-    public void saveTripDetail(Destination tripDetail){
-        em.persist(tripDetail);
-    }
 
 }
-*/

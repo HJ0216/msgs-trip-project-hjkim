@@ -1,6 +1,6 @@
 package com.msgs.domain.tripschedule.service;
 
-import com.msgs.domain.tripplace.dto.PlaceInfoDTO;
+import com.msgs.domain.tripstory.dto.PlaceInfoDTO;
 import com.msgs.domain.tripschedule.dto.PlanBlockDTO;
 import java.util.List;
 import java.util.Map;
