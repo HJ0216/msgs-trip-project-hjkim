@@ -1,6 +1,6 @@
 package com.msgs.domain.tripschedule.domain;
 
-import com.msgs.domain.tripplace.domain.Destination;
+import com.msgs.domain.tripstory.domain.Destination;
 import lombok.*;
 
 import java.io.Serializable;

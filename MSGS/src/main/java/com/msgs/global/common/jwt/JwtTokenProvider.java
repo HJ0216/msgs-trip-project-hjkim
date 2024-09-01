@@ -1,7 +1,5 @@
 package com.msgs.global.common.jwt;
 
-import com.msgs.global.common.jwt.dto.TokenInfo;
-import com.msgs.domain.user.dto.UserPrinciple;
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.redis.RedisUtil;
 import com.msgs.domain.user.repository.UserRepository;

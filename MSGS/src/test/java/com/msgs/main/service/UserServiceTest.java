@@ -2,12 +2,12 @@ package com.msgs.main.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.msgs.domain.user.dto.LoginRequestDTO;
-import com.msgs.global.common.jwt.dto.TokenInfo;
+import com.msgs.global.common.jwt.TokenInfo;
 import com.msgs.domain.user.domain.LoginType;
 import com.msgs.domain.user.domain.User;
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.domain.user.repository.UserRepository;
-import com.msgs.domain.user.service.UserService2;
+import com.msgs.domain.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Transactional
 public class UserServiceTest {
     @Autowired
-    UserService2 userService;
+    UserService userService;
     @Autowired
     UserRepository userRepository;
 

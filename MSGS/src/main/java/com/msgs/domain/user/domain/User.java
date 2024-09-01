@@ -40,18 +40,4 @@ public class User extends BaseEntity {
 
    private String imagePath;
 
-
-
-   // 카카오 로그인 -> 회원 생성
-   public static User kakaoCreate(LoginRequestDTO loginRequestDTO) {
-      return User.builder()
-              .status("K")
-              .loginType(LoginType.KAKAO)
-              .role(loginRequestDTO.getRole())
-              .email(loginRequestDTO.getEmail())
-              .phone("")
-              .nickname(loginRequestDTO.getId().toString())
-              .password(loginRequestDTO.getPassword())
-              .build();
-   }
 }

@@ -1,7 +1,7 @@
 package com.msgs.domain.tripschedule.domain;
 
 import com.msgs.global.common.model.BaseEntity;
-import com.msgs.domain.tripplace.domain.Destination;
+import com.msgs.domain.tripstory.domain.Destination;
 import jakarta.persistence.*;
 import lombok.*;
 
