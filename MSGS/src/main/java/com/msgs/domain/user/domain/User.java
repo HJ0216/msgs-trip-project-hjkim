@@ -1,6 +1,5 @@
 package com.msgs.domain.user.domain;
 
-import com.msgs.domain.user.dto.LoginRequestDTO;
 import com.msgs.global.common.model.BaseEntity;
 
 import jakarta.persistence.*;

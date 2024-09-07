@@ -1,5 +1,6 @@
 package com.msgs.domain.user.service;
 
+import com.msgs.domain.user.dto.SignUpRequestDTO;
 import lombok.RequiredArgsConstructor;
 
 import com.msgs.domain.user.dto.LoginRequestDTO;
@@ -43,11 +44,9 @@ public class UserService {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional
-    public Integer create(User user){
-        emailDuplicateCheck(user.getEmail());
-        userRepository.save(user);
-
-        return user.getId();
+    public void create(SignUpRequestDTO dto){
+        emailDuplicateCheck(dto.getEmail());
+        userRepository.save(dto.toEntity());
     }
 
     public void emailDuplicateCheck(String email){
@@ -66,7 +65,7 @@ public class UserService {
         }
 
         //스프링 시큐리티에서 로그인하기
-        Authentication authentication = authenticationManagerBuilder
+        authenticationManagerBuilder
                 .getObject()
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
 
@@ -135,7 +134,7 @@ public class UserService {
         Authentication authentication = jwtTokenProvider.getAuthentication(reIssueDto.getAccessToken());
 
         // 3. Redis에서 User email을 기반으로 저장된 Refresh Token 값을 가져옵니다.
-        String refreshToken = (String)redisTemplate.opsForValue().get("RT:" + authentication.getName());
+        String refreshToken = redisTemplate.opsForValue().get("RT:" + authentication.getName());
         // (추가) 로그아웃되어 Redis 에 RefreshToken 이 존재하지 않는 경우 처리
         if(ObjectUtils.isEmpty(refreshToken)) {
             throw new BusinessException(LOGOUT_MEMBER);

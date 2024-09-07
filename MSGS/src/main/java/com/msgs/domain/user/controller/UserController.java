@@ -1,5 +1,6 @@
 package com.msgs.domain.user.controller;
 
+import com.msgs.domain.user.dto.SignUpRequestDTO;
 import lombok.RequiredArgsConstructor;
 
 import com.msgs.domain.user.dto.LoginRequestDTO;
@@ -7,7 +8,6 @@ import com.msgs.domain.user.dto.LogoutRequestDTO;
 import com.msgs.domain.user.dto.UserDTO;
 import com.msgs.domain.user.service.SmsService;
 import com.msgs.global.common.jwt.TokenInfo;
-import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.service.UserService;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpStatus;
@@ -22,23 +22,23 @@ public class UserController {
     private final UserService userService;
     private final SmsService smsService;
 
+    private Random random = new Random();
+
     @PostMapping("/new")
-    public String create(@RequestBody User user){
-        Integer id = userService.create(user);
-        return id.toString();
+    public void create(@RequestBody SignUpRequestDTO dto){
+        dto.validUserDto();
+        userService.create(dto);
     }
 
     @PostMapping("/new/sms-verification")
     public String verifySms(@RequestBody String phone) throws ParseException {
-        Random random = new Random();
-        String numStr = "";
+        StringBuilder randomSb = new StringBuilder();
         for (int i = 0; i < 6; i++) {
-            String ran = Integer.toString(random.nextInt(10));
-            numStr += ran;
+            randomSb.append(random.nextInt(10));
         }
-        smsService.sendSms(phone, numStr); //send authentication number
+        smsService.sendSms(phone, randomSb.toString()); //send authentication number
 
-        return numStr;
+        return randomSb.toString();
     }
 
     @PostMapping("/login")
