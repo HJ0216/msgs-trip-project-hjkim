@@ -5,6 +5,8 @@ import com.msgs.global.common.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 
 @Entity
 @Getter @Setter
@@ -39,4 +41,15 @@ public class User extends BaseEntity {
 
    private String imagePath;
 
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof User user)) return false;
+      return Objects.equals(getId(), user.getId()) && Objects.equals(getStatus(), user.getStatus()) && Objects.equals(getEmail(), user.getEmail()) && Objects.equals(getPhone(), user.getPhone());
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(getId(), getStatus(), getEmail(), getPhone());
+   }
 }
