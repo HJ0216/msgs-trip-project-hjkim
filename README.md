@@ -129,22 +129,28 @@ public class UserServiceTest {
 
     @Test
     @DisplayName("회원 가입")
-    public void userSignUp() throws Exception {
+    void userSignUp() throws Exception {
         // given
-        User user = new User();
-        user.setStatus("M");
-        user.setEmail("test@email.com");
-        user.setPhone("01023456789");
+        SignUpRequestDTO dto = SignUpRequestDTO.builder()
+                .status("M")
+                .email("test0907@email.com")
+                .phone("01075395468")
+                .nickname("hello")
+                .password("1234")
+                .build();
 
         // when
-        Integer createdId = userService.create(user);
+        userService.create(dto);
 
         // then
-        assertThat(user).isEqualTo(userRepository.findById(createdId));
+        User savedUser = userRepository.findByEmail(dto.getEmail()).orElseThrow(
+                () -> new BusinessException(NOT_FOUND_MEMBER));
+
+        assertThat(savedUser.getEmail()).isEqualTo(dto.getEmail());
+        assertThat(savedUser.getPhone()).isEqualTo(dto.getPhone());
     }
 }
 ```
-
 
 
 ### Spring Security, JWT 학습
@@ -168,6 +174,55 @@ public class UserServiceTest {
 >\* 인증 성공: Authentication 객체는 SecurityContext에 저장, 이후의 요청에서 사용자 정보를 참조할 수 있음  
 >\* 인증 실패: BadCredentialsException 발생
 >10. UserService에서 JwtTokenProvider의 generateToken() 호출
+
+
+### 패키지 구조 변경
+> 도메인형 + 계층형 -> 도메인형으로 통일
+```txt
+├─domain
+│  ├─tripschedule
+│  │  ├─controller
+│  │  ├─domain
+│  │  ├─dto
+│  │  ├─exception
+│  │  ├─repository
+│  │  └─service
+│  ├─tripstory
+│  │  ├─controller
+│  │  ├─domain
+│  │  ├─dto
+│  │  ├─exception
+│  │  ├─repository
+│  │  └─service
+│  └─user
+│      ├─controller
+│      ├─domain
+│      ├─dto
+│      ├─exception
+│      ├─repository
+│      └─service
+├─global
+│  ├─common
+│  │  ├─error
+│  │  ├─jwt
+│  │  ├─model
+│  │  └─redis
+│  ├─config
+│  └─util
+└─infra
+    ├─chatbot
+    └─imageupload
+```
+
+
+### 정적 코드 분석 도구, SonarQube 추가
+> 코드 품질 검사용 오픈 소스를 활용하여 버그 수정 및 유지보수성 등을 개선
+
+![image](https://github.com/user-attachments/assets/9735e3d9-6599-4b65-af2f-8a376bcaec2d)
+
+
+
+
 
 
 
