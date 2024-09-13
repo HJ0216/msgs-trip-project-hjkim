@@ -4,7 +4,6 @@ import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.redis.RedisUtil;
 import com.msgs.domain.user.repository.UserRepository;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,18 +36,43 @@ public class JwtTokenProvider {
 
     // 유저 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
     public TokenInfo generateToken(UserDetails auth) {
-        Date now = new Date();
+        // Access Token 생성
+        String accessToken = generateAccessToken(auth).getAccessToken();
 
-        Date expirationAccessToken = new Date(now.getTime() + Duration.ofMinutes(1).toMillis());
+        // Refresh Token 생성
+        // 아무런 정보도 토큰에 넣지 않고, 단순히 IssuedAt과 Expiration만을 입력한 후 서명
+        String refreshToken = generateRefreshToken();
+
+        return TokenInfo.builder()
+                .grantType(BEARER_TYPE)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    public String generateRefreshToken() {
+        Key secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
+
+        Date now = new Date();
         Date expirationRefreshToken = new Date(now.getTime() + Duration.ofMinutes(2).toMillis());
+
+        return Jwts.builder()
+                .setIssuedAt(now)
+                .setExpiration(expirationRefreshToken)
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public TokenInfo generateAccessToken(UserDetails auth) {
+        Key secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
+
+        Date now = new Date();
+        Date expirationAccessToken = new Date(now.getTime() + Duration.ofMinutes(1).toMillis());
 
         String authorites = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        Key secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
-
-        // Access Token 생성
         String accessToken = Jwts.builder()
                 .setSubject(auth.getUsername()) // 토큰 소유자 설정
                 .claim(AUTHORITIES_KEY, authorites) // JWT 내부에 추가적인 정보 설정
@@ -57,19 +81,11 @@ public class JwtTokenProvider {
                 .signWith(secretKey)
                 .compact();
 
-        // Refresh Token 생성
-        // 아무런 정보도 토큰에 넣지 않고, 단순히 IssuedAt과 Expiration만을 입력한 후 서명
-        String refreshToken = Jwts.builder()
-                .setIssuedAt(now)
-                .setExpiration(expirationRefreshToken)
-                .signWith(secretKey)
-                .compact();
-
         return TokenInfo.builder()
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .build();
+
     }
 
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드

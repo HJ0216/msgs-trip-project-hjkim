@@ -1,6 +1,7 @@
 package com.msgs.domain.user.service;
 
 import com.msgs.domain.user.dto.SignUpRequestDTO;
+import com.msgs.global.common.jwt.SecurityUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 
@@ -23,8 +24,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.msgs.global.common.error.ErrorCode.*;
@@ -72,27 +73,23 @@ public class UserService {
                 .getObject()
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
 
-        // User의 role -> 스프링시큐리티의 GrantedAuthority로 변경
-        // 여러개의 role을 가질수 있으므로 Set
-//        Set<GrantedAuthority> authorities = Set.of(SecurityUtils.convertToAuthority(user.getRole()));
-
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         TokenInfo tokenInfo = jwtTokenProvider.generateToken(userDetails);
 
         // 로그인 시, Refresh Token 정보를 Redis에 저장
         // Refresh Token 정보를 기반으로 Access Token 정보 재 발행
-        storeRefreshToken(user.getEmail(), tokenInfo.getRefreshToken());
+        storeRefreshToken(tokenInfo.getRefreshToken(), user.getEmail());
 
         return tokenInfo;
     }
 
-    private void storeRefreshToken(String email, String refreshToken){
+    private void storeRefreshToken(String refreshToken, String email){
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         // opsForValue: Strings를 쉽게 Serialize / Deserialize 해주는 interface
         // 자바 언어에서 사용되는 Object 또는 Data를 다른 컴퓨터의 자바 시스템에서도 사용 할수 있도록 바이트 스트림(stream of bytes) 형태로 연속전인(serial) 데이터로 변환하는 포맷 변환 기술
         Long expiration = jwtTokenProvider.getExpiration(refreshToken);
-        valueOperations.set("RT:" + email, refreshToken, expiration, TimeUnit.MILLISECONDS);
+        valueOperations.set("RT:" + refreshToken, email, expiration, TimeUnit.MILLISECONDS);
     }
 
     public UserDTO findMyInfo(){
@@ -105,36 +102,37 @@ public class UserService {
     }
 
     public TokenInfo reissue(TokenInfo reIssueDto) {
-        // Refresh Token 유효성 검사
-        if (!jwtTokenProvider.isValidToken(reIssueDto.getRefreshToken())) {
-            throw new BusinessException(INVALID_REFRESH_TOKEN);
+        try {
+            jwtTokenProvider.getExpiration(reIssueDto.getAccessToken());
+            throw new BusinessException(VALID_ACCESS_TOKEN);
+        } catch (ExpiredJwtException e) {
+            // Refresh Token 유효성 검사
+            if (!jwtTokenProvider.isValidToken(reIssueDto.getRefreshToken())) {
+                throw new BusinessException(INVALID_REFRESH_TOKEN);
+            }
+
+            // Redis에 Refresh Token 존재 확인
+            boolean hasStoredRefreshToken = redisTemplate.hasKey("RT:" + reIssueDto.getRefreshToken());
+            if(!hasStoredRefreshToken) {
+                throw new BusinessException(LOGOUT_MEMBER);
+            }
+
+            String email = redisTemplate.opsForValue().get("RT:" + reIssueDto.getRefreshToken());
+            User user = userRepository.findByEmail(email).orElseThrow(
+                    () -> new BusinessException(NOT_FOUND_MEMBER));
+
+            // AccessToken 재발급
+
+            // User의 role -> 스프링시큐리티의 GrantedAuthority로 변경
+            // 여러개의 role을 가질수 있으므로 Set
+            UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                    user.getEmail(),
+                    user.getPassword(),
+                    Set.of(SecurityUtils.convertToAuthority(user.getRole()))
+            );
+
+            return jwtTokenProvider.generateAccessToken(userDetails);
         }
-
-        Authentication authentication = jwtTokenProvider.getAuthentication(reIssueDto.getAccessToken());
-
-        // Redis에 Refresh Token 존재 확인
-        String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + authentication.getName());
-
-        if(ObjectUtils.isEmpty(storedRefreshToken)) {
-            throw new BusinessException(LOGOUT_MEMBER);
-        }
-
-        if(!storedRefreshToken.equals(reIssueDto.getRefreshToken())) {
-            throw new BusinessException(INVALID_REFRESH_TOKEN);
-        }
-
-        userRepository.findByEmail(authentication.getName()).orElseThrow(
-                () -> new BusinessException(NOT_FOUND_MEMBER));
-
-//        Set<GrantedAuthority> authorities = Set.of(SecurityUtils.convertToAuthority(user.getRole()));
-
-        // Token 재발급
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        TokenInfo tokenInfo = jwtTokenProvider.generateToken(userDetails);
-
-        storeRefreshToken(userDetails.getUsername(), tokenInfo.getRefreshToken());
-
-        return tokenInfo;
     }
 
     public void logout(LogoutRequestDTO logoutRequestDto) {
@@ -147,7 +145,7 @@ public class UserService {
         Authentication authentication = jwtTokenProvider.getAuthentication(logoutRequestDto.getAccessToken());
 
         // 3. Redis 에서 해당 User email 로 저장된 Refresh Token 이 있는지 여부를 확인 후 있을 경우 삭제합니다.
-        if (redisTemplate.opsForValue().get("RT:" + authentication.getName()) != null) {
+        if (redisTemplate.opsForValue().get(logoutRequestDto.getAccessToken()) != null) {
             // Refresh Token 삭제
             redisTemplate.delete("RT:" + authentication.getName());
         }
@@ -155,6 +153,6 @@ public class UserService {
         // 4. 해당 Access Token 유효시간 가지고 와서 BlackList 로 저장하기
         Long expiration = jwtTokenProvider.getExpiration(logoutRequestDto.getAccessToken());
         redisTemplate.opsForValue()
-                .set(logoutRequestDto.getAccessToken(), "logout", expiration, TimeUnit.MILLISECONDS);
+                .set("AT:" + logoutRequestDto.getAccessToken(), "logout", expiration, TimeUnit.MILLISECONDS);
     }
 }
