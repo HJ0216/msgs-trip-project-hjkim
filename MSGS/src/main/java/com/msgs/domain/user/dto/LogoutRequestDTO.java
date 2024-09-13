@@ -1,15 +1,15 @@
 package com.msgs.domain.user.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LogoutRequestDTO {
-    @NotBlank
+    @NotEmpty
     private String accessToken;
 
-    @NotBlank
+    @NotEmpty
     private String refreshToken;
 
     public static LogoutRequestDTO of(String accessToken, String refreshToken) {
