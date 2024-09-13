@@ -4,6 +4,7 @@ import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.redis.RedisUtil;
 import com.msgs.domain.user.repository.UserRepository;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,30 +29,31 @@ public class JwtTokenProvider {
     private static final String AUTHORITIES_KEY  = "roles";
     private static final String BEARER_TYPE = "Bearer";
 
-    @Value("${jwt.secretKey}")
-    private String JWT_SECRET;
+    @Value("${jwt.secret}")
+    private String jwtSecretKey;
 
     private final RedisUtil redisUtil;
     private final UserRepository userRepository;
 
     // 유저 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
-    public TokenInfo generateToken(UserPrinciple auth) {
+    public TokenInfo generateToken(UserDetails auth) {
         Date now = new Date();
 
-        Date expiration = new Date(now.getTime() + Duration.ofMinutes(5).toMillis());
+        Date expirationAccessToken = new Date(now.getTime() + Duration.ofMinutes(1).toMillis());
+        Date expirationRefreshToken = new Date(now.getTime() + Duration.ofMinutes(2).toMillis());
 
         String authorites = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+        Key secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
 
         // Access Token 생성
         String accessToken = Jwts.builder()
-                .setSubject(auth.getEmail())
-                .claim(AUTHORITIES_KEY, authorites)
+                .setSubject(auth.getUsername()) // 토큰 소유자 설정
+                .claim(AUTHORITIES_KEY, authorites) // JWT 내부에 추가적인 정보 설정
                 .setIssuedAt(now)
-                .setExpiration(expiration)
+                .setExpiration(expirationAccessToken)
                 .signWith(secretKey)
                 .compact();
 
@@ -59,7 +61,7 @@ public class JwtTokenProvider {
         // 아무런 정보도 토큰에 넣지 않고, 단순히 IssuedAt과 Expiration만을 입력한 후 서명
         String refreshToken = Jwts.builder()
                 .setIssuedAt(now)
-                .setExpiration(expiration)
+                .setExpiration(expirationRefreshToken)
                 .signWith(secretKey)
                 .compact();
 
@@ -77,9 +79,6 @@ public class JwtTokenProvider {
         if(claims == null)
             throw new BusinessException(NOT_FOUND_MEMBER);
 
-        if(claims.getSubject() == null)
-            throw new BusinessException(NOT_FOUND_MEMBER);
-
         if (claims.get(AUTHORITIES_KEY) == null)
             throw new BusinessException(NOT_FOUND_AUTHORITY);
 
@@ -89,7 +88,7 @@ public class JwtTokenProvider {
                 Arrays.stream(claims.get(AUTHORITIES_KEY)
                         .toString()
                         .split(","))
-                        .map(SecurityUtils::convertToAuthority) // 스트림의 각 요소를 다른 형태로 변환하는 데 사용
+                        .map(SecurityUtils::convertToAuthority) // 스트림의 각 요소를 다른 형태로 변환
                         .collect(Collectors.toSet());
 
 
@@ -100,6 +99,7 @@ public class JwtTokenProvider {
                 .build();
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+        // credentials: null, 인증이 완료된 후에는 실제 자격 증명(예: 비밀번호)을 사용할 필요가 없으므로 null로 설정
     }
     /**
      * UsernamePasswordAuthenticationToken
@@ -109,59 +109,42 @@ public class JwtTokenProvider {
      * */
 
     // 토큰 정보를 검증하는 메서드
-    public boolean isValidToken(String accessToken) {
-        Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
-
-        Claims claims = parseClaims(accessToken);
+    public boolean isValidToken(String token) {
+        if(token == null || token.isEmpty())
+            return false;
 
         try {
-//            Jwts.parserBuilder()
-//                    .setSigningKey(secretKey)
-//                    .build()
-//                    .parseClaimsJws(accessToken);
-            //토큰에 claims 데이터가 없으면 사용불가 false 리턴
-            if(claims == null)
-                return false;
-            //토큰사용기간 만료시에도 사용불가 false 리턴
-            if (claims.getExpiration().before(new Date())) return false;
-
-            return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            System.out.println("잘못된 JWT 서명입니다.");
+            return (!parseClaims(token).isEmpty());
+        } catch (MalformedJwtException e) {
+            throw new BusinessException(MALFORMED_JWT);
         } catch (ExpiredJwtException e) {
-            System.out.println("만료된 JWT 토큰입니다.");
+            throw new BusinessException(EXPIRED_JWT);
         } catch (UnsupportedJwtException e) {
-            System.out.println("지원되지 않는 JWT 토큰입니다.");
+            throw new BusinessException(UNSUPPORTED_JWT);
         } catch (IllegalStateException e) {
-            System.out.println("JWT 토큰이 잘못되었습니다.");
+            throw new BusinessException(ILLEGAL_STATE_JWT);
         }
-
-        return false;
     }
 
     // 리퀘스트의 토큰에서 암호풀어 Claims 가져오기
-    private Claims parseClaims(String accessToken) {
-
-        if(redisUtil.hasKeyBlackList(accessToken)){
+    private Claims parseClaims(String token) {
+        if(redisUtil.hasKeyBlackList(token)){
             throw new BusinessException(LOGOUT_MEMBER);
         }
 
-        if(accessToken == null)
-            return null;
-
-        Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+        Key secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
 
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
-                .parseClaimsJws(accessToken)
+                .parseClaimsJws(token)
                 .getBody();
     }
 
     public Long getExpiration(String token) {
-        Key secretKey = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+        Key secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
 
-        // accessToken 남은 유효시간
+        // Token 남은 유효시간
         Date expiration = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
@@ -172,6 +155,6 @@ public class JwtTokenProvider {
         // 현재 시간
         Long now = new Date().getTime();
 
-        return (expiration.getTime() - now);
+        return (expiration.getTime() - now); // TimeUnit.MILLISECONDS
     }
 }

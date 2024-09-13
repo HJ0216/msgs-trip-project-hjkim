@@ -25,6 +25,7 @@ public class UserController {
     private Random random = new Random();
 
     @PostMapping("/new")
+    @ResponseStatus(HttpStatus.OK)
     public void create(@RequestBody SignUpRequestDTO dto){
         dto.validUserDto();
         userService.create(dto);
@@ -55,8 +56,8 @@ public class UserController {
 
     @PostMapping("/re-issue")
     @ResponseStatus(HttpStatus.OK)
-    public TokenInfo reissue(@RequestBody LogoutRequestDTO logoutRequestDto) {
-        return userService.reissue(logoutRequestDto);
+    public TokenInfo reissue(@RequestBody TokenInfo reIssueDto) {
+        return userService.reissue(reIssueDto);
     }
 
     @PostMapping("/logout")
