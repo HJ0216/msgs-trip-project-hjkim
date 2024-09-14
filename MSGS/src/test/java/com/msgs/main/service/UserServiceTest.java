@@ -19,10 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @Transactional
 class UserServiceTest {
-    @Autowired
-    UserService userService;
-    @Autowired
-    UserRepository userRepository;
+    @Autowired UserService userService;
+    @Autowired UserRepository userRepository;
 
     @Test
     @DisplayName("회원 가입")
