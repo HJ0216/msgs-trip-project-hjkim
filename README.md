@@ -24,18 +24,13 @@
 * 해결: 중복 데이터에 대하여 제 1 정규화 수행 -> 여행지 테이블 별도 분리 후 관계 설정
 
 
-### Entity 수정
+### Entity 개선
 * Auditing 기능 추가
   * 엔티티가 생성되고, 변경되는 시점을 감지하여 생성시각, 수정시각, 생성인, 수정인 등을 자동으로 기록
   * 여러 테이블의 공통 속성인 생성시각, 수정시각을 하나의 Entity(= BaseEntity)로 관리
 ```java
 // 개선 전
 @Entity
-@Table(name="user")
-@Getter @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class UserEntity implements UserDetails {
    // ...
    
@@ -48,10 +43,6 @@ public class UserEntity implements UserDetails {
 ```java
 // 개선 후
 @Entity
-@Getter @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class User extends BaseEntity implements UserDetails {
     // ...
 }
@@ -99,19 +90,18 @@ public class UserController {
 @RestController
 @RequestMapping("api/v2/users")
 @RequiredArgsConstructor
-public class UserController2 {
-    private final UserService2 userService;
-
+public class UserController {
     @PostMapping("/new")
-    public String create(@RequestBody User user){
-        Integer id = userService.create(user);
-        return id.toString();
+    @ResponseStatus(HttpStatus.OK)
+    public void create(@RequestBody SignUpRequestDTO dto){
+        dto.validUserDto();
+        userService.create(dto);
     }
 
-    @GetMapping
-    public ResponseEntity<?> getUser(@RequestParam String accessToken) {
-        JSONObject user = userService.getUser(accessToken);
-        return ResponseEntity.ok().body(user.toString());
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDTO findMyInfo(){
+        return userService.findMyInfo();
     }
 }
 ```
@@ -122,10 +112,8 @@ public class UserController2 {
 @SpringBootTest
 @Transactional
 public class UserServiceTest {
-    @Autowired
-    UserService2 userService;
-    @Autowired
-    UserRepository userRepository;
+    @Autowired UserService userService;
+    @Autowired UserRepository userRepository;
 
     @Test
     @DisplayName("회원 가입")
@@ -146,6 +134,7 @@ public class UserServiceTest {
         User savedUser = userRepository.findByEmail(dto.getEmail()).orElseThrow(
                 () -> new BusinessException(NOT_FOUND_MEMBER));
 
+        // 필드 값 비교
         assertThat(savedUser.getEmail()).isEqualTo(dto.getEmail());
         assertThat(savedUser.getPhone()).isEqualTo(dto.getPhone());
     }
@@ -154,26 +143,60 @@ public class UserServiceTest {
 
 
 ### Spring Security, JWT 학습
->SpringSecurity와 JWT가 동작하는 과정
+>SpringSecurity와 JWT가 Login 시 동작하는 과정
 
->1. 애플리케이션 시작 → SpringConfig: Spring Security의 초기화 및 설정 과정  
->\* JwtAuthenticationFilter 등
+>1. 애플리케이션 시작 → SpringConfig  
+>\* Spring Security의 초기화 및 설정 과정: JwtAuthenticationFilter 등
 >2. API 호출 → JwtAuthenticationFilter 요청 처리  
->\* 필터 통과: 요청을 다음 필터로 전달  
->\* 필터 통과 X: 오류 반환
->3. 필터 체인을 모두 통과한 요청은 Controller로 전달
->4. Controller → UserService 호출
->5. UserService에서 AuthenticationManager은 UserDetailsService 호출
->6. AuthenticationManagerBuilder 동작
->7. AuthenticationManagerBuilder에서 사용자가 제공한 정보(이메일과 비밀번호)를 확인  
->\* 사용자가 입력한 이메일과 비밀번호를 담은 인증 토큰 생성 
->8. AuthenticationManagerBuilder에서 authentificate() 호출하여 인증 시도  
->내부적으로 CustomUserDetailsService의 loadUserByUsername() 호출  
->\* 주어진 이메일로 데이터베이스에서 사용자를 찾아서 그 정보를 UserDetails 객체로 반환
->9. AuthenticationManagerBuilder에서 6과 7의 객체 비교  
->\* 인증 성공: Authentication 객체는 SecurityContext에 저장, 이후의 요청에서 사용자 정보를 참조할 수 있음  
->\* 인증 실패: BadCredentialsException 발생
->10. UserService에서 JwtTokenProvider의 generateToken() 호출
+>🚨 필터에서 오류가 발생할 경우, Controller에 도달하지 못하므로 Debugging 시, 유의
+>3. Controller → UserService 호출
+>4. UserService: AuthenticationManagerBuilder.authenticate() 호출  
+>\* 전달된 인증 객체(Authentication)를 사용하여 인증되지 않은 사용자에 대한 인증을 수행  
+>\* 내부적으로 설정된 AuthenticationProvider들을 순차적으로 사용하여 자격 증명을 검증
+>5. AuthenticationProvider → UserDetailsService 호출
+>6. UserDetailsService
+>\* 내부적으로 loadUserByUsername()를 호출하여 데이터베이스에서 해당 이메일을 가진 사용자를 찾아 UserDetails 객체로 반환  
+>\* 해당 이메일이 존재하지 않는다면, UsernameNotFoundException가 발생하여 인증 실패
+>7. Authentication 객체: SecurityContextHolder에 저장
+>8. 토큰 발행
+
+
+### Refresh Token을 활용한 Access Token 재발급 기능 추가
+```java
+public TokenInfo reissue(TokenInfo reIssueDto) {
+    try {
+        jwtTokenProvider.getExpiration(reIssueDto.getAccessToken());
+        throw new BusinessException(VALID_ACCESS_TOKEN);
+    } catch (ExpiredJwtException e) {
+        // Refresh Token 유효성 검사
+        if (!jwtTokenProvider.isValidToken(reIssueDto.getRefreshToken())) {
+            throw new BusinessException(INVALID_REFRESH_TOKEN);
+        }
+
+        // Redis에 Refresh Token 존재 확인
+        boolean hasStoredRefreshToken = redisTemplate.hasKey("RT:" + reIssueDto.getRefreshToken());
+        if(!hasStoredRefreshToken) {
+            throw new BusinessException(LOGOUT_MEMBER);
+        }
+
+        String email = redisTemplate.opsForValue().get("RT:" + reIssueDto.getRefreshToken());
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new BusinessException(NOT_FOUND_MEMBER));
+
+        // AccessToken 재발급
+
+        // User의 role -> 스프링시큐리티의 GrantedAuthority로 변경
+        // 여러개의 role을 가질수 있으므로 Set
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                Set.of(SecurityUtils.convertToAuthority(user.getRole()))
+        );
+
+        return jwtTokenProvider.generateAccessToken(userDetails);
+    }
+}
+```
 
 
 ### 패키지 구조 변경
