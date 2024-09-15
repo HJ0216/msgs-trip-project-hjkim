@@ -41,7 +41,7 @@ class UserControllerTest {
         mockMvc.perform(post("/api/v2/users/new")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signUpDto)))
-                .andExpect(status().isOk());  // 응답이 200 OK 인지 확인
+                .andExpect(status().isCreated());
 
         // 회원 생성 메소드가 호출되었는지 확인
         verify(userService).create(refEq(signUpDto));

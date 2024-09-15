@@ -5,6 +5,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.util.StringUtils;
 
 public class SecurityUtils {
+    private SecurityUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static final String ROLE_PREFIX = "ROLE_";
 
     //Token 값을 가져오는데 필요한 값들

@@ -2,6 +2,7 @@ package com.msgs.global.config;
 
 import com.msgs.global.common.jwt.JwtAuthenticationFilter;
 import com.msgs.global.common.jwt.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -37,25 +39,19 @@ public class SecurityConfig {
     // 스프링 시큐리티의 세부 설정
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.httpBasic(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable)
+        http.httpBasic(AbstractHttpConfigurer::disable) // 기본 HTTP 인증을 비활성화
+                .csrf(AbstractHttpConfigurer::disable) // CSRF 보호를 비활성화, CSRF 토큰을 사용하여, 클라이언트가 서버에 요청할 때마다 유효한 토큰을 함께 전송해야만 요청이 성공하도록 하는 방식으로 보안을 강화 -> 토큰으로 대체
                 .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
                 .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )                .authorizeRequests((auth) -> auth
-                                .requestMatchers("/api/v2/users/login").permitAll()
-                                .requestMatchers("/api/v2/users/me") .permitAll()
-//                    .requestMatchers("/mypage/**").hasRole("USER")
-//                    .requestMatchers("/admin/**").hasRole("ADMIN")
-//                    .anyRequest().authenticated() // 이 외의 접근은 인증이 필요
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션을 사용하지 않고, 상태를 저장하지 않도록 설정(STATLESS)
+                ).authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v2/users/login").permitAll()
+                        .requestMatchers("/api/v2/users/create").permitAll()
+                        .requestMatchers("/api/v2/users/me", "/api/v2/users/logout").hasRole("USER")
+                        .requestMatchers("/api/v2/users/reissue").permitAll()
+                        // .anyRequest().authenticated() // 이 외의 접근은 인증이 필요
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
-                        .logoutSuccessHandler((request, response, authentication) ->
-                                response.sendRedirect("/"))
-                );
+                .addFilterBefore(jwtAuthenticationFilterForSpecificUrls(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -87,6 +83,24 @@ public class SecurityConfig {
      * addFilterBefore: JWT 인증 필터 추가
      * JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
      * */
+
+    // 특정 경로에 대해 모든 보안 필터 제외
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return (web) -> web.ignoring()
+//                .requestMatchers("/api/v2/users/new", "/api/v2/users/reissue");
+//    }
+
+    // 특정 경로에 대해 특정 보안 필터 제외
+    public JwtAuthenticationFilter jwtAuthenticationFilterForSpecificUrls() {
+        return new JwtAuthenticationFilter(jwtTokenProvider) {
+            @Override
+            protected boolean shouldNotFilter(HttpServletRequest request) {
+                String path = request.getServletPath();
+                return !("/api/v2/users/login".equals(path) || "/api/v2/users/me".equals(path) || "/api/v2/users/logout".equals(path));
+            }
+        };
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
