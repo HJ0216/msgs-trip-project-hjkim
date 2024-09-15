@@ -142,25 +142,6 @@ public class UserServiceTest {
 ```
 
 
-### Spring Security, JWT 학습
->SpringSecurity와 JWT가 Login 시 동작하는 과정
-
->1. 애플리케이션 시작 → SpringConfig  
->\* Spring Security의 초기화 및 설정 과정: JwtAuthenticationFilter 등
->2. API 호출 → JwtAuthenticationFilter 요청 처리  
->🚨 필터에서 오류가 발생할 경우, Controller에 도달하지 못하므로 Debugging 시, 유의
->3. Controller → UserService 호출
->4. UserService: AuthenticationManagerBuilder.authenticate() 호출  
->\* 전달된 인증 객체(Authentication)를 사용하여 인증되지 않은 사용자에 대한 인증을 수행  
->\* 내부적으로 설정된 AuthenticationProvider들을 순차적으로 사용하여 자격 증명을 검증
->5. AuthenticationProvider → UserDetailsService 호출
->6. UserDetailsService
->\* 내부적으로 loadUserByUsername()를 호출하여 데이터베이스에서 해당 이메일을 가진 사용자를 찾아 UserDetails 객체로 반환  
->\* 해당 이메일이 존재하지 않는다면, UsernameNotFoundException가 발생하여 인증 실패
->7. Authentication 객체: SecurityContextHolder에 저장
->8. 토큰 발행
-
-
 ### Refresh Token을 활용한 Access Token 재발급 기능 추가
 ```java
 public TokenInfo reissue(TokenInfo reIssueDto) {
@@ -195,6 +176,99 @@ public TokenInfo reissue(TokenInfo reIssueDto) {
 
         return jwtTokenProvider.generateAccessToken(userDetails);
     }
+}
+```
+
+
+### Spring Security: 특정 url을 제외한 필터 적용
+🚨문제: JwtAuthentificationFilter에서 Access Token의 유효성 검증을 수행하는데, 유효성 검증이 필요없는 회원가입이나 Access Token 재발행에서도 Filter가 동작  
+🤓 해결 방안: 특정 url에서만 filter가 동작하도록 수정  
+
+🛠️해결1, **shouldNotFilter**  
+\* 특정 경로에 대한 특정 필터만 제외
+```java
+public JwtAuthenticationFilter jwtAuthenticationFilterForSpecificUrls() {
+    return new JwtAuthenticationFilter(jwtTokenProvider) {
+        @Override
+        protected boolean shouldNotFilter(HttpServletRequest request) {
+            String path = request.getServletPath();
+            return !("/api/v2/users/login".equals(path) || "/api/v2/users/me".equals(path) || "/api/v2/users/logout".equals(path));
+        }
+    };
+}
+
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.httpBasic(AbstractHttpConfigurer::disable)
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
+            .sessionManagement(sessionManagement ->
+                    sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            ).authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/v2/users/login").permitAll()
+                    .requestMatchers("/api/v2/users/me", "/api/v2/users/logout").hasRole("USER")
+            )
+            .addFilterBefore(jwtAuthenticationFilterForSpecificUrls(), UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+}
+```
+
+🛠️해결2, **WebSecurityCustomizer**  
+\* 경로에 대해 모든 필터 체인을 비활성화
+```java
+@Bean
+public WebSecurityCustomizer webSecurityCustomizer() {
+    return (web) -> web.ignoring()
+            .requestMatchers("/api/v2/users/new", "/api/v2/users/reissue");
+}
+
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.httpBasic(AbstractHttpConfigurer::disable)
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
+            .sessionManagement(sessionManagement ->
+                    sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            ).authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/v2/users/login").permitAll()
+                    .requestMatchers("/api/v2/users/me", "/api/v2/users/logout").hasRole("USER")
+            )
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+}
+```
+
+
+### Custom Error Code 작성
+```java
+@Getter
+public enum ErrorCode {
+    // 회원 가입
+    EMAIL_VALIDATION(HttpStatus.BAD_REQUEST, "이메일 형식이 맞지 않습니다."),
+    PASSWORD_VALIDATION(HttpStatus.BAD_REQUEST, "비밀번호 형식이 맞지 않습니다."),
+    NICKNAME_VALIDATION(HttpStatus.BAD_REQUEST, "닉네임 형식이 맞지 않습니다."),
+    PHONE_NUMBER_VALIDATION(HttpStatus.BAD_REQUEST, "휴대폰 형식이 맞지 않습니다."),
+    PASSWORD_CONFIRM_VALIDATION(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인이 맞지 않습니다."),
+    DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일 입니다."),
+    NOT_EQUAL_PASSWORD(HttpStatus.BAD_REQUEST,"입력한 비밀번호가 상이합니다."),
+
+
+    // 로그인
+    CHECK_LOGIN_ID_OR_PASSWORD(HttpStatus.NOT_FOUND, "아이디 또는 비밀번호를 확인해주세요."),
+    NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
+
+
+    // JWT
+    MALFORMED_JWT(HttpStatus.BAD_REQUEST, "잘못된 JWT 형식입니다."),
+    EXPIRED_JWT(HttpStatus.BAD_REQUEST, "만료된 JWT 토큰입니다."),
+    UNSUPPORTED_JWT(HttpStatus.BAD_REQUEST, "지원하지 않은 JWT 서명입니다."),
+    ILLEGAL_STATE_JWT(HttpStatus.BAD_REQUEST, "JWT 처리 중 오류가 발생하였습니다."),
+    VALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "Access Token의 유효기간이 남아있습니다."),
+    LOGOUT_MEMBER(HttpStatus.NOT_FOUND, "로그아웃한 회원입니다."),
+    INVALID_ACCESS_TOKEN(HttpStatus.NOT_FOUND, "유효하지 않은 Access Token입니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.NOT_FOUND, "유효하지 않은 Refresh Token입니다."),
+    NOT_FOUND_AUTHORITY(HttpStatus.NOT_FOUND, "존재하지 않는 권한입니다."),
+    ;
 }
 ```
 
