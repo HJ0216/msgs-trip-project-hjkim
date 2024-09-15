@@ -4,7 +4,6 @@ import com.msgs.domain.user.dto.SignUpRequestDTO;
 import lombok.RequiredArgsConstructor;
 
 import com.msgs.domain.user.dto.LoginRequestDTO;
-import com.msgs.domain.user.dto.LogoutRequestDTO;
 import com.msgs.domain.user.dto.UserDTO;
 import com.msgs.domain.user.service.SmsService;
 import com.msgs.global.common.jwt.TokenInfo;

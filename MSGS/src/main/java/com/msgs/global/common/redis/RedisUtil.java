@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 public class RedisUtil {
-
     private final RedisTemplate<String, Object> redisTemplate;
     // Redis와의 기본적인 데이터 상호작용을 처리하는 객체
     // 일반 데이터를 저장하고 조회하는 데 사용

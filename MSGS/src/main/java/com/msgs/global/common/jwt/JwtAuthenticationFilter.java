@@ -29,6 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             , HttpServletResponse response
             , FilterChain filterChain
     ) throws IOException, ServletException {
+        System.out.println("Call JwtAuthenticationFilter");
         // 1. Request Header에서 JWT 토큰 추출
         String accessToken = SecurityUtils.resolveToken(request);
 
@@ -43,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
+        // 3. 현재 필터가 요청을 처리한 후, 필터 체인의 다음 필터로 요청과 응답을 전달
         filterChain.doFilter(request, response);
-        // 현재 필터가 요청을 처리한 후, 필터 체인의 다음 필터로 요청과 응답을 전달
     }
 }
