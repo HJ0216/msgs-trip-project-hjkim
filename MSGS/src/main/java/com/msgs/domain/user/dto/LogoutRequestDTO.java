@@ -3,19 +3,19 @@ package com.msgs.domain.user.dto;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
+@Builder
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class LogoutRequestDTO {
     @NotEmpty
     private String accessToken;
-
     @NotEmpty
     private String refreshToken;
 
     public static LogoutRequestDTO of(String accessToken, String refreshToken) {
-        LogoutRequestDTO logoutRequestDto = new LogoutRequestDTO();
-        logoutRequestDto.accessToken = accessToken;
-        logoutRequestDto.refreshToken = refreshToken;
-        return logoutRequestDto;
+        return LogoutRequestDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }

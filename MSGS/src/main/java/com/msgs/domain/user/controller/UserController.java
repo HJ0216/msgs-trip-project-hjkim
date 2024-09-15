@@ -25,7 +25,7 @@ public class UserController {
     private Random random = new Random();
 
     @PostMapping("/new")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public void create(@RequestBody SignUpRequestDTO dto){
         dto.validUserDto();
         userService.create(dto);
@@ -54,15 +54,15 @@ public class UserController {
         return userService.findMyInfo();
     }
 
-    @PostMapping("/re-issue")
+    @PostMapping("/reissue")
     @ResponseStatus(HttpStatus.OK)
-    public TokenInfo reissue(@RequestBody TokenInfo reIssueDto) {
-        return userService.reissue(reIssueDto);
+    public TokenInfo reissue(@RequestBody TokenInfo reissueRequestDto) {
+        return userService.reissue(reissueRequestDto);
     }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.OK)
-    public void logout(@RequestBody LogoutRequestDTO logoutRequestDto){
+    public void logout(@RequestBody TokenInfo logoutRequestDto){
         userService.logout(logoutRequestDto);
     }
 

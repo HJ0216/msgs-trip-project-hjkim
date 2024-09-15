@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )                .authorizeRequests((auth) -> auth
+                )                .authorizeRequests(auth -> auth
                                 .requestMatchers("/api/v2/users/login").permitAll()
                                 .requestMatchers("/api/v2/users/me") .permitAll()
 //                    .requestMatchers("/mypage/**").hasRole("USER")

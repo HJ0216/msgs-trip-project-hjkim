@@ -2,7 +2,6 @@ package com.msgs.global.common.jwt;
 
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.redis.RedisUtil;
-import com.msgs.domain.user.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +31,11 @@ public class JwtTokenProvider {
     private String jwtSecretKey;
 
     private final RedisUtil redisUtil;
-    private final UserRepository userRepository;
 
     // 유저 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
     public TokenInfo generateToken(UserDetails auth) {
-        // Access Token 생성
         String accessToken = generateAccessToken(auth).getAccessToken();
-
-        // Refresh Token 생성
-        // 아무런 정보도 토큰에 넣지 않고, 단순히 IssuedAt과 Expiration만을 입력한 후 서명
-        String refreshToken = generateRefreshToken();
+        String refreshToken = generateRefreshToken(auth);
 
         return TokenInfo.builder()
                 .grantType(BEARER_TYPE)
@@ -50,17 +44,24 @@ public class JwtTokenProvider {
                 .build();
     }
 
-    public String generateRefreshToken() {
+    // 아무런 정보도 토큰에 넣지 않고, 단순히 IssuedAt과 Expiration만을 입력한 후 서명
+    public String generateRefreshToken(UserDetails auth) {
         Key secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
 
         Date now = new Date();
         Date expirationRefreshToken = new Date(now.getTime() + Duration.ofMinutes(2).toMillis());
 
-        return Jwts.builder()
+        String refreshToken = Jwts.builder()
                 .setIssuedAt(now)
                 .setExpiration(expirationRefreshToken)
                 .signWith(secretKey)
                 .compact();
+
+        Long expiration = expirationRefreshToken.getTime() - now.getTime();
+
+        redisUtil.set("RT:" + refreshToken, auth.getUsername(), expiration);
+
+        return refreshToken;
     }
 
     public TokenInfo generateAccessToken(UserDetails auth) {
@@ -98,7 +99,6 @@ public class JwtTokenProvider {
         if (claims.get(AUTHORITIES_KEY) == null)
             throw new BusinessException(NOT_FOUND_AUTHORITY);
 
-
         // 클레임에서 권한 정보 가져오기
         Set<GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY)
@@ -107,12 +107,11 @@ public class JwtTokenProvider {
                         .map(SecurityUtils::convertToAuthority) // 스트림의 각 요소를 다른 형태로 변환
                         .collect(Collectors.toSet());
 
-
-        // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails userDetails = UserPrinciple.builder()
-                .email(claims.getSubject())
-                .authorities(authorities)
-                .build();
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                claims.getSubject(),
+                "",
+                authorities
+        );
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
         // credentials: null, 인증이 완료된 후에는 실제 자격 증명(예: 비밀번호)을 사용할 필요가 없으므로 null로 설정
@@ -125,12 +124,15 @@ public class JwtTokenProvider {
      * */
 
     // 토큰 정보를 검증하는 메서드
-    public boolean isValidToken(String token) {
-        if(token == null || token.isEmpty())
+    public boolean isValidAccessToken(String accessToken) {
+        if(redisUtil.hasKeyBlackList("AT:" + accessToken)){
             return false;
+        }
 
         try {
-            return (!parseClaims(token).isEmpty());
+            parseClaims(accessToken);
+
+            return true;
         } catch (MalformedJwtException e) {
             throw new BusinessException(MALFORMED_JWT);
         } catch (ExpiredJwtException e) {
@@ -142,12 +144,7 @@ public class JwtTokenProvider {
         }
     }
 
-    // 리퀘스트의 토큰에서 암호풀어 Claims 가져오기
     private Claims parseClaims(String token) {
-        if(redisUtil.hasKeyBlackList(token)){
-            throw new BusinessException(LOGOUT_MEMBER);
-        }
-
         Key secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
 
         return Jwts.parserBuilder()
