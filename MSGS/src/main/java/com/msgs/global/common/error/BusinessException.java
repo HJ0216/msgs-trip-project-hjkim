@@ -1,12 +1,10 @@
 package com.msgs.global.common.error;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public class BusinessException extends RuntimeException{
-    private ErrorCode errorCode;
-
-    public BusinessException(ErrorCode errorCode) {
-        this.errorCode = errorCode;
-    }
+    private final ErrorCode errorCode;
 }
