@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.msgs.*"})
+@ComponentScan
 @EntityScan("com.msgs.domain.*")
 @EnableJpaRepositories({"com.msgs.domain.*", "com.msgs.domain.*"})
 @EnableJpaAuditing
