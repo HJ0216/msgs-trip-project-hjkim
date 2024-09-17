@@ -41,8 +41,7 @@ public class TripScheduleServiceImpl implements TripScheduleService {
 //    @Autowired
 //    private EntityManager entityManager;
 
-    @Autowired
-    private TripScheduleDAO scheduleDAO;
+    private final TripScheduleDAO scheduleDAO;
 
 
     @Override

@@ -13,7 +13,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 import static com.msgs.global.common.error.ErrorCode.LOGOUT_MEMBER;
-import static com.msgs.global.common.error.ErrorCode.NOT_EQUAL_PASSWORD;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

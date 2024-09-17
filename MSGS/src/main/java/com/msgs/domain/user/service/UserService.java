@@ -55,7 +55,7 @@ public class UserService {
         // 비밀번호 일치 여부 비교
         // TODO: 240915, passwordEncoder 적용
         if(!loginRequestDTO.getPassword().equals(user.getPassword())) {
-            throw new BusinessException(NOT_EQUAL_PASSWORD);
+            throw new BusinessException(PASSWORD_CONFIRM_VALIDATION);
         }
 
         // SecurityContextHolder에 저장

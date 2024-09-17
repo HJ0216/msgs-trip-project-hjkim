@@ -3,16 +3,11 @@ package com.msgs.domain.user.service;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-//import net.sf.json.JSONArray;
-//import net.sf.json.JSONObject;
-//import org.json.simple.JSONArray;
-//import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Mac;
@@ -30,7 +25,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class SmsService {
 
