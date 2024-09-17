@@ -6,6 +6,8 @@ import com.msgs.domain.tripschedule.dto.PlanBlockDTO;
 import com.msgs.domain.tripschedule.dto.ScheduleRequestDTO;
 import com.msgs.domain.tripschedule.service.TripScheduleService;
 import java.util.Map;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController  // JSON 형식의 데이터 반환
+@RequiredArgsConstructor
 @RequestMapping("/schedule")
 @CrossOrigin(origins={"localhost:3000"})
 public class TripScheduleController {
-
-    @Autowired
-    private TripScheduleService tripScheduleService;
+    private final TripScheduleService tripScheduleService;
 
 
     //해당 areaCode, sigunguCode 에 해당하는 숙박 정보
