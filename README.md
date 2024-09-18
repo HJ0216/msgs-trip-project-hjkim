@@ -107,10 +107,6 @@ public class UserController {
 ```
 
 
-### DTO 응집도 향상
-validate 검사를 DTO로 이동하여 
-
-
 ### Test Code 추가
 * TooManyActualInvocations을 방지하기 위해 @BeforeEach 대신 @MockBean의 doThrow()를 사용
 ```java
