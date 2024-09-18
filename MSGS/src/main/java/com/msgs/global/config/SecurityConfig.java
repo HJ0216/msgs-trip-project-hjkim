@@ -40,16 +40,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.httpBasic(AbstractHttpConfigurer::disable) // 기본 HTTP 인증을 비활성화
-                .csrf(AbstractHttpConfigurer::disable) // CSRF 보호를 비활성화, CSRF 토큰을 사용하여, 클라이언트가 서버에 요청할 때마다 유효한 토큰을 함께 전송해야만 요청이 성공하도록 하는 방식으로 보안을 강화 -> 토큰으로 대체
+                .csrf(AbstractHttpConfigurer::disable) // CSRF 보호를 비활성화, CSRF 토큰을 사용하여 클라이언트가 서버에 요청할 때마다 유효한 토큰을 함께 전송해야만 요청이 성공하도록 하는 방식으로 보안을 강화 -> 토큰으로 대체
                 .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션을 사용하지 않고, 상태를 저장하지 않도록 설정(STATLESS)
                 ).authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v2/users/login").permitAll()
-                        .requestMatchers("/api/v2/users/create").permitAll()
+                        .requestMatchers("/api/v2/users/new").permitAll()
                         .requestMatchers("/api/v2/users/me", "/api/v2/users/logout").hasRole("USER")
                         .requestMatchers("/api/v2/users/reissue").permitAll()
-                        // .anyRequest().authenticated() // 이 외의 접근은 인증이 필요
+                        .anyRequest().authenticated() // 이 외의 접근은 인증이 필요
                 )
                 .addFilterBefore(jwtAuthenticationFilterForSpecificUrls(), UsernamePasswordAuthenticationFilter.class);
 
