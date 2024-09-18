@@ -6,7 +6,6 @@ import com.msgs.domain.user.dto.SignUpRequestDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.error.ErrorCode;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,26 +23,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
-//@AutoConfigureMockMvc
+//@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 class UserControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @MockBean UserService userService;
-
-//    @BeforeEach
-//    void setup() {
-//        SignUpRequestDTO signUpDto = SignUpRequestDTO.builder()
-//                .status("M")
-//                .email("temp@email.com")
-//                .phone("01023698745")
-//                .nickname("name")
-//                .password("temp123!")
-//                .confirmPassword("temp123!")
-//                .build();
-//
-//        userService.create(signUpDto);
-//    }
 
     @Test
     @DisplayName("Controller: 회원 가입 성공")
