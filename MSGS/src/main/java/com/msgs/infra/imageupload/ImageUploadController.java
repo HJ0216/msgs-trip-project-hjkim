@@ -1,13 +1,5 @@
 package com.msgs.infra.imageupload;
 
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
-
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -19,8 +11,12 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.util.Base64;
-
 import jakarta.servlet.http.HttpSession;
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 
 public class ImageUploadController {
@@ -40,143 +36,135 @@ public class ImageUploadController {
 //   @Value("${objectStorage.bucketName}")
 //   private String bucketName;
 
-      //String path = "/user-image";
-      //String path = "/review-image";
-   public List<String>  uploadFilesSample2(List<Object> imageList, String pathName ,HttpSession session) throws Exception{
+  //String path = "/user-image";
+  //String path = "/review-image";
+  public List<String> uploadFilesSample2(List<Object> imageList, String pathName,
+      HttpSession session) throws Exception {
 
-      String path = pathName;
-      String originalName;
-      long size;
-      String bucketName = "msgs-file-server";
-      String endPoint = "https://kr.object.ncloudstorage.com";
-      String regionName = "kr-standard";
-      String accessKey = "6fCMolib7QBe1JKwSafq";
-      String secretKey = "miJ3BdZsKPsE3WLliwHPJbJS7qaxby6F6rDiVTJa";
+    String path = pathName;
+    String originalName;
+    long size;
+    String bucketName = "msgs-file-server";
+    String endPoint = "https://kr.object.ncloudstorage.com";
+    String regionName = "kr-standard";
+    String accessKey = "6fCMolib7QBe1JKwSafq";
+    String secretKey = "miJ3BdZsKPsE3WLliwHPJbJS7qaxby6F6rDiVTJa";
 
-      List<String> imageLinkList = new ArrayList<>();
-     // HashMap<String, String> imageKeyLink = new HashMap<>();
+    List<String> imageLinkList = new ArrayList<>();
+    // HashMap<String, String> imageKeyLink = new HashMap<>();
 
+    // S3 client
+    AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+                                       .withEndpointConfiguration(
+                                           new AwsClientBuilder.EndpointConfiguration(endPoint,
+                                               regionName))
+                                       .withCredentials(new AWSStaticCredentialsProvider(
+                                           new BasicAWSCredentials(accessKey, secretKey)))
+                                       .build();
 
-      // S3 client
-      AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, regionName))
-            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-            .build();
-      
+    try {
 
+      for (Object image : imageList) {
+        byte[] byteArr = Base64.decode(
+            image.toString().substring(image.toString().indexOf(",") + 1));
+        UUID uuid = UUID.randomUUID();
+        String newFileName = uuid.toString();
 
-      try {
+        ByteArrayInputStream fileData = new ByteArrayInputStream(byteArr);
 
-      
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(byteArr.length);
+        metadata.setContentType("image/jpeg");
+        metadata.setCacheControl("public, max-age=31536000");
 
-         for (Object image : imageList) {
-            byte[] byteArr = Base64.decode(image.toString().substring(image.toString().indexOf(",") + 1));
-            UUID uuid = UUID.randomUUID();
-            String newFileName = uuid.toString();
-         
-            ByteArrayInputStream fileData = new ByteArrayInputStream(byteArr);
-            
+        // 업로드
+        s3.putObject(
+            new PutObjectRequest(bucketName + path, newFileName, fileData, metadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead)
+        );
 
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(byteArr.length);
-            metadata.setContentType("image/jpeg");
-            metadata.setCacheControl("public, max-age=31536000");
-            
-            
-            // 업로드
-            s3.putObject(
-                  new PutObjectRequest(bucketName + path, newFileName, fileData, metadata)
-                        .withCannedAcl(CannedAccessControlList.PublicRead)
-            );
-
-            String imagePath = s3.getUrl(bucketName + path, newFileName).toString(); // 접근가능한 URL 가져오기
+        String imagePath = s3.getUrl(bucketName + path, newFileName).toString(); // 접근가능한 URL 가져오기
 
 //          imageKeyLink.put(newFileName, imagePath);
-          //imageKeyLink.put("imgPath", imagePath);
-          imageLinkList.add(imagePath);
-            
-         }
-         
-        
+        //imageKeyLink.put("imgPath", imagePath);
+        imageLinkList.add(imagePath);
 
-
-
-      } catch (AmazonS3Exception e) {
-         e.printStackTrace();
-      } catch(SdkClientException e) {
-         e.printStackTrace();
       }
-      
-   
 
 
-      return  imageLinkList;
+    } catch (AmazonS3Exception e) {
+      e.printStackTrace();
+    } catch (SdkClientException e) {
+      e.printStackTrace();
+    }
 
-   }
-   
-   public List<HashMap<String, String>>  uploadFilesSample(List<Object> imageList, String pathName ,HttpSession session) throws Exception{
+    return imageLinkList;
 
-	      String path = pathName;
-	      String originalName;
-	      long size;
-	      String bucketName = "msgs-file-server";
-	      String endPoint = "https://kr.object.ncloudstorage.com";
-	      String regionName = "kr-standard";
-	      String accessKey = "6fCMolib7QBe1JKwSafq";
-	      String secretKey = "miJ3BdZsKPsE3WLliwHPJbJS7qaxby6F6rDiVTJa";
+  }
 
-	      List<HashMap<String, String>> imageLinkList = new ArrayList<>();
-	      HashMap<String, String> imageKeyLink = new HashMap<>();
+  public List<HashMap<String, String>> uploadFilesSample(List<Object> imageList, String pathName,
+      HttpSession session) throws Exception {
 
+    String path = pathName;
+    String originalName;
+    long size;
+    String bucketName = "msgs-file-server";
+    String endPoint = "https://kr.object.ncloudstorage.com";
+    String regionName = "kr-standard";
+    String accessKey = "6fCMolib7QBe1JKwSafq";
+    String secretKey = "miJ3BdZsKPsE3WLliwHPJbJS7qaxby6F6rDiVTJa";
 
-	      // S3 client
-	      AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-	            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, regionName))
-	            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-	            .build();
-	      
+    List<HashMap<String, String>> imageLinkList = new ArrayList<>();
+    HashMap<String, String> imageKeyLink = new HashMap<>();
 
+    // S3 client
+    AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+                                       .withEndpointConfiguration(
+                                           new AwsClientBuilder.EndpointConfiguration(endPoint,
+                                               regionName))
+                                       .withCredentials(new AWSStaticCredentialsProvider(
+                                           new BasicAWSCredentials(accessKey, secretKey)))
+                                       .build();
 
-	      try {
-	    	  
-	    	  int index = 1;
+    try {
 
-	         for (Object image : imageList) {
-	            byte[] byteArr = Base64.decode(image.toString().substring(image.toString().indexOf(",") + 1));
-	            UUID uuid = UUID.randomUUID();
-	            String newFileName = uuid.toString();
-	         
-	            ByteArrayInputStream fileData = new ByteArrayInputStream(byteArr);
-	            
+      int index = 1;
 
-	            ObjectMetadata metadata = new ObjectMetadata();
-	            metadata.setContentLength(byteArr.length);
-	            metadata.setContentType("image/jpeg");
-	            metadata.setCacheControl("public, max-age=31536000");
-	            
-	            
-	            // 업로드
-	            s3.putObject(
-	                  new PutObjectRequest(bucketName + path, newFileName, fileData, metadata)
-	                        .withCannedAcl(CannedAccessControlList.PublicRead)
-	            );
+      for (Object image : imageList) {
+        byte[] byteArr = Base64.decode(
+            image.toString().substring(image.toString().indexOf(",") + 1));
+        UUID uuid = UUID.randomUUID();
+        String newFileName = uuid.toString();
 
-	            String imagePath = s3.getUrl(bucketName + path, newFileName).toString(); // 접근가능한 URL 가져오기
+        ByteArrayInputStream fileData = new ByteArrayInputStream(byteArr);
 
-	          imageKeyLink.put("key" + index, imagePath);
-	          imageLinkList.add(imageKeyLink);
-	          
-	          index++;
-	         }
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(byteArr.length);
+        metadata.setContentType("image/jpeg");
+        metadata.setCacheControl("public, max-age=31536000");
 
-	      } catch (AmazonS3Exception e) {
-	         e.printStackTrace();
-	      } catch(SdkClientException e) {
-	         e.printStackTrace();
-	      }
+        // 업로드
+        s3.putObject(
+            new PutObjectRequest(bucketName + path, newFileName, fileData, metadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead)
+        );
 
-	      return  imageLinkList;
-	   }
+        String imagePath = s3.getUrl(bucketName + path, newFileName).toString(); // 접근가능한 URL 가져오기
+
+        imageKeyLink.put("key" + index, imagePath);
+        imageLinkList.add(imageKeyLink);
+
+        index++;
+      }
+
+    } catch (AmazonS3Exception e) {
+      e.printStackTrace();
+    } catch (SdkClientException e) {
+      e.printStackTrace();
+    }
+
+    return imageLinkList;
+  }
 
 
 }

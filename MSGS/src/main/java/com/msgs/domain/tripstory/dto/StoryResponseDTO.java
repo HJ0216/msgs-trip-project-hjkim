@@ -12,9 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StoryResponseDTO {
-    private Map<String, Object> storyData; //cityName, rating, comment, title
 
-    private List<String> dateList;
-    private Map<Integer, List<StoryBlockDTO>> storyList;
-    private Map<Integer, String> dailyComment;
+  private Map<String, Object> storyData; //cityName, rating, comment, title
+
+  private List<String> dateList;
+  private Map<Integer, List<StoryBlockDTO>> storyList;
+  private Map<Integer, String> dailyComment;
 }

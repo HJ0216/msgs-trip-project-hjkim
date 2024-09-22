@@ -6,18 +6,19 @@ import org.springframework.http.ResponseEntity;
 
 @Getter
 public class ErrorResponse {
-    private String errorMessage;
 
-    @Builder
-    public ErrorResponse(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
+  private final String errorMessage;
 
-    public static ResponseEntity<ErrorResponse> toResponseEntity(ErrorCode errorCode) {
-        return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(ErrorResponse.builder()
-                        .errorMessage(errorCode.getMessage())
-                        .build());
+  @Builder
+  public ErrorResponse(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
 
-    }
+  public static ResponseEntity<ErrorResponse> toResponseEntity(ErrorCode errorCode) {
+    return ResponseEntity.status(errorCode.getHttpStatus())
+                         .body(ErrorResponse.builder()
+                                            .errorMessage(errorCode.getMessage())
+                                            .build());
+
+  }
 }
