@@ -14,9 +14,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaAuditing
 public class MsgsApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MsgsApplication.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(MsgsApplication.class, args);
+  }
 
 }
 

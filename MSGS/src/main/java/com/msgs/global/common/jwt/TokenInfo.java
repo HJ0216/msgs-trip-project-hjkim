@@ -9,8 +9,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class TokenInfo {
-    private String grantType;
-    @NotEmpty
-    private String accessToken;
-    private String refreshToken;
+
+  private String grantType;
+  @NotEmpty
+  private String accessToken;
+  private String refreshToken;
 }
