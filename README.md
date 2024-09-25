@@ -3,15 +3,44 @@
 '1년이 지난 후, 나는 얼마만큼 프로젝트에서 개선할 부분을 찾을 수 있을까?' 라는 작은 의문에서 시작한 공사 중 마실가실입니다.
 
 
-## 🛠️사용한 기술
+## 사용 기술
 * Java 17
 * SpringBoot 3.1.0
 * Spring Security 6.1.0
 * Spring Data JPA
 * MySQL 8.0
 
+## 커밋 규칙
 
-## 📝주요 개선 내용
+### 커밋 메시지 형식
+> 50자를 넘기지 않게 명령형으로 작성  
+> 한국어로 작성  
+> 어떻게 보단 `무엇`을, `왜`에 초점을 두고 작성  
+> Commit Body는 PR에 기재
+```txt
+CommitType : #issueNumber Subject
+
+✨Feat: #-- 로그 기능 추가
+🐛Fix: #-- 에러 메시지 오류 수정
+🎨Style: #-- 회원가입 API 함수명 수정
+```
+
+### 커밋 타입
+
+| 커밋 타입   | 설명                       |
+| ---------- | ---------------------------|
+| ✨Feat     | 기능 추가                  |
+| 🐛Fix      | 버그 수정                  |
+| 🎨Style    | 코드 포맷팅, 함수명 수정 등 |
+| ♻️Refactor | 코드 리펙토링              |
+| 🧹Chore    | 그 외 자잘한 수정          |
+| ✅Test     | 테스트 코드 작성 및 수정    |
+| 📝Docs     | 문서 작성 및 수정          |
+
+
+
+
+## 주요 개선 내용
 ### ERD 수정
 <div>
     <img src="./images/msgs_previous_erd.png" alt="msgs_previous_erd" width="50%"/>
