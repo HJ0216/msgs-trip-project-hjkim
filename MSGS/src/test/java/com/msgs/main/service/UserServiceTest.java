@@ -1,7 +1,7 @@
 package com.msgs.main.service;
 
-import static com.msgs.global.common.error.ErrorCode.DUPLICATED_EMAIL;
-import static com.msgs.global.common.error.ErrorCode.NOT_FOUND_MEMBER;
+import static com.msgs.global.common.error.CustomErrorCode.DUPLICATED_EMAIL;
+import static com.msgs.global.common.error.CustomErrorCode.NOT_FOUND_MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,7 +31,7 @@ class UserServiceTest {
   void userSignUp() throws Exception {
     // given
     SignUpRequestDTO dto = SignUpRequestDTO.builder()
-                                           .status("M")
+                                           .userType("MSGS")
                                            .email("test0907@email.com")
                                            .phone("01075395468")
                                            .nickname("hello")
@@ -55,7 +55,7 @@ class UserServiceTest {
   void emailDuplicateCheck() {
     // given
     SignUpRequestDTO dto = SignUpRequestDTO.builder()
-                                           .status("M")
+                                           .userType("MSGS")
                                            .email("test0907@email.com")
                                            .phone("01013579513")
                                            .nickname("hello")

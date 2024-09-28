@@ -1,24 +1,36 @@
 package com.msgs.global.common.error;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.FieldError;
 
 @Getter
+@Builder
+@RequiredArgsConstructor
 public class ErrorResponse {
 
-  private final String errorMessage;
+  private final String code;
+  private final String message;
 
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private final List<ValidationError> errors;
+
+  @Getter
   @Builder
-  public ErrorResponse(String errorMessage) {
-    this.errorMessage = errorMessage;
-  }
+  @RequiredArgsConstructor
+  public static class ValidationError {
 
-  public static ResponseEntity<ErrorResponse> toResponseEntity(ErrorCode errorCode) {
-    return ResponseEntity.status(errorCode.getHttpStatus())
-                         .body(ErrorResponse.builder()
-                                            .errorMessage(errorCode.getMessage())
-                                            .build());
+    private final String field;
+    private final String message;
 
+    public static ValidationError of(final FieldError fieldError) {
+      return ValidationError.builder()
+                            .field(fieldError.getField())
+                            .message(fieldError.getDefaultMessage())
+                            .build();
+    }
   }
 }

@@ -6,6 +6,7 @@ import com.msgs.domain.user.dto.UserDTO;
 import com.msgs.domain.user.service.SmsService;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.jwt.TokenInfo;
+import jakarta.validation.Valid;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.parser.ParseException;
@@ -31,9 +32,10 @@ public class UserController {
 
   @PostMapping("/new")
   @ResponseStatus(HttpStatus.CREATED)
-  public void create(@RequestBody SignUpRequestDTO dto) {
-    dto.validUserDto();
-    userService.create(dto);
+  // ResponseEntity에서도 status를 지정하고 @ResponseStatus도 있다면 ResponseEntity가 우선순위를 갖
+  public void create(@Valid @RequestBody SignUpRequestDTO signUpRequestDTO) {
+    signUpRequestDTO.validateSignUpRequest();
+    userService.create(signUpRequestDTO);
   }
 
   @PostMapping("/new/sms-verification")

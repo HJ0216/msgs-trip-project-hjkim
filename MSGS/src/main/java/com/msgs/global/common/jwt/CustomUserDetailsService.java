@@ -1,6 +1,6 @@
 package com.msgs.global.common.jwt;
 
-import static com.msgs.global.common.error.ErrorCode.NOT_FOUND_MEMBER;
+import static com.msgs.global.common.error.CustomErrorCode.NOT_FOUND_MEMBER;
 
 import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.repository.UserRepository;

@@ -32,7 +32,7 @@ public class User extends BaseEntity {
   private String status;
 
   @Enumerated(EnumType.STRING)
-  private LoginType loginType;
+  private UserType userType;
 
   @Column(nullable = false)
   private String role;
