@@ -3,6 +3,7 @@ package com.msgs.domain.user.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -14,7 +15,7 @@ import com.msgs.domain.user.dto.LoginRequestDTO;
 import com.msgs.domain.user.dto.SignUpRequestDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
-import com.msgs.global.common.error.ErrorCode;
+import com.msgs.global.common.error.CustomErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ class UserControllerTest {
   void createSuccess() throws Exception {
     // given
     SignUpRequestDTO signUpDto = SignUpRequestDTO.builder()
-                                                 .status("M")
+                                                 .userType("MSGS")
                                                  .email("new@email.com")
                                                  .phone("01023698741")
                                                  .nickname("name")
@@ -64,7 +65,7 @@ class UserControllerTest {
   void createFailDuplicateEmail() throws Exception {
     // given
     SignUpRequestDTO signUpDto = SignUpRequestDTO.builder()
-                                                 .status("M")
+                                                 .userType("MSGS")
                                                  .email("temp@email.com")
                                                  .phone("01023698745")
                                                  .nickname("name")
@@ -73,7 +74,7 @@ class UserControllerTest {
                                                  .build();
 
     // when // then
-    doThrow(new BusinessException(ErrorCode.DUPLICATED_EMAIL))
+    doThrow(new BusinessException(CustomErrorCode.DUPLICATED_EMAIL))
         .when(userService).create(any(SignUpRequestDTO.class));
 
     mockMvc.perform(post("/api/v2/users/new")
@@ -84,6 +85,32 @@ class UserControllerTest {
 
     // 회원 생성 메소드가 호출되었는지 확인
     verify(userService).create(refEq(signUpDto));
+  }
+
+  @Test
+  @DisplayName("Controller: 회원 가입 실패, 잘못된 이메일 형식")
+  void createFailInvalidEmail() throws Exception {
+    // given
+    SignUpRequestDTO signUpRequestDTO = SignUpRequestDTO.builder()
+                                                        .userType("MSGS")
+                                                        .email("email")
+                                                        .phone("01023698745")
+                                                        .nickname("name")
+                                                        .password("temp123!")
+                                                        .confirmPassword("temp123!")
+                                                        .build();
+
+    // when // then
+    mockMvc.perform(post("/api/v2/users/new")
+               .contentType(MediaType.APPLICATION_JSON)
+               .content(objectMapper.writeValueAsString(signUpRequestDTO)))
+           .andExpect(status().isBadRequest())
+           .andExpect(jsonPath("$.errors[0].field").value("email")) // email 필드의 에러 확인
+           .andExpect(
+               jsonPath("$.errors[0].message").value("이메일 형식이 올바르지 않습니다.")); // 에러 메시지 검증
+
+    // 회원 생성 메소드가 호출되었는지 확인
+    verify(userService, never()).create(any(SignUpRequestDTO.class));
   }
 
   @Test
@@ -114,7 +141,7 @@ class UserControllerTest {
                                               .build();
 
     when(userService.login(any(LoginRequestDTO.class)))
-        .thenThrow(new BusinessException(ErrorCode.NOT_FOUND_MEMBER));
+        .thenThrow(new BusinessException(CustomErrorCode.NOT_FOUND_MEMBER));
 
     // when // then
     mockMvc.perform(post("/api/v2/users/login")
@@ -136,7 +163,7 @@ class UserControllerTest {
                                               .build();
 
     when(userService.login(any(LoginRequestDTO.class)))
-        .thenThrow(new BusinessException(ErrorCode.CHECK_LOGIN_ID_OR_PASSWORD));
+        .thenThrow(new BusinessException(CustomErrorCode.CHECK_LOGIN_ID_OR_PASSWORD));
 
     // when // then
     mockMvc.perform(post("/api/v2/users/login")
