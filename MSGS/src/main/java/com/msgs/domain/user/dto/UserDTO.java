@@ -1,7 +1,7 @@
 package com.msgs.domain.user.dto;
 
-import com.msgs.domain.user.domain.LoginType;
 import com.msgs.domain.user.domain.User;
+import com.msgs.domain.user.domain.UserType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +19,7 @@ public class UserDTO {
   // UserEntity
   private Integer id;
   private String status;
-  private LoginType loginType;
+  private UserType userType;
   private String role;
   private String email;
   private String phone;
@@ -33,7 +33,7 @@ public class UserDTO {
     return UserDTO.builder()
                   .id(u.getId())
                   .status(u.getStatus())
-                  .loginType(u.getLoginType())
+                  .userType(u.getUserType())
                   .role(u.getRole())
                   .email(u.getEmail())
                   .phone(u.getPhone())

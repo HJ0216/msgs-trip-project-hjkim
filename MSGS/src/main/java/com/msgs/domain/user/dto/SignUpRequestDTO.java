@@ -1,6 +1,6 @@
 package com.msgs.domain.user.dto;
 
-import static com.msgs.global.common.error.ErrorCode.USERTYPE_VALIDATION;
+import static com.msgs.global.common.error.CustomErrorCode.USERTYPE_VALIDATION;
 
 import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.domain.UserType;
@@ -59,7 +59,7 @@ public class SignUpRequestDTO {
                .build();
   }
 
-  public boolean validateSignUpRequuest() {
+  public boolean validateSignUpRequest() {
     try {
       validateUserType();
       isPasswordConfirmed();
