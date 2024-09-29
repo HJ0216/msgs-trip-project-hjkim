@@ -1,9 +1,9 @@
 package com.msgs.main.service;
 
-import static com.msgs.global.common.error.CustomErrorCode.DUPLICATED_EMAIL;
-import static com.msgs.global.common.error.CustomErrorCode.NOT_FOUND_MEMBER;
+import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
+import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.msgs.domain.user.domain.User;
@@ -73,5 +73,4 @@ class UserServiceTest {
     // then
     assertEquals(DUPLICATED_EMAIL, exception.getErrorCode());
   }
-
 }

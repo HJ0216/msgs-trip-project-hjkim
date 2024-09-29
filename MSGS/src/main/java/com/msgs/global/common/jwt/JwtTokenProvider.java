@@ -1,11 +1,11 @@
 package com.msgs.global.common.jwt;
 
-import static com.msgs.global.common.error.CustomErrorCode.EXPIRED_JWT;
-import static com.msgs.global.common.error.CustomErrorCode.ILLEGAL_STATE_JWT;
-import static com.msgs.global.common.error.CustomErrorCode.MALFORMED_JWT;
-import static com.msgs.global.common.error.CustomErrorCode.NOT_FOUND_AUTHORITY;
-import static com.msgs.global.common.error.CustomErrorCode.NOT_FOUND_MEMBER;
-import static com.msgs.global.common.error.CustomErrorCode.UNSUPPORTED_JWT;
+import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
+import static com.msgs.domain.user.exception.UserErrorCode.ILLEGAL_STATE_JWT;
+import static com.msgs.domain.user.exception.UserErrorCode.MALFORMED_JWT;
+import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_AUTHORITY;
+import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
+import static com.msgs.domain.user.exception.UserErrorCode.UNSUPPORTED_JWT;
 
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.redis.RedisUtil;

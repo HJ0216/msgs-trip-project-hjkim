@@ -1,9 +1,8 @@
 package com.msgs.global.util;
 
-import static com.msgs.global.common.error.CustomErrorCode.NICKNAME_VALIDATION;
-import static com.msgs.global.common.error.CustomErrorCode.PASSWORD_CONFIRM_VALIDATION;
-import static com.msgs.global.common.error.CustomErrorCode.PASSWORD_VALIDATION;
-import static com.msgs.global.common.error.CustomErrorCode.PHONE_NUMBER_VALIDATION;
+import static com.msgs.domain.user.exception.UserErrorCode.NICKNAME_VALIDATION;
+import static com.msgs.domain.user.exception.UserErrorCode.PASSWORD_VALIDATION;
+import static com.msgs.domain.user.exception.UserErrorCode.PHONE_NUMBER_VALIDATION;
 
 import com.msgs.global.common.error.BusinessException;
 import java.util.regex.Matcher;
@@ -47,12 +46,6 @@ public class ValidationUtils {
 
     if (!matcher.matches()) {
       throw new BusinessException(PHONE_NUMBER_VALIDATION);
-    }
-  }
-
-  public static void confirmPassword(String password, String confirmPassword) {
-    if (!password.equals(confirmPassword)) {
-      throw new BusinessException(PASSWORD_CONFIRM_VALIDATION);
     }
   }
 }

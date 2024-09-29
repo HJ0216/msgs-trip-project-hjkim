@@ -1,6 +1,6 @@
 package com.msgs.global.common.jwt;
 
-import static com.msgs.global.common.error.CustomErrorCode.LOGOUT_MEMBER;
+import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
 
 import com.msgs.global.common.error.BusinessException;
 import jakarta.servlet.FilterChain;
