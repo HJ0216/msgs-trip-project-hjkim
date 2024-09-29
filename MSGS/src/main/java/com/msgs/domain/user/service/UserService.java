@@ -1,11 +1,11 @@
 package com.msgs.domain.user.service;
 
-import static com.msgs.global.common.error.CustomErrorCode.DUPLICATED_EMAIL;
-import static com.msgs.global.common.error.CustomErrorCode.INVALID_ACCESS_TOKEN;
-import static com.msgs.global.common.error.CustomErrorCode.LOGOUT_MEMBER;
-import static com.msgs.global.common.error.CustomErrorCode.NOT_FOUND_MEMBER;
-import static com.msgs.global.common.error.CustomErrorCode.PASSWORD_CONFIRM_VALIDATION;
-import static com.msgs.global.common.error.CustomErrorCode.VALID_ACCESS_TOKEN;
+import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
+import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
+import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
+import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
+import static com.msgs.domain.user.exception.UserErrorCode.PASSWORD_CONFIRM_VALIDATION;
+import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
 
 import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.dto.LoginRequestDTO;

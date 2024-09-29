@@ -34,6 +34,7 @@ CommitType : #issueNumber Subject
 | 🎨Style    | 코드 포맷팅, 함수명 수정 등 |
 | ♻️Refactor | 코드 리펙토링              |
 | 🧹Chore    | 그 외 자잘한 수정          |
+| 💡Comment  | 주석 추가 및 수정          |
 | ✅Test     | 테스트 코드 작성 및 수정    |
 | 📝Docs     | 문서 작성 및 수정          |
 

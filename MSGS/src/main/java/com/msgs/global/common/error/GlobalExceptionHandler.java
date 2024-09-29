@@ -20,14 +20,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException e) {
-    ErrorCode errorCode = CommonErrorCode.BAD_REQUEST;
+    ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
     return handleExceptionInternal(errorCode, e.getMessage());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Object> handleMethodArgumentNotValid(
       MethodArgumentNotValidException e) {
-    ErrorCode errorCode = CommonErrorCode.BAD_REQUEST;
+    ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
     return handleExceptionInternal(e, errorCode);
   }
 
