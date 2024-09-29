@@ -1,5 +1,8 @@
 package com.msgs.domain.user.controller;
 
+import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PASSWORD;
+import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
+import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.doThrow;
@@ -15,7 +18,6 @@ import com.msgs.domain.user.dto.LoginRequestDTO;
 import com.msgs.domain.user.dto.SignUpRequestDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
-import com.msgs.global.common.error.CustomErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +28,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
-//@AutoConfigureMockMvc(addFilters = false)
 @AutoConfigureMockMvc
 class UserControllerTest {
 
@@ -74,14 +75,15 @@ class UserControllerTest {
                                                  .build();
 
     // when // then
-    doThrow(new BusinessException(CustomErrorCode.DUPLICATED_EMAIL))
+    doThrow(new BusinessException(DUPLICATED_EMAIL))
         .when(userService).create(any(SignUpRequestDTO.class));
 
     mockMvc.perform(post("/api/v2/users/new")
                .contentType(MediaType.APPLICATION_JSON)
                .content(objectMapper.writeValueAsString(signUpDto)))
            .andExpect(status().isBadRequest())
-           .andExpect(jsonPath("$.errorMessage").value("이미 존재하는 이메일 입니다."));
+           .andExpect(jsonPath("$.code").value("DUPLICATED_EMAIL"))
+           .andExpect(jsonPath("$.message").value("이미 존재하는 이메일 입니다."));
 
     // 회원 생성 메소드가 호출되었는지 확인
     verify(userService).create(refEq(signUpDto));
@@ -93,7 +95,7 @@ class UserControllerTest {
     // given
     SignUpRequestDTO signUpRequestDTO = SignUpRequestDTO.builder()
                                                         .userType("MSGS")
-                                                        .email("email")
+                                                        .email("email@email")
                                                         .phone("01023698745")
                                                         .nickname("name")
                                                         .password("temp123!")
@@ -141,14 +143,15 @@ class UserControllerTest {
                                               .build();
 
     when(userService.login(any(LoginRequestDTO.class)))
-        .thenThrow(new BusinessException(CustomErrorCode.NOT_FOUND_MEMBER));
+        .thenThrow(new BusinessException(NOT_FOUND_MEMBER));
 
     // when // then
     mockMvc.perform(post("/api/v2/users/login")
                .contentType(MediaType.APPLICATION_JSON)
                .content(objectMapper.writeValueAsString(loginDto)))
            .andExpect(status().isNotFound())
-           .andExpect(jsonPath("$.errorMessage").value("존재하지 않는 회원입니다."));
+           .andExpect(jsonPath("$.code").value("NOT_FOUND_MEMBER"))
+           .andExpect(jsonPath("$.message").value("존재하지 않는 회원입니다."));
 
     verify(userService).login(refEq(loginDto));
   }
@@ -163,14 +166,15 @@ class UserControllerTest {
                                               .build();
 
     when(userService.login(any(LoginRequestDTO.class)))
-        .thenThrow(new BusinessException(CustomErrorCode.CHECK_LOGIN_ID_OR_PASSWORD));
+        .thenThrow(new BusinessException(CHECK_LOGIN_ID_OR_PASSWORD));
 
     // when // then
     mockMvc.perform(post("/api/v2/users/login")
                .contentType(MediaType.APPLICATION_JSON)
                .content(objectMapper.writeValueAsString(loginDto)))
            .andExpect(status().isUnauthorized())
-           .andExpect(jsonPath("$.errorMessage").value("아이디 또는 비밀번호를 확인해주세요."));
+           .andExpect(jsonPath("$.code").value("CHECK_LOGIN_ID_OR_PASSWORD"))
+           .andExpect(jsonPath("$.message").value("아이디 또는 비밀번호를 확인해주세요."));
 
     verify(userService).login(refEq(loginDto));
   }
