@@ -48,8 +48,11 @@ public class SignUpRequestDTO {
   @NotBlank(message = "비밀번호 확인을 입력해 주세요.")
   private String confirmPassword;
 
-  @Builder.Default
-  private String role = "USER";
+  private String role;
+
+  public String getRole() {
+    return role == null || role.isEmpty() ? "USER" : role;
+  }
 
   public User toEntity() {
     return User.builder()
@@ -59,7 +62,7 @@ public class SignUpRequestDTO {
                .phone(phone)
                .nickname(nickname)
                .password(password)
-               .role(role)
+               .role(getRole())
                .build();
   }
 
