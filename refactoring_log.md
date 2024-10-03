@@ -6,7 +6,7 @@
 ## 📒마실가실 리팩토링 일지
 | <div style="width:70px">Date</div> | <div>Description</div> |
 | ---------- | --- |
-| 2024.09.29 | 회원가입 입력값 검증을 GlobalUtils → DTO 내 검증으로 변경 |
+| 2024.09.29 | [회원가입 입력값 검증을 GlobalUtils → DTO 내 검증으로 변경](#회원가입-입력값-검증) |
 | 2024.09.18 | [Spring Security url별 필터 적용 기능 추가](#spring-security-특정-url을-제외한-필터-적용) |
 | 2024.09.17 | Custom Error Response 설정 |
 | 2024.09.16 | 로그아웃 기능 추가 |
@@ -14,12 +14,13 @@
 | 2024.09.03 | [도메인형 패키지 구조로 변경](#패키지-구조-변경) |
 | 2024.08.23 | 로그아웃 구현을 위한 Redis 설정 추가 |
 | 2024.08.11 | Spring Security, JWT 코드 리팩토링 |
-| 2024.08.10 | [CustomException 추가](#custom-error-code-작성) |
+| 2024.08.10 | CustomException 추가 |
 | 2024.08.05 | [일부 API 테스트 코드 추가](#test-code-추가) |
 | 2024.08.04 | [일부 기존 API → REST API 형식으로 수정](#rest-api-구현) |
 | 2024.07.28 | [Entity 개선](#entity-개선) |
-| 2024.07.27 | 환경 설정(로컬 DB 연결 및 JPA 설정) |
-|            | [ERD 수정](#erd-수정) |
+| 2024.07.27 | 환경 설정(로컬 DB 연결 및 JPA 설정) <br/> [ERD 수정](#erd-수정) |
+
+
 
 ### ERD 수정
 <div>
@@ -155,6 +156,47 @@ public class UserServiceTest {
 ```
 
 
+
+### 패키지 구조 변경
+> 도메인형 + 계층형 -> 도메인형으로 통일
+```txt
+├─domain
+│  ├─tripschedule
+│  │  ├─controller
+│  │  ├─domain
+│  │  ├─dto
+│  │  ├─exception
+│  │  ├─repository
+│  │  └─service
+│  ├─tripstory
+│  │  ├─controller
+│  │  ├─domain
+│  │  ├─dto
+│  │  ├─exception
+│  │  ├─repository
+│  │  └─service
+│  └─user
+│      ├─controller
+│      ├─domain
+│      ├─dto
+│      ├─exception
+│      ├─repository
+│      └─service
+├─global
+│  ├─common
+│  │  ├─error
+│  │  ├─jwt
+│  │  ├─model
+│  │  └─redis
+│  ├─config
+│  └─util
+└─infra
+    ├─chatbot
+    └─imageupload
+```
+
+
+
 ### Refresh Token을 활용한 Access Token 재발급 기능 추가
 ```java
 public TokenInfo reissue(TokenInfo reissueRequestDto) {
@@ -252,76 +294,73 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 ```
 
 
-### Custom Error Code 작성
+
+### 회원가입 입력값 검증
 ```java
+@Builder
+@AllArgsConstructor
 @Getter
-public enum ErrorCode {
-    // 회원 가입
-    EMAIL_VALIDATION(HttpStatus.BAD_REQUEST, "이메일 형식이 맞지 않습니다."),
-    DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일 입니다."),
-    PASSWORD_VALIDATION(HttpStatus.BAD_REQUEST, "비밀번호 형식이 맞지 않습니다."),
-    NICKNAME_VALIDATION(HttpStatus.BAD_REQUEST, "닉네임 형식이 맞지 않습니다."),
-    PHONE_NUMBER_VALIDATION(HttpStatus.BAD_REQUEST, "휴대폰 형식이 맞지 않습니다."),
-    PASSWORD_CONFIRM_VALIDATION(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인이 맞지 않습니다."),
+public class SignUpRequestDTO {
 
+  @NotNull(message = "회원 타입은 필수 값입니다.")
+  private String userType;
 
-    // 로그인
-    CHECK_LOGIN_ID_OR_PASSWORD(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호를 확인해주세요."),
-    NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
+  @NotBlank(message = "이메일을 입력해 주세요.")
+  @Pattern(regexp = EMAIL_REGEX, message = "이메일 형식이 올바르지 않습니다.")
+  private String email;
 
+  @NotBlank(message = "전화번호를 입력해 주세요.")
+  @Pattern(regexp = PHONE_REGEX, message = "전화번호 형식이 올바르지 않습니다.")
+  private String phone;
 
-    // JWT
-    MALFORMED_JWT(HttpStatus.BAD_REQUEST, "잘못된 JWT 형식입니다."),
-    EXPIRED_JWT(HttpStatus.BAD_REQUEST, "만료된 JWT 토큰입니다."),
-    UNSUPPORTED_JWT(HttpStatus.BAD_REQUEST, "지원하지 않은 JWT 서명입니다."),
-    ILLEGAL_STATE_JWT(HttpStatus.BAD_REQUEST, "JWT 처리 중 오류가 발생하였습니다."),
-    VALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "Access Token의 유효기간이 남아있습니다."),
-    LOGOUT_MEMBER(HttpStatus.NOT_FOUND, "로그아웃한 회원입니다."),
-    INVALID_ACCESS_TOKEN(HttpStatus.NOT_FOUND, "유효하지 않은 Access Token입니다."),
-    INVALID_REFRESH_TOKEN(HttpStatus.NOT_FOUND, "유효하지 않은 Refresh Token입니다."),
-    NOT_FOUND_AUTHORITY(HttpStatus.NOT_FOUND, "존재하지 않는 권한입니다."),
-    ;
+  @Pattern(regexp = NICKNAME_REGEX, message = "닉네임 형식이 올바르지 않습니다.")
+  private String nickname;
+
+  @NotBlank(message = "비밀번호를 입력해 주세요.")
+  @Pattern(regexp = PASSWORD_REGEX, message = "비밀번호 형식이 올바르지 않습니다.")
+  private String password;
+
+  @NotBlank(message = "비밀번호 확인을 입력해 주세요.")
+  private String confirmPassword;
+
+  @Builder.Default
+  private String role = "USER";
+
+  public User toEntity() {
+    return User.builder()
+               .status(userType.substring(0, 1).toUpperCase())
+               .userType(UserType.valueOf(userType.toUpperCase()))
+               .email(email)
+               .phone(phone)
+               .nickname(nickname)
+               .password(password)
+               .role(role)
+               .build();
+  }
+
+  public boolean validateSignUpRequest() {
+    try {
+      validateUserType();
+      isPasswordConfirmed();
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private void validateUserType() {
+    if (!UserType.isValidUserType(userType)) {
+      throw new BusinessException(USERTYPE_VALIDATION);
+    }
+  }
+
+  @AssertTrue(message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.")
+  private boolean isPasswordConfirmed() {
+    return password.equals(confirmPassword);
+  }
 }
 ```
 
-
-### 패키지 구조 변경
-> 도메인형 + 계층형 -> 도메인형으로 통일
-```txt
-├─domain
-│  ├─tripschedule
-│  │  ├─controller
-│  │  ├─domain
-│  │  ├─dto
-│  │  ├─exception
-│  │  ├─repository
-│  │  └─service
-│  ├─tripstory
-│  │  ├─controller
-│  │  ├─domain
-│  │  ├─dto
-│  │  ├─exception
-│  │  ├─repository
-│  │  └─service
-│  └─user
-│      ├─controller
-│      ├─domain
-│      ├─dto
-│      ├─exception
-│      ├─repository
-│      └─service
-├─global
-│  ├─common
-│  │  ├─error
-│  │  ├─jwt
-│  │  ├─model
-│  │  └─redis
-│  ├─config
-│  └─util
-└─infra
-    ├─chatbot
-    └─imageupload
-```
 
 
 ### 정적 코드 분석 도구, SonarQube 추가

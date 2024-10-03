@@ -20,6 +20,7 @@ import com.msgs.global.common.redis.RedisUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -42,21 +44,28 @@ public class UserService {
   public void create(SignUpRequestDTO signUpRequestDTO) {
     emailDuplicateCheck(signUpRequestDTO.getEmail());
     userRepository.save(signUpRequestDTO.toEntity());
+
+    log.info("User successfully created for email: {}", signUpRequestDTO.getEmail());
   }
 
   public void emailDuplicateCheck(String email) {
     if (userRepository.findByEmail(email).isPresent()) {
+      log.warn("Email duplication check failed. Email: {}", email);
       throw new BusinessException(DUPLICATED_EMAIL);
     }
   }
 
   public TokenInfo login(LoginRequestDTO loginRequestDTO) {
     User user = userRepository.findByEmail(loginRequestDTO.getEmail()).orElseThrow(
-        () -> new BusinessException(NOT_FOUND_MEMBER));
+        () -> {
+          log.warn("User not found for email: {}", loginRequestDTO.getEmail());
+          throw new BusinessException(NOT_FOUND_MEMBER);
+        });
 
     // 비밀번호 일치 여부 비교
     // TODO: 240915, passwordEncoder 적용
     if (!loginRequestDTO.getPassword().equals(user.getPassword())) {
+      log.warn("Password validation failed for user: {}", loginRequestDTO.getEmail());
       throw new BusinessException(PASSWORD_CONFIRM_VALIDATION);
     }
 
@@ -74,6 +83,8 @@ public class UserService {
 
     TokenInfo tokenInfo = jwtTokenProvider.generateToken(userDetails);
 
+    log.info("Generating token for user: {}", user.getEmail());
+
     return tokenInfo;
   }
 
@@ -81,7 +92,10 @@ public class UserService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
-        () -> new BusinessException(NOT_FOUND_MEMBER));
+        () -> {
+          log.warn("User not found for email: {}", authentication.getName());
+          throw new BusinessException(NOT_FOUND_MEMBER);
+        });
 
     return UserDTO.toUserDTO(user);
   }
@@ -89,17 +103,24 @@ public class UserService {
   public TokenInfo reissue(TokenInfo reissueRequestDto) {
     try {
       jwtTokenProvider.getExpiration(reissueRequestDto.getAccessToken());
+
+      log.warn("Valid access token used for reissue: {}", reissueRequestDto.getAccessToken());
       throw new BusinessException(VALID_ACCESS_TOKEN);
     } catch (ExpiredJwtException e) {
       // Redis에 Refresh Token 존재 확인
       boolean hasStoredRefreshToken = redisUtil.hasKey("RT:" + reissueRequestDto.getRefreshToken());
       if (!hasStoredRefreshToken) {
+        log.warn("Refresh token not found or expired in Redis. RefreshToken: {}",
+            reissueRequestDto.getRefreshToken());
         throw new BusinessException(LOGOUT_MEMBER);
       }
 
       String email = (String) redisUtil.get("RT:" + reissueRequestDto.getRefreshToken());
       User user = userRepository.findByEmail(email).orElseThrow(
-          () -> new BusinessException(NOT_FOUND_MEMBER));
+          () -> {
+            log.warn("User not found for email: {}", email);
+            throw new BusinessException(NOT_FOUND_MEMBER);
+          });
 
       // AccessToken 재발급
 
@@ -111,12 +132,15 @@ public class UserService {
           Set.of(SecurityUtils.convertToAuthority(user.getRole()))
       );
 
+      log.info("Successfully reissued access token for user: {}", user.getEmail());
       return jwtTokenProvider.generateAccessToken(userDetails);
     }
   }
 
   public void logout(TokenInfo logoutRequestDto) {
     if (!jwtTokenProvider.isValidAccessToken(logoutRequestDto.getAccessToken())) {
+      log.warn("Invalid access token detected during logout: {}",
+          logoutRequestDto.getAccessToken());
       throw new BusinessException(INVALID_ACCESS_TOKEN);
     }
 
@@ -126,5 +150,7 @@ public class UserService {
 
     Long expiration = jwtTokenProvider.getExpiration(logoutRequestDto.getAccessToken());
     redisUtil.setBlackList("AT:" + logoutRequestDto.getAccessToken(), "logout", expiration);
+
+    log.info("Logout successful for accessToken: {}", logoutRequestDto.getAccessToken());
   }
 }
