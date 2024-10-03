@@ -6,6 +6,7 @@
 ## 📒마실가실 리팩토링 일지
 | <div style="width:70px">Date</div> | <div>Description</div> |
 | ---------- | --- |
+| 2024.10.03 | [로그 설정 추가](#로그-설정-추가) |
 | 2024.09.29 | [회원가입 입력값 검증을 GlobalUtils → DTO 내 검증으로 변경](#회원가입-입력값-검증) |
 | 2024.09.18 | [Spring Security url별 필터 적용 기능 추가](#spring-security-특정-url을-제외한-필터-적용) |
 | 2024.09.17 | Custom Error Response 설정 |
@@ -357,6 +358,42 @@ public class SignUpRequestDTO {
   @AssertTrue(message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.")
   private boolean isPasswordConfirmed() {
     return password.equals(confirmPassword);
+  }
+}
+```
+
+
+
+### 로그 설정 추가
+```java
+@Slf4j
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
+public class UserService {
+  public TokenInfo login(LoginRequestDTO loginRequestDTO) {
+    User user = userRepository.findByEmail(loginRequestDTO.getEmail()).orElseThrow(
+        () -> {
+          log.warn("User not found for email: {}", loginRequestDTO.getEmail());
+          throw new BusinessException(NOT_FOUND_MEMBER);
+        });
+
+    if (!loginRequestDTO.getPassword().equals(user.getPassword())) {
+      log.warn("Password validation failed for user: {}", loginRequestDTO.getEmail());
+      throw new BusinessException(PASSWORD_CONFIRM_VALIDATION);
+    }
+
+    Authentication authentication = authenticationManagerBuilder
+        .getObject()
+        .authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+
+    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+    TokenInfo tokenInfo = jwtTokenProvider.generateToken(userDetails);
+
+    log.info("Generating token for user: {}", user.getEmail());
+
+    return tokenInfo;
   }
 }
 ```
