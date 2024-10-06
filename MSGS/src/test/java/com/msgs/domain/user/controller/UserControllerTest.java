@@ -4,6 +4,7 @@ import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PAS
 import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -56,9 +57,12 @@ class UserControllerTest {
                .contentType(MediaType.APPLICATION_JSON)
                .content(objectMapper.writeValueAsString(signUpDto)))
            .andExpect(status().isCreated());
+    // objectMapper.writeValueAsString(signUpDto)
+    // DTO 객체를 JSON 문자열로 변환한 후, 이를 HTTP 요청으로 보냄
+    // signUpDto의 값들이 변형되지 않지만, userService.create()가 호출될 때는 새로운 인스턴스가 생성
 
     // 회원 생성 메소드가 호출되었는지 확인
-    verify(userService).create(refEq(signUpDto));
+    verify(userService).create(eq(signUpDto));
   }
 
   @Test

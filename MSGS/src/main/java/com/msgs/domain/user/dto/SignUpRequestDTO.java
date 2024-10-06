@@ -9,6 +9,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -85,5 +86,27 @@ public class SignUpRequestDTO {
   @AssertTrue(message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.")
   private boolean isPasswordConfirmed() {
     return password.equals(confirmPassword);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof SignUpRequestDTO)) {
+      return false;
+    }
+    SignUpRequestDTO that = (SignUpRequestDTO) o;
+    return Objects.equals(userType, that.userType) &&
+        Objects.equals(email, that.email) &&
+        Objects.equals(phone, that.phone) &&
+        Objects.equals(nickname, that.nickname) &&
+        Objects.equals(password, that.password) &&
+        Objects.equals(confirmPassword, that.confirmPassword);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(userType, email, phone, nickname, password, confirmPassword);
   }
 }
