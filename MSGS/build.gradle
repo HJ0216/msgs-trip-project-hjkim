@@ -1,184 +1,227 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.1.0'
-	id 'io.spring.dependency-management' version '1.1.0'
-	id 'com.github.node-gradle.node' version '4.0.0'
-	id "org.sonarqube" version "5.0.0.4638"
-	id 'jacoco'
+    id 'java'
+    id 'org.springframework.boot' version '3.1.0'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'com.github.node-gradle.node' version '4.0.0'
+    id "org.sonarqube" version "5.0.0.4638"
+    id 'jacoco'
+    id "org.asciidoctor.jvm.convert" version "3.3.2" // AsciiDoc 문서를 HTML, PDF, ePub 등 다양한 포맷으로 변환
 }
 
+// 프로젝트 기본 정보
 group = 'com.msgs'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    asciidoctorExt // asciidoctorExt에 대한 종속성 구성 선언
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.238'
-	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-aws', version: '2.2.5.RELEASE'
-	implementation 'org.json:json:20230227'
-
-	implementation 'com.vladmihalcea:hibernate-types-60:2.20.0'
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-	// validation
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-	// security
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.security:spring-security-config'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-
-	// jwt
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
-	// redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
 
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools:3.0.4'
-	runtimeOnly 'com.mysql:mysql-connector-j'
-	annotationProcessor 'org.projectlombok:lombok'
-	
-	implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
+    // JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'com.vladmihalcea:hibernate-types-60:2.20.0'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-	implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+    // AWS
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.238'
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.5.RELEASE'
+
+
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-config'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+
+    // jwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+
+    // Spring REST Docs
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    // Spring REST Docs로 생성된 AsciiDoc 형식의 문서를 최종적으로 HTML이나 PDF 같은 문서 파일로 변환하기 위해 사용되는 라이브러리
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    // MockMvc를 사용한 테스트에서 API 문서를 생성할 때 사용
+    // MockMvc: Spring MVC 애플리케이션을 실제 서버 없이 테스트할 수 있게 해주는 도구
+    testImplementation 'org.springframework.restdocs:spring-restdocs-restassured'
+    // REST Assured를 사용한 API 테스트에서 문서를 생성할 때 사용
+    // REST Assured: REST API를 테스트하기 위해 자주 사용되는 라이브러리, HTTP 요청 및 응답을 간단하게 작성하고 확인할 수 있음
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    // Java에서 JSON 데이터를 간단하게 다루기 위한 경량 라이브러리
+
+
+    // Database
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+
+    // Utilities
+    developmentOnly 'org.springframework.boot:spring-boot-devtools:3.0.4'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.json:json:20230227'
+    implementation 'commons-io:commons-io:2.11.0'
+
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 
 //  NCP SMS API
-	// implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	// implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
-	// annotationProcessor 'org.projectlombok:lombok'
-	// implementation 'com.google.code.gson:gson:2.8.5'
-	implementation group: 'net.sf.json-lib', name: 'json-lib', version: '2.4', classifier: 'jdk15'
-	implementation 'com.google.code.gson:gson:2.8.7'
+//    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+//    implementation 'com.google.code.gson:gson:2.8.5'
+//    implementation 'net.sf.json-lib:json-lib:2.4:jdk15'
+    implementation 'com.google.code.gson:gson:2.8.7'
 
-	// chat bot
-	implementation 'org.springframework.boot:spring-boot-starter-websocket'
-	implementation 'org.springframework:spring-messaging:5.3.9'
+    // chat bot
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework:spring-messaging:5.3.9'
 }
 
 jacoco {
-	toolVersion = "0.8.8"
-	// reportsDir = file("$buildDir/customJacocoReportDir")
+    toolVersion = "0.8.8"
 }
 
 jacocoTestReport {
-	reports {
-		xml {
-			enabled false
-		}
-		csv {
-				enabled false
-		}
-		html {
-			enabled true
-		}
-
-		xml.destination file(project.layout.buildDirectory.dir("jacoco/index.xml")) as File
-		csv.destination file(project.layout.buildDirectory.dir("jacoco/index.csv")) as File
-		html.destination file(project.layout.buildDirectory.dir("jacoco/index.html")) as File
-	}
-	getClassDirectories().setFrom(
-			files(classDirectories.files.collect {
-				fileTree(
-						dir: it,
-						exclude: [
-								'**/Application.class',
-								'**/dto/*.class',
-								'**/vo/*.class'
-						]
-				)
-			}
-			)
-	)
-	finalizedBy 'jacocoTestCoverageVerification'
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.enabled true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/html')
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: ['**/Application.class', '**/dto/*.class'])
+        }))
+    }
+    finalizedBy 'jacocoTestCoverageVerification'
 }
 
 jacocoTestCoverageVerification {
-	violationRules {
-		rule {
-			enabled = true
-			element = 'CLASS'
+    violationRules {
+        rule {
+            enabled = true
+            element = 'CLASS'
 
-			limit {
-				counter = 'LINE'
-				value = 'COVEREDRATIO'
-				minimum = 0.00
-			}
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.00
+            }
 
-			limit {
-				counter = 'METHOD'
-				value = 'COVEREDRATIO'
-				minimum = 0.00
-			}
-		}
-	}
+            limit {
+                counter = 'METHOD'
+                value = 'COVEREDRATIO'
+                minimum = 0.00
+            }
+        }
+    }
+}
+
+
+ext { // 스니펫 생성 디렉토리 설정
+    snippetsDir = file('build/generated-snippets')
 }
 
 test {
-	useJUnitPlatform()
-	finalizedBy 'jacocoTestReport'
+    useJUnitPlatform()
+    outputs.dir snippetsDir // 테스트가 수행된 후 Spring REST Docs에서 생성한 스니펫들이 이 디렉토리에 저장
+    finalizedBy 'jacocoTestReport'
 }
 
 def frontendDir = "$projectDir/src/main/webapp"
 
 sourceSets {
-	main {
-		resources {
-			srcDirs = ["$projectDir/src/main/resources"]
-		}
-	}
+    main {
+        resources {
+            srcDirs = ["$projectDir/src/main/resources"]
+        }
+    }
 }
 
-processResources {
-	dependsOn "copyReactBuildFiles"
+//processResources { // 프로젝트의 리소스 파일들을 처리(복사 또는 변환)하는 역할
+//    dependsOn "copyReactBuildFiles"
+//}
+//
+//task installReact(type: Exec) {
+//    workingDir "$frontendDir"
+//    inputs.dir "$frontendDir"
+//    group = BasePlugin.BUILD_GROUP
+//    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+//        commandLine "npm.cmd", "audit", "fix"
+//        commandLine 'npm.cmd', 'install', "--legacy-peer-deps"
+//    } else {
+//        commandLine "npm", "audit", "fix"
+//        commandLine 'npm', 'install', "--legacy-peer-deps"
+//    }
+//}
+//
+//task buildReact(type: Exec) {
+//    dependsOn "installReact"
+//    workingDir "$frontendDir"
+//    inputs.dir "$frontendDir"
+//    group = BasePlugin.BUILD_GROUP
+//    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+//        commandLine "npm.cmd", "run-script", "build"
+//    } else {
+//        commandLine "npm", "run-script", "build"
+//    }
+//}
+//
+//task copyReactBuildFiles(type: Copy) {
+//    dependsOn "buildReact"
+//    from "$frontendDir/build"
+//    into "$buildDir/resources/main/static"
+//}
+
+
+asciidoctor { // asciidoctor 테스크 설정
+    inputs.dir snippetsDir
+    // Spring REST Docs가 테스트 실행 후에 생성하는 스니펫 파일(예: 요청/응답, cURL 명령어 등)이 저장되는 디렉토리
+    configurations 'asciidoctorExt'
+    // asciidoctor 작업에 대해 추가적인 설정을 적용하기 위해 사용되는 설정
+    // Spring REST Docs가 테스트를 통해 생성한 스니펫을 가져와, Asciidoctor가 문서로 변환할 수 있도록 함
+    dependsOn test
+    // test 테스크가 먼저 실행된 후에 asciidoctor 테스크가 실행되도록 하여,
+    // 테스트가 완료된 후 생성된 스니펫을 사용해 API 문서를 빌드할 수 있도록 보장
 }
 
-task installReact(type: Exec) {
-	workingDir "$frontendDir"
-	inputs.dir "$frontendDir"
-	group = BasePlugin.BUILD_GROUP
-	if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-		commandLine "npm.cmd", "audit", "fix"
-		commandLine 'npm.cmd', 'install', "--legacy-peer-deps"
-	} else {
-		commandLine "npm", "audit", "fix"
-		commandLine 'npm', 'install', "--legacy-peer-deps"
-	}
+task copyDocument(type: Copy) {
+    dependsOn asciidoctor
+    from file("build/docs/asciidoc")
+    // resources/static/docs로 복사하여 서버가 돌아가고 있을때 /docs/index.html로 접속하면 볼수 있음
+    into file("src/main/resources/static/docs")
 }
 
-task buildReact(type: Exec) {
-	dependsOn "installReact"
-	workingDir "$frontendDir"
-	inputs.dir "$frontendDir"
-	group = BasePlugin.BUILD_GROUP
-	if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-		commandLine "npm.cmd", "run-script", "build"
-	} else {
-		commandLine "npm", "run-script", "build"
-	}
+build {
+    dependsOn copyDocument
 }
 
-task copyReactBuildFiles(type: Copy) {
-	dependsOn "buildReact"
-	from "$frontendDir/build"
-	into "$buildDir/resources/main/static"
+bootJar {
+    dependsOn asciidoctor
+    from("${asciidoctor.outputDir}/html5") {
+        into 'static/docs'
+    }
 }
