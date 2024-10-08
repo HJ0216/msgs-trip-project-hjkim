@@ -1,0 +1,28 @@
+ifndef::snippets[]
+:snippets: ../../../build/generated-snippets
+endif::[]
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+:site-url: /build/asciidoc/html5/
+
+= API 문서
+
+== `POST /api/v2/users/new` - 회원가입
+
+HTTP request:
+include::{snippets}/users/createSuccess/http-request.adoc[]
+
+HTTP response:
+include::{snippets}/users/createSuccess/http-response.adoc[]
+
+== `POST /api/v2/users/login` - 회원가입
+
+HTTP request:
+include::{snippets}/users/loginSuccess/http-request.adoc[]
+
+HTTP response:
+include::{snippets}/users/loginSuccess/http-response.adoc[]
