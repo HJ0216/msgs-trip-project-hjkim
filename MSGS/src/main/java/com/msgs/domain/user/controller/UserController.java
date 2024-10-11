@@ -36,7 +36,6 @@ public class UserController {
   @ResponseStatus(HttpStatus.CREATED)
   // ResponseEntity에서도 status를 지정하고 @ResponseStatus도 있다면 ResponseEntity가 우선순위를 갖
   public void create(@Valid @RequestBody SignUpRequestDTO signUpRequestDTO) {
-    signUpRequestDTO.validateSignUpRequest();
     userService.create(signUpRequestDTO);
   }
 
