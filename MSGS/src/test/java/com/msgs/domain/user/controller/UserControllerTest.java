@@ -379,6 +379,31 @@ class UserControllerTest {
   }
 
   @Test
+  @DisplayName("로그인: 실패 - 이메일 및 비밀번호 입력 X")
+  void loginFailEmptyEmailAndPassword() throws Exception {
+    // given
+    LoginRequestDTO loginDto = LoginRequestDTO.builder()
+                                              .email("")
+                                              .password("")
+                                              .build();
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(loginDto)));
+
+    // then
+    result.andExpect(status().isBadRequest())
+          .andExpect(
+              jsonPath("$.errors[?(@.field == 'email')].message").value(
+                  "이메일은 필수값입니다."))
+          .andExpect(
+              jsonPath("$.errors[?(@.field == 'password')].message").value(
+                  "비밀번호는 필수값입니다."))
+          .andDo(print());
+  }
+
+  @Test
   void findMyInfo() {
   }
 

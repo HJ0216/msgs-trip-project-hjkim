@@ -15,7 +15,4 @@ public class LoginRequestDTO {
 
   @NotEmpty(message = "비밀번호는 필수값입니다.")
   private String password;
-
-//    @NotNull(message = "Role 타입은 필수값입니다.")
-//    private String role;
 }

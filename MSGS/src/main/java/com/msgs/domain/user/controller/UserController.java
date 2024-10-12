@@ -52,7 +52,7 @@ public class UserController {
 
   @PostMapping("/login")
   @ResponseStatus(HttpStatus.OK)
-  public TokenInfo login(@RequestBody LoginRequestDTO loginRequestDto) {
+  public TokenInfo login(@Valid @RequestBody LoginRequestDTO loginRequestDto) {
     return userService.login(loginRequestDto);
   }
 
