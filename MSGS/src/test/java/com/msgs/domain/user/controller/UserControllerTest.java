@@ -4,6 +4,7 @@ import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PAS
 import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -21,6 +22,7 @@ import com.msgs.domain.user.dto.LoginRequestDTO;
 import com.msgs.domain.user.dto.SignUpRequestDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
+import com.msgs.global.common.jwt.TokenInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -324,13 +327,25 @@ class UserControllerTest {
                                               .password("temp123!")
                                               .build();
 
+    TokenInfo expectedResult = TokenInfo.builder()
+                                        .grantType("Bearer")
+                                        .accessToken("accessToken")
+                                        .refreshToken("refreshToken")
+                                        .build();
+
+    given(userService.login(any())).willReturn(expectedResult);
+
     // when
     ResultActions result = mockMvc.perform(post("/api/v2/users/login")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(loginDto)));
 
+    MockHttpServletResponse response = result.andReturn().getResponse();
+
     // then
-    result.andExpect(status().isOk());
+    result.andExpect(status().isOk())
+          .andExpect(jsonPath("$.accessToken").value("accessToken"))
+          .andExpect(jsonPath("$.refreshToken").value("refreshToken"));
   }
 
   @Test
@@ -404,10 +419,24 @@ class UserControllerTest {
   }
 
   @Test
-  void findMyInfo() {
+  @DisplayName("정보 조회: 성공")
+  void findMyInfoSuccess() throws Exception {
+    // given
+
+    // when
+
+    // then
   }
 
   @Test
-  void reissue() {
+  @DisplayName("정보 조회: 실패 - 만료된 Access Token")
+  void findMyInfoFailExpiredToken() {
+
+  }
+
+  @Test
+  @DisplayName("정보 조회: 실패 - 유효하지 않은 Access Token")
+  void findMyInfoFailInvalidToken() {
+
   }
 }
