@@ -6,9 +6,11 @@ import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -18,21 +20,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.msgs.domain.user.domain.UserType;
 import com.msgs.domain.user.dto.LoginRequestDTO;
 import com.msgs.domain.user.dto.SignUpRequestDTO;
+import com.msgs.domain.user.dto.UserDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.jwt.TokenInfo;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -335,12 +342,24 @@ class UserControllerTest {
 
     given(userService.login(any())).willReturn(expectedResult);
 
+//    given(userService.login(argThat(dto ->
+//        dto.getEmail().equals(loginDto.getEmail()) &&
+//            dto.getPassword().equals(loginDto.getPassword())
+//    ))).willReturn(expectedResult);
+
+    ArgumentCaptor<LoginRequestDTO> captor = ArgumentCaptor.forClass(LoginRequestDTO.class);
+
     // when
     ResultActions result = mockMvc.perform(post("/api/v2/users/login")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(loginDto)));
 
-    MockHttpServletResponse response = result.andReturn().getResponse();
+    verify(userService).login(captor.capture());
+    LoginRequestDTO capturedDto = captor.getValue();
+
+    System.out.println("Original loginDto instance address: " + System.identityHashCode(loginDto));
+    System.out.println(
+        "Captured loginDto instance address: " + System.identityHashCode(capturedDto));
 
     // then
     result.andExpect(status().isOk())
@@ -422,10 +441,44 @@ class UserControllerTest {
   @DisplayName("정보 조회: 성공")
   void findMyInfoSuccess() throws Exception {
     // given
+    LocalDateTime createdDate = LocalDateTime.now().minusDays(1).truncatedTo(ChronoUnit.MILLIS);
+    LocalDateTime updatedDate = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+    UserDTO userDto = UserDTO.builder()
+                             .id(300)
+                             .status("M")
+                             .userType(UserType.MSGS)
+                             .role("ROLE_USER")
+                             .email("msgs@msgs.com")
+                             .phone("010-2024-1017")
+                             .nickname("MSGS")
+                             .password("password123!")
+                             .imagePath("")
+                             .createdDate(createdDate)
+                             .updatedDate(updatedDate)
+                             .build();
+
+    given(userService.findMyInfo()).willReturn(userDto);
 
     // when
+    ResultActions result = mockMvc.perform(get("/api/v2/users/me")
+        .contentType(MediaType.APPLICATION_JSON));
+
+    verify(userService).findMyInfo();
 
     // then
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+    result.andExpect(status().isOk())
+          .andExpect(jsonPath("$.id").value(300))
+          .andExpect(jsonPath("$.status").value("M"))
+          .andExpect(jsonPath("$.userType").value("MSGS"))
+          .andExpect(jsonPath("$.role").value("ROLE_USER"))
+          .andExpect(jsonPath("$.email").value("msgs@msgs.com"))
+          .andExpect(jsonPath("$.phone").value("010-2024-1017"))
+          .andExpect(jsonPath("$.nickname").value("MSGS"))
+          .andExpect(jsonPath("$.imagePath").value(""))
+          .andExpect(jsonPath("$.createdDate").value(createdDate.format(formatter)))
+          .andExpect(jsonPath("$.updatedDate").value(updatedDate.format(formatter)));
   }
 
   @Test
