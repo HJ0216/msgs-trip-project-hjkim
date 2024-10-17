@@ -14,15 +14,23 @@ endif::[]
 == `POST /api/v2/users/new` - 회원가입
 
 HTTP request:
-include::{snippets}/users/createSuccess/http-request.adoc[]
+include::{snippets}/users/create-success/http-request.adoc[]
 
 HTTP response:
-include::{snippets}/users/createSuccess/http-response.adoc[]
+include::{snippets}/users/create-success/http-response.adoc[]
 
-== `POST /api/v2/users/login` - 회원가입
+== `POST /api/v2/users/login` - 로그인
 
 HTTP request:
-include::{snippets}/users/loginSuccess/http-request.adoc[]
+include::{snippets}/users/login-success/http-request.adoc[]
 
 HTTP response:
-include::{snippets}/users/loginSuccess/http-response.adoc[]
+include::{snippets}/users/login-success/http-response.adoc[]
+
+== `GET /api/v2/users/me` - 회원 정보 조회
+
+HTTP request:
+include::{snippets}/users/find-my-info-success/http-request.adoc[]
+
+HTTP response:
+include::{snippets}/users/find-my-info-success/http-response.adoc[]
