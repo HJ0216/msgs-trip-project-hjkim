@@ -166,7 +166,7 @@ class UserControllerTest {
         .content(objectMapper.writeValueAsString(signUpDto)));
 
     // then
-    result.andExpect(status().isBadRequest());
+    result.andExpect(status().isConflict());
     assertErrorResponse(result, DUPLICATED_EMAIL.name(), DUPLICATED_EMAIL.getMessage());
   }
 
