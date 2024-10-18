@@ -2,6 +2,8 @@ package com.msgs.domain.user.controller;
 
 import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PASSWORD;
 import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
+import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
+import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -39,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
@@ -483,13 +486,47 @@ class UserControllerTest {
 
   @Test
   @DisplayName("정보 조회: 실패 - 만료된 Access Token")
-  void findMyInfoFailExpiredToken() {
+  void findMyInfoFailExpiredToken() throws Exception {
+    // given
+    String expiredToken = "expiredAccessToken";
 
+    doThrow(new BusinessException(EXPIRED_JWT))
+        .when(userService).findMyInfo();
+//    when(userService.findMyInfo())
+//        .thenThrow(new BusinessException(EXPIRED_JWT));
+
+    // when
+    ResultActions result = mockMvc.perform(get("/api/v2/users/me")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + expiredToken));
+
+    // then
+//    result.andExpect(status().isUnauthorized())
+//          .andExpect(jsonPath("$.error").value("Expired or invalid token"))
+//          .andExpect(jsonPath("$.message").value("만료된 JWT 토큰입니다."));
+
+    result.andExpect(status().isUnauthorized());
+    assertErrorResponse(result, EXPIRED_JWT.name(),
+        EXPIRED_JWT.getMessage());
   }
 
   @Test
   @DisplayName("정보 조회: 실패 - 유효하지 않은 Access Token")
-  void findMyInfoFailInvalidToken() {
+  void findMyInfoFailInvalidToken() throws Exception {
+    // given
+    String invalidToken = "invalidAccessToken";
 
+    doThrow(new BusinessException(INVALID_ACCESS_TOKEN))
+        .when(userService).findMyInfo();
+
+    // when
+    ResultActions result = mockMvc.perform(get("/api/v2/users/me")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken));
+
+    // then
+    result.andExpect(status().isUnauthorized());
+    assertErrorResponse(result, INVALID_ACCESS_TOKEN.name(),
+        INVALID_ACCESS_TOKEN.getMessage());
   }
 }
