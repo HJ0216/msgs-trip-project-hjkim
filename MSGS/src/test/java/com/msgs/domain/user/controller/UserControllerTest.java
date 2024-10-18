@@ -92,7 +92,8 @@ class UserControllerTest {
   private void assertErrorResponse(ResultActions result, String code, String message)
       throws Exception {
     result.andExpect(jsonPath("$.code").value(code))
-          .andExpect(jsonPath("$.message").value(message));
+          .andExpect(jsonPath("$.message").value(message))
+          .andDo(print());
   }
 
   @Test
@@ -371,7 +372,7 @@ class UserControllerTest {
   }
 
   @Test
-  @DisplayName("Controller: 로그인 실패 - 가입하지 않은 회원")
+  @DisplayName("로그인 실패 - 가입하지 않은 회원")
   void loginFailUnjoinUser() throws Exception {
     // given
     LoginRequestDTO loginDto = LoginRequestDTO.builder()
@@ -490,10 +491,8 @@ class UserControllerTest {
     // given
     String expiredToken = "expiredAccessToken";
 
-    doThrow(new BusinessException(EXPIRED_JWT))
-        .when(userService).findMyInfo();
-//    when(userService.findMyInfo())
-//        .thenThrow(new BusinessException(EXPIRED_JWT));
+    when(userService.findMyInfo())
+        .thenThrow(new BusinessException(EXPIRED_JWT));
 
     // when
     ResultActions result = mockMvc.perform(get("/api/v2/users/me")
@@ -501,10 +500,6 @@ class UserControllerTest {
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + expiredToken));
 
     // then
-//    result.andExpect(status().isUnauthorized())
-//          .andExpect(jsonPath("$.error").value("Expired or invalid token"))
-//          .andExpect(jsonPath("$.message").value("만료된 JWT 토큰입니다."));
-
     result.andExpect(status().isUnauthorized());
     assertErrorResponse(result, EXPIRED_JWT.name(),
         EXPIRED_JWT.getMessage());
@@ -516,8 +511,8 @@ class UserControllerTest {
     // given
     String invalidToken = "invalidAccessToken";
 
-    doThrow(new BusinessException(INVALID_ACCESS_TOKEN))
-        .when(userService).findMyInfo();
+    when(userService.findMyInfo())
+        .thenThrow(new BusinessException(INVALID_ACCESS_TOKEN));
 
     // when
     ResultActions result = mockMvc.perform(get("/api/v2/users/me")
