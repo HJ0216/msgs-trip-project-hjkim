@@ -1,10 +1,10 @@
 package com.msgs.domain.user.service;
 
+import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PASSWORD;
 import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
-import static com.msgs.domain.user.exception.UserErrorCode.PASSWORD_CONFIRM_VALIDATION;
 import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
 
 import com.msgs.domain.user.domain.User;
@@ -66,7 +66,7 @@ public class UserService {
     // TODO: 240915, passwordEncoder 적용
     if (!loginRequestDTO.getPassword().equals(user.getPassword())) {
       log.warn("Password validation failed for user: {}", loginRequestDTO.getEmail());
-      throw new BusinessException(PASSWORD_CONFIRM_VALIDATION);
+      throw new BusinessException(CHECK_LOGIN_ID_OR_PASSWORD);
     }
 
     // SecurityContextHolder에 저장
