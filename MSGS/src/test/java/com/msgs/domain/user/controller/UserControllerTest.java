@@ -529,6 +529,26 @@ class UserControllerTest {
   }
 
   @Test
+  @DisplayName("정보 조회: 실패 - 존재하지 않는 회원")
+  void findMyInfoFailNotFoundMember() throws Exception {
+    // given
+    String accessToken = "accessToken";
+
+    when(userService.findMyInfo())
+        .thenThrow(new BusinessException(NOT_FOUND_MEMBER));
+
+    // when
+    ResultActions result = mockMvc.perform(get("/api/v2/users/me")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken));
+
+    // then
+    result.andExpect(status().isNotFound());
+    assertErrorResponse(result, NOT_FOUND_MEMBER.name(),
+        NOT_FOUND_MEMBER.getMessage());
+  }
+
+  @Test
   @DisplayName("토큰 재발급: 성공")
   void reissueSuccess() throws Exception {
     // given
@@ -627,5 +647,73 @@ class UserControllerTest {
     result.andExpect(status().isUnauthorized());
     assertErrorResponse(result, INVALID_REFRESH_TOKEN.name(),
         INVALID_REFRESH_TOKEN.getMessage());
+  }
+
+  @Test
+  @DisplayName("토큰 재발급: 실패 - 존재하지 않는 회원")
+  void reissueFailNotFoundMember() throws Exception {
+    // given
+    TokenInfo invalidTokenInfo = TokenInfo.builder()
+                                          .grantType("Bearer")
+                                          .accessToken("invalidAT")
+                                          .refreshToken("invalidRT")
+                                          .build();
+
+    when(userService.reissue(any(TokenInfo.class)))
+        .thenThrow(new BusinessException(NOT_FOUND_MEMBER));
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/reissue")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(invalidTokenInfo)));
+
+    // then
+    result.andExpect(status().isNotFound());
+    assertErrorResponse(result, NOT_FOUND_MEMBER.name(),
+        NOT_FOUND_MEMBER.getMessage());
+  }
+
+  @Test
+  @DisplayName("로그아웃: 성공")
+  void logoutSuccess() throws Exception {
+    // given
+    TokenInfo logoutTokenInfo = TokenInfo.builder()
+                                         .grantType("Bearer")
+                                         .accessToken("logoutAT")
+                                         .refreshToken("logoutRT")
+                                         .build();
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/logout")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(logoutTokenInfo)));
+
+    // then
+    result.andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("로그아웃: 실패 - 유효하지 않은 Access Token")
+  void logoutFailInvalidAccessToken() throws Exception {
+    // given
+    TokenInfo invalidTokenInfo = TokenInfo.builder()
+                                          .grantType("Bearer")
+                                          .accessToken("invalidAT")
+                                          .refreshToken("invalidRT")
+                                          .build();
+
+    doThrow(new BusinessException(INVALID_ACCESS_TOKEN))
+        .when(userService).logout(any(TokenInfo.class));
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/logout")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(invalidTokenInfo)));
+
+    // then
+    result.andExpect(status().isUnauthorized());
+    assertErrorResponse(result, INVALID_ACCESS_TOKEN.name(),
+        INVALID_ACCESS_TOKEN.getMessage());
+
   }
 }
