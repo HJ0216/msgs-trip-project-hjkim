@@ -4,7 +4,10 @@ import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PAS
 import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
 import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
+import static com.msgs.domain.user.exception.UserErrorCode.INVALID_REFRESH_TOKEN;
+import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
+import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
@@ -523,5 +526,106 @@ class UserControllerTest {
     result.andExpect(status().isUnauthorized());
     assertErrorResponse(result, INVALID_ACCESS_TOKEN.name(),
         INVALID_ACCESS_TOKEN.getMessage());
+  }
+
+  @Test
+  @DisplayName("토큰 재발급: 성공")
+  void reissueSuccess() throws Exception {
+    // given
+    TokenInfo previousTokenInfo = TokenInfo.builder()
+                                           .grantType("Bearer")
+                                           .accessToken("previousAT")
+                                           .refreshToken("previouseRT")
+                                           .build();
+
+    TokenInfo newTokenInfo = TokenInfo.builder()
+                                      .grantType("Bearer")
+                                      .accessToken("newAT")
+                                      .refreshToken("newRT")
+                                      .build();
+
+    given(userService.reissue(any(TokenInfo.class))).willReturn(newTokenInfo);
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/reissue")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(previousTokenInfo)));
+
+    // then
+    result.andExpect(status().isOk())
+          .andExpect(jsonPath("$.accessToken").value("newAT"))
+          .andExpect(jsonPath("$.refreshToken").value("newRT"));
+  }
+
+  @Test
+  @DisplayName("토큰 재발급: 실패 - 유효한 Access Token")
+  void reissueFailValidAccessToken() throws Exception {
+    // given
+    TokenInfo validTokenInfo = TokenInfo.builder()
+                                        .grantType("Bearer")
+                                        .accessToken("validAT")
+                                        .refreshToken("validRT")
+                                        .build();
+
+    when(userService.reissue(any(TokenInfo.class)))
+        .thenThrow(new BusinessException(VALID_ACCESS_TOKEN));
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/reissue")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(validTokenInfo)));
+
+    // then
+    result.andExpect(status().isOk());
+    assertErrorResponse(result, VALID_ACCESS_TOKEN.name(),
+        VALID_ACCESS_TOKEN.getMessage());
+  }
+
+  @Test
+  @DisplayName("토큰 재발급: 실패 - 로그아웃한 회원")
+  void reissueFailLogout() throws Exception {
+    // given
+    TokenInfo logoutTokenInfo = TokenInfo.builder()
+                                         .grantType("Bearer")
+                                         .accessToken("logoutAT")
+                                         .refreshToken("logoutRT")
+                                         .build();
+
+    when(userService.reissue(any(TokenInfo.class)))
+        .thenThrow(new BusinessException(LOGOUT_MEMBER));
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/reissue")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(logoutTokenInfo)));
+
+    // then
+    result.andExpect(status().isUnauthorized());
+    assertErrorResponse(result, LOGOUT_MEMBER.name(),
+        LOGOUT_MEMBER.getMessage());
+  }
+
+  @Test
+  @DisplayName("토큰 재발급: 실패 - 유효하지 않은 Refresh Token")
+  void reissueFailInvalidRefreshToken() throws Exception {
+    // given
+    TokenInfo invalidTokenInfo = TokenInfo.builder()
+                                          .grantType("Bearer")
+                                          .accessToken("invalidAT")
+                                          .refreshToken("invalidRT")
+                                          .build();
+
+    when(userService.reissue(any(TokenInfo.class)))
+        .thenThrow(new BusinessException(INVALID_REFRESH_TOKEN));
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/reissue")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(invalidTokenInfo)));
+
+    // then
+    result.andExpect(status().isUnauthorized());
+    assertErrorResponse(result, INVALID_REFRESH_TOKEN.name(),
+        INVALID_REFRESH_TOKEN.getMessage());
   }
 }
