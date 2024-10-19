@@ -1,10 +1,7 @@
 package com.msgs.domain.user.dto;
 
-import static com.msgs.domain.user.exception.UserErrorCode.USERTYPE_VALIDATION;
-
 import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.domain.UserType;
-import com.msgs.global.common.error.BusinessException;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -66,25 +63,14 @@ public class SignUpRequestDTO {
                .role(getRole())
                .build();
   }
-
-  public boolean validateSignUpRequest() {
-    try {
-      validateUserType();
-      isPasswordConfirmed();
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  private void validateUserType() {
-    if (!UserType.isValidUserType(userType)) {
-      throw new BusinessException(USERTYPE_VALIDATION);
-    }
+  
+  @AssertTrue(message = "회원 타입이 올바르지 않습니다.")
+  private boolean isValidUserType() {
+    return UserType.isValidUserType(userType);
   }
 
   @AssertTrue(message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.")
-  private boolean isPasswordConfirmed() {
+  private boolean isValidPasswordConfirmed() {
     return password.equals(confirmPassword);
   }
 

@@ -448,7 +448,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_post_apiv2usersnew_회원가입"><code>POST /api/v2/users/new</code> - 회원가입</a></li>
-<li><a href="#_post_apiv2userslogin_회원가입"><code>POST /api/v2/users/login</code> - 회원가입</a></li>
+<li><a href="#_post_apiv2userslogin_로그인"><code>POST /api/v2/users/login</code> - 로그인</a></li>
+<li><a href="#_get_apiv2usersme_회원_정보_조회"><code>GET /api/v2/users/me</code> - 회원 정보 조회</a></li>
+<li><a href="#_post_apiv2usersreissue_토큰_재발급"><code>POST /api/v2/users/reissue</code> - 토큰 재발급</a></li>
+<li><a href="#_post_apiv2userslogout_로그아웃"><code>POST /api/v2/users/logout</code> - 로그아웃</a></li>
 </ul>
 </div>
 </div>
@@ -457,25 +460,177 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_post_apiv2usersnew_회원가입"><a class="link" href="#_post_apiv2usersnew_회원가입"><code>POST /api/v2/users/new</code> - 회원가입</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>HTTP request:
-Unresolved directive in index.adoc - include::C:\Users\user\Desktop\KHJ\PROJECT\msgs\msgs-trip-project-hj\MSGS\build\generated-snippets/users/createSuccess/http-request.adoc[]</p>
+<p>HTTP request:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/v2/users/new HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 196
+Host: localhost:8080
+
+{
+  "userType" : "MSGS",
+  "email" : "new@email.com",
+  "phone" : "01023698741",
+  "nickname" : "name",
+  "password" : "newnew123!",
+  "confirmPassword" : "newnew123!",
+  "role" : "USER"
+}</code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>HTTP response:
-Unresolved directive in index.adoc - include::C:\Users\user\Desktop\KHJ\PROJECT\msgs\msgs-trip-project-hj\MSGS\build\generated-snippets/users/createSuccess/http-response.adoc[]</p>
+<p>HTTP response:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 201 Created</code></pre>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_post_apiv2userslogin_회원가입"><a class="link" href="#_post_apiv2userslogin_회원가입"><code>POST /api/v2/users/login</code> - 회원가입</a></h2>
+<h2 id="_post_apiv2userslogin_로그인"><a class="link" href="#_post_apiv2userslogin_로그인"><code>POST /api/v2/users/login</code> - 로그인</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>HTTP request:
-Unresolved directive in index.adoc - include::C:\Users\user\Desktop\KHJ\PROJECT\msgs\msgs-trip-project-hj\MSGS\build\generated-snippets/users/loginSuccess/http-request.adoc[]</p>
+<p>HTTP request:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/v2/users/login HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 62
+Host: localhost:8080
+
+{
+  "email" : "temp@email.com",
+  "password" : "temp123!"
+}</code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>HTTP response:
-Unresolved directive in index.adoc - include::C:\Users\user\Desktop\KHJ\PROJECT\msgs\msgs-trip-project-hj\MSGS\build\generated-snippets/users/loginSuccess/http-response.adoc[]</p>
+<p>HTTP response:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+Content-Length: 100
+
+{
+  "grantType" : "Bearer",
+  "accessToken" : "accessToken",
+  "refreshToken" : "refreshToken"
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_get_apiv2usersme_회원_정보_조회"><a class="link" href="#_get_apiv2usersme_회원_정보_조회"><code>GET /api/v2/users/me</code> - 회원 정보 조회</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>HTTP request:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v2/users/me HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Host: localhost:8080</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>HTTP response:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+Content-Length: 315
+
+{
+  "id" : 300,
+  "status" : "M",
+  "userType" : "MSGS",
+  "role" : "ROLE_USER",
+  "email" : "msgs@msgs.com",
+  "phone" : "010-2024-1017",
+  "nickname" : "MSGS",
+  "password" : "password123!",
+  "imagePath" : "",
+  "createdDate" : "2024-10-18T10:06:19.387",
+  "updatedDate" : "2024-10-19T10:06:19.387"
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_post_apiv2usersreissue_토큰_재발급"><a class="link" href="#_post_apiv2usersreissue_토큰_재발급"><code>POST /api/v2/users/reissue</code> - 토큰 재발급</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>HTTP request:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/v2/users/reissue HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 98
+Host: localhost:8080
+
+{
+  "grantType" : "Bearer",
+  "accessToken" : "previousAT",
+  "refreshToken" : "previouseRT"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>HTTP response:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+Content-Length: 87
+
+{
+  "grantType" : "Bearer",
+  "accessToken" : "newAT",
+  "refreshToken" : "newRT"
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_post_apiv2userslogout_로그아웃"><a class="link" href="#_post_apiv2userslogout_로그아웃"><code>POST /api/v2/users/logout</code> - 로그아웃</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>HTTP request:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/v2/users/logout HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 93
+Host: localhost:8080
+
+{
+  "grantType" : "Bearer",
+  "accessToken" : "logoutAT",
+  "refreshToken" : "logoutRT"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>HTTP response:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -483,7 +638,7 @@ Unresolved directive in index.adoc - include::C:\Users\user\Desktop\KHJ\PROJECT\
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-10-06 15:40:06 +0900
+Last updated 2024-10-19 10:03:39 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

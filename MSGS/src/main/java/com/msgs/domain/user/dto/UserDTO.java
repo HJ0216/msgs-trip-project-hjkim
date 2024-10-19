@@ -16,7 +16,6 @@ import lombok.Setter;
 @Builder
 public class UserDTO {
 
-  // UserEntity
   private Integer id;
   private String status;
   private UserType userType;

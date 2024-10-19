@@ -51,7 +51,7 @@ public class SecurityConfig {
             .requestMatchers("/api/v2/users/new").permitAll()
             .requestMatchers("/api/v2/users/me", "/api/v2/users/logout").hasRole("USER")
             .requestMatchers("/api/v2/users/reissue").permitAll()
-            .anyRequest().authenticated() // 이 외의 접근은 인증이 필요
+            .anyRequest().permitAll() // 이 외의 접근은 인증이 필요
         )
         .addFilterBefore(jwtAuthenticationFilterForSpecificUrls(),
             UsernamePasswordAuthenticationFilter.class);
