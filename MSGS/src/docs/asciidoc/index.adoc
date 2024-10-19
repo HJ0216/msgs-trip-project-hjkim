@@ -34,3 +34,19 @@ include::{snippets}/users/find-my-info-success/http-request.adoc[]
 
 HTTP response:
 include::{snippets}/users/find-my-info-success/http-response.adoc[]
+
+== `POST /api/v2/users/reissue` - 토큰 재발급
+
+HTTP request:
+include::{snippets}/users/reissue-success/http-request.adoc[]
+
+HTTP response:
+include::{snippets}/users/reissue-success/http-response.adoc[]
+
+== `POST /api/v2/users/logout` - 로그아웃
+
+HTTP request:
+include::{snippets}/users/logout-success/http-request.adoc[]
+
+HTTP response:
+include::{snippets}/users/logout-success/http-response.adoc[]
