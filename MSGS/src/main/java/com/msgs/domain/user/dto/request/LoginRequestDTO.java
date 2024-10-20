@@ -1,4 +1,4 @@
-package com.msgs.domain.user.dto;
+package com.msgs.domain.user.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;

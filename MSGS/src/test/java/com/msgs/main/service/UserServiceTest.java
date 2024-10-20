@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.msgs.domain.user.domain.User;
-import com.msgs.domain.user.dto.SignUpRequestDTO;
+import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.repository.UserRepository;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
