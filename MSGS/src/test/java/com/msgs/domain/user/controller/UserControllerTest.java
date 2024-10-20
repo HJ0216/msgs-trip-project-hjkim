@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -26,9 +27,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msgs.domain.user.domain.UserType;
-import com.msgs.domain.user.dto.LoginRequestDTO;
-import com.msgs.domain.user.dto.SignUpRequestDTO;
 import com.msgs.domain.user.dto.UserDTO;
+import com.msgs.domain.user.dto.request.LoginRequestDTO;
+import com.msgs.domain.user.dto.request.SignUpRequestDTO;
+import com.msgs.domain.user.dto.request.UpdateUserNicknameRequestDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.jwt.TokenInfo;
@@ -302,7 +304,7 @@ class UserControllerTest {
     result.andExpect(status().isBadRequest())
           .andExpect(
               jsonPath("$.errors[?(@.field == 'nickname')].message").value(
-                  "닉네임 형식이 올바르지 않습니다."))
+                  "닉네임은 2~8자의 한글, 영문 대/소문자, 숫자로만 이뤄져야 합니다."))
           .andDo(print());
   }
 
@@ -714,6 +716,67 @@ class UserControllerTest {
     result.andExpect(status().isUnauthorized());
     assertErrorResponse(result, INVALID_ACCESS_TOKEN.name(),
         INVALID_ACCESS_TOKEN.getMessage());
+  }
+
+  @Test
+  @DisplayName("닉네임 수정: 성공")
+  void updateNicknameSuccess() throws Exception {
+    // given
+    UpdateUserNicknameRequestDTO request = UpdateUserNicknameRequestDTO.builder()
+                                                                       .nickname("newNick")
+                                                                       .build();
+
+    // when
+    ResultActions result = mockMvc.perform(patch("/api/v2/users/nickname")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)));
+
+    // then
+    result.andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("닉네임 수정: 실패 - 잘못된 닉네임 형식")
+  void updateNicknameFailNickname() throws Exception {
+    // given
+    UpdateUserNicknameRequestDTO request = UpdateUserNicknameRequestDTO.builder()
+                                                                       .nickname("nick-name")
+                                                                       .build();
+
+    // when
+    ResultActions result = mockMvc.perform(patch("/api/v2/users/nickname")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)));
+
+    // then
+    result.andExpect(status().isBadRequest())
+          .andExpect(
+              jsonPath("$.errors[?(@.field == 'nickname')].message").value(
+                  "닉네임은 2~8자의 한글, 영문 대/소문자, 숫자로만 이뤄져야 합니다."))
+          .andDo(print());
 
   }
+
+  @Test
+  @DisplayName("닉네임 수정: 실패 - 존재하지 않는 회원")
+  void updateNicknameFailNotFoundMember() throws Exception {
+    // given
+    UpdateUserNicknameRequestDTO request = UpdateUserNicknameRequestDTO.builder()
+                                                                       .nickname("nickname")
+                                                                       .build();
+
+    doThrow(new BusinessException(NOT_FOUND_MEMBER))
+        .when(userService).updateNickname(any(String.class));
+
+    // when
+    ResultActions result = mockMvc.perform(patch("/api/v2/users/nickname")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)));
+
+    // then
+    result.andExpect(status().isNotFound());
+    assertErrorResponse(result, NOT_FOUND_MEMBER.name(),
+        NOT_FOUND_MEMBER.getMessage());
+  }
+
 }

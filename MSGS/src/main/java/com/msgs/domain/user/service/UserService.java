@@ -8,9 +8,9 @@ import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
 
 import com.msgs.domain.user.domain.User;
-import com.msgs.domain.user.dto.LoginRequestDTO;
-import com.msgs.domain.user.dto.SignUpRequestDTO;
 import com.msgs.domain.user.dto.UserDTO;
+import com.msgs.domain.user.dto.request.LoginRequestDTO;
+import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.repository.UserRepository;
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.jwt.JwtTokenProvider;
@@ -77,7 +77,8 @@ public class UserService {
     // * 해당 이메일이 존재하지 않는다면, UsernameNotFoundException이 발생하여 인증 실패
     Authentication authentication = authenticationManagerBuilder
         .getObject()
-        .authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+        .authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(),
+            loginRequestDTO.getPassword()));
 
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
@@ -152,5 +153,20 @@ public class UserService {
     redisUtil.setBlackList("AT:" + logoutRequestDto.getAccessToken(), "logout", expiration);
 
     log.info("Logout successful for accessToken: {}", logoutRequestDto.getAccessToken());
+  }
+
+  @Transactional
+  public void updateNickname(String newNickname) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
+        () -> {
+          log.warn("User not found for email: {}", authentication.getName());
+          throw new BusinessException(NOT_FOUND_MEMBER);
+        });
+
+    user.setNickname(newNickname);
+
+    userRepository.save(user);
   }
 }

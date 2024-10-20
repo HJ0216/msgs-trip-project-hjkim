@@ -1,8 +1,9 @@
 package com.msgs.domain.user.controller;
 
-import com.msgs.domain.user.dto.LoginRequestDTO;
-import com.msgs.domain.user.dto.SignUpRequestDTO;
 import com.msgs.domain.user.dto.UserDTO;
+import com.msgs.domain.user.dto.request.LoginRequestDTO;
+import com.msgs.domain.user.dto.request.SignUpRequestDTO;
+import com.msgs.domain.user.dto.request.UpdateUserNicknameRequestDTO;
 import com.msgs.domain.user.service.SmsService;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.jwt.TokenInfo;
@@ -75,8 +76,9 @@ public class UserController {
   }
 
   @PatchMapping("/nickname")
-  public void patchNickname() {
-
+  @ResponseStatus(HttpStatus.OK)
+  public void updateNickname(@Valid @RequestBody UpdateUserNicknameRequestDTO request) {
+    userService.updateNickname(request.getNickname());
   }
 
   @PatchMapping("/password")
