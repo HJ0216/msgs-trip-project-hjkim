@@ -48,7 +48,8 @@ public class SecurityConfig {
             // 세션을 사용하지 않고, 상태를 저장하지 않도록 설정(STATLESS)
         ).authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/v2/users/new", "/api/v2/users/login").permitAll()
-            .requestMatchers("/api/v2/users/me", "/api/v2/users/nickname", "/api/v2/users/logout",
+            .requestMatchers("/api/v2/users/me", "/api/v2/users/nickname", "/api/v2/users/password",
+                "/api/v2/users/logout",
                 "/api/v2/users/reissue")
             .hasRole("USER")
             .anyRequest().permitAll() // 이 외의 접근은 인증이 필요
@@ -101,7 +102,7 @@ public class SecurityConfig {
       protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
         return !("/api/v2/users/login".equals(path) || "/api/v2/users/me".equals(path)
-            || "/api/v2/users/nickname".equals(path)
+            || "/api/v2/users/nickname".equals(path) || "/api/v2/users/password".equals(path)
             || "/api/v2/users/logout".equals(path));
       }
     };

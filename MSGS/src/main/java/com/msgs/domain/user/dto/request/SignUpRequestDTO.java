@@ -36,9 +36,7 @@ public class SignUpRequestDTO {
   private String nickname;
 
   @NotBlank(message = "비밀번호를 입력해 주세요.")
-  @Pattern(regexp = PASSWORD_REGEX, message = "비밀번호 형식이 올바르지 않습니다.")
-  // 적어도 하나 이상의 영문자, 특수문자, 숫자가 포함
-  // 비밀번호가 8자 이상 20자 이하
+  @Pattern(regexp = PASSWORD_REGEX, message = "비밀번호는 8~20자의 영문자, 특수문자, 숫자를 포함해야 합니다.")
   private String password;
 
   @NotBlank(message = "비밀번호 확인을 입력해 주세요.")

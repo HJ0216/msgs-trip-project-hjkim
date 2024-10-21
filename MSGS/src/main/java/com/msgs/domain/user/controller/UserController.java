@@ -4,6 +4,7 @@ import com.msgs.domain.user.dto.UserDTO;
 import com.msgs.domain.user.dto.request.LoginRequestDTO;
 import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.dto.request.UpdateUserNicknameRequestDTO;
+import com.msgs.domain.user.dto.request.UpdateUserPasswordRequestDTO;
 import com.msgs.domain.user.service.SmsService;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.jwt.TokenInfo;
@@ -82,8 +83,9 @@ public class UserController {
   }
 
   @PatchMapping("/password")
-  public void patchPassword() {
-
+  @ResponseStatus(HttpStatus.OK)
+  public void patchPassword(@Valid @RequestBody UpdateUserPasswordRequestDTO request) {
+    userService.updatePassword(request.getPassword());
   }
 
   @DeleteMapping()

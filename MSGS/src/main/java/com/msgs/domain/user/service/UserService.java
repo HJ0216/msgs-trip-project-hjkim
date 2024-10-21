@@ -168,5 +168,26 @@ public class UserService {
     user.setNickname(newNickname);
 
     userRepository.save(user);
+
+    log.info("Nickname updated successfully. User email: {}, New nickname: {}",
+        authentication.getName(), newNickname);
+  }
+
+  @Transactional
+  public void updatePassword(String newPassword) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
+        () -> {
+          log.warn("User not found for email: {}", authentication.getName());
+          throw new BusinessException(NOT_FOUND_MEMBER);
+        });
+
+    user.setPassword(newPassword);
+
+    userRepository.save(user);
+
+    log.info("Password updated successfully. User email: {}, New password: {}",
+        authentication.getName(), newPassword);
   }
 }

@@ -31,6 +31,7 @@ import com.msgs.domain.user.dto.UserDTO;
 import com.msgs.domain.user.dto.request.LoginRequestDTO;
 import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.dto.request.UpdateUserNicknameRequestDTO;
+import com.msgs.domain.user.dto.request.UpdateUserPasswordRequestDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.jwt.TokenInfo;
@@ -777,6 +778,25 @@ class UserControllerTest {
     result.andExpect(status().isNotFound());
     assertErrorResponse(result, NOT_FOUND_MEMBER.name(),
         NOT_FOUND_MEMBER.getMessage());
+  }
+
+  @Test
+  @DisplayName("비밀번호 수정: 성공")
+  void updatePasswordSuccess() throws Exception {
+    // given
+    UpdateUserPasswordRequestDTO request = UpdateUserPasswordRequestDTO.builder()
+                                                                       .password("newPass123!")
+                                                                       .confirmPassword(
+                                                                           "newPass123!")
+                                                                       .build();
+
+    // when
+    ResultActions result = mockMvc.perform(patch("/api/v2/users/password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)));
+
+    // then
+    result.andExpect(status().isOk());
   }
 
 }
