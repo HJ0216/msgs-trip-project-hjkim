@@ -5,14 +5,12 @@ import com.msgs.domain.user.dto.request.LoginRequestDTO;
 import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.dto.request.UpdateUserNicknameRequestDTO;
 import com.msgs.domain.user.dto.request.UpdateUserPasswordRequestDTO;
-import com.msgs.domain.user.service.SmsService;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.jwt.TokenInfo;
 import jakarta.validation.Valid;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserService userService;
-  private final SmsService smsService;
 
   private final Random random = new Random();
 
@@ -39,17 +36,6 @@ public class UserController {
   // ResponseEntity에서도 status를 지정하고 @ResponseStatus도 있다면 ResponseEntity가 우선순위를 갖
   public void create(@Valid @RequestBody SignUpRequestDTO signUpRequestDTO) {
     userService.create(signUpRequestDTO);
-  }
-
-  @PostMapping("/new/sms-verification")
-  public String verifySms(@RequestBody String phone) throws ParseException {
-    StringBuilder randomSb = new StringBuilder();
-    for (int i = 0; i < 6; i++) {
-      randomSb.append(random.nextInt(10));
-    }
-    smsService.sendSms(phone, randomSb.toString()); //send authentication number
-
-    return randomSb.toString();
   }
 
   @PostMapping("/login")
