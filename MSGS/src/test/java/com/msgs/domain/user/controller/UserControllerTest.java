@@ -198,7 +198,7 @@ class UserControllerTest {
     // then
     result.andExpect(status().isBadRequest())
           .andExpect(jsonPath("$.errors[?(@.field == 'password')].message").value(
-              "비밀번호 형식이 올바르지 않습니다."))// annotation에서 나오는 error message 반환
+              "비밀번호는 8~20자의 영문자, 특수문자, 숫자를 포함해야 합니다."))// annotation에서 나오는 error message 반환
           .andDo(print());// 에러 메시지 검증
   }
 
@@ -226,7 +226,8 @@ class UserControllerTest {
           .andExpect(
               jsonPath("$.errors[?(@.field == 'email')].message").value("이메일 형식이 올바르지 않습니다."))
           .andExpect(
-              jsonPath("$.errors[?(@.field == 'password')].message").value("비밀번호 형식이 올바르지 않습니다."))
+              jsonPath("$.errors[?(@.field == 'password')].message").value(
+                  "비밀번호는 8~20자의 영문자, 특수문자, 숫자를 포함해야 합니다."))
           .andDo(print());
   }
 
