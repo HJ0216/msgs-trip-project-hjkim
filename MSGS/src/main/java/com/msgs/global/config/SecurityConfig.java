@@ -2,6 +2,7 @@ package com.msgs.global.config;
 
 import com.msgs.global.common.jwt.JwtAuthenticationFilter;
 import com.msgs.global.common.jwt.JwtTokenProvider;
+import com.msgs.global.common.jwt.LoginFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
@@ -14,8 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -27,7 +27,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+  private final AuthenticationConfiguration authenticationConfiguration;
   private final JwtTokenProvider jwtTokenProvider;
+
 
   // 스프링 시큐리티의 인증을 담당
   @Bean
@@ -39,24 +41,48 @@ public class SecurityConfig {
   // 스프링 시큐리티의 세부 설정
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.httpBasic(AbstractHttpConfigurer::disable) // 기본 HTTP 인증을 비활성화
-        .csrf(
-            AbstractHttpConfigurer::disable) // CSRF 보호를 비활성화, CSRF 토큰을 사용하여 클라이언트가 서버에 요청할 때마다 유효한 토큰을 함께 전송해야만 요청이 성공하도록 하는 방식으로 보안을 강화 -> 토큰으로 대체
-        .cors(httpSecurityCorsConfigurer -> corsConfigurationSource())
-        .sessionManagement(sessionManagement ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            // 세션을 사용하지 않고, 상태를 저장하지 않도록 설정(STATLESS)
-        ).authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/v2/users/new", "/api/v2/users/login").permitAll()
-            .requestMatchers("/api/v2/users/me", "/api/v2/users/nickname", "/api/v2/users/password",
-                "/api/v2/users/logout",
-                "/api/v2/users/reissue")
-            .hasRole("USER")
-            .anyRequest().permitAll() // 이 외의 접근은 인증이 필요
-        )
-        .addFilterBefore(jwtAuthenticationFilterForSpecificUrls(),
-            UsernamePasswordAuthenticationFilter.class);
 
+    // 기본 HTTP 인증 비활성화
+    http.httpBasic(AbstractHttpConfigurer::disable);
+
+    // CSRF 보호 비활성화: CSRF 토큰 대신 JWT 같은 토큰을 사용하여 요청 검증
+    // CSRF 보호를 비활성화, CSRF 토큰을 사용하여 클라이언트가 서버에 요청할 때마다 유효한 토큰을 함께 전송해야만 요청이 성공하도록 하는 방식으로 보안을 강화 -> 토큰으로 대체
+    http.csrf(AbstractHttpConfigurer::disable);
+
+    // CORS 설정 적용
+    http.cors(httpSecurityCorsConfigurer ->
+        corsConfigurationSource()
+    );
+
+    // 세션 관리 설정: 상태 저장하지 않는 무상태(stateless) 설정
+    http.sessionManagement(sessionManagement ->
+        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    );
+
+    http.authorizeHttpRequests(auth ->
+        auth
+            .requestMatchers("/api/v2/users/new", "/api/v2/users/login")
+            .permitAll() // 회원가입과 로그인은 인증 없이 접근 가능
+            .requestMatchers("/api/v2/users/me", "/api/v2/users/nickname",
+                "/api/v2/users/password", "/api/v2/users/logout",
+                "/api/v2/users/reissue").hasRole("USER") // 특정 엔드포인트에 대해 USER 역할이 필요
+            .anyRequest().permitAll() // 나머지 요청은 모두 접근 허용
+    );
+
+    // 필터 체인에 예외 처리 필터 추가: UsernamePasswordAuthenticationFilter 이전에 추가
+//    http.addFilterBefore(new ExceptionHandlerFilter(), UsernamePasswordAuthenticationFilter.class);
+
+    // JWT 인증 필터 추가: 예외 처리 필터 이후에 추가
+//    http.addFilterAfter(new JwtAuthenticationFilter(jwtTokenProvider),
+//        ExceptionHandlerFilter.class);
+
+    // 사용자 로그인 필터 추가: UsernamePasswordAuthenticationFilter 위치에 추가
+    // 사용자 로그인 필터 추가: /api/v2/users/login 경로에 맞춰 설정
+    LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration));
+    loginFilter.setFilterProcessesUrl("/api/v2/users/login");
+    http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+
+    // 구성된 필터 체인 빌드
     return http.build();
   }
   /**
@@ -103,14 +129,14 @@ public class SecurityConfig {
         String path = request.getServletPath();
         return !("/api/v2/users/login".equals(path) || "/api/v2/users/me".equals(path)
             || "/api/v2/users/nickname".equals(path) || "/api/v2/users/password".equals(path)
-            || "/api/v2/users/logout".equals(path));
+            || "/api/v2/users/reissue".equals(path) || "/api/v2/users/logout".equals(path));
       }
     };
   }
 
   @Bean
-  public PasswordEncoder passwordEncoder() {
-    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+  public BCryptPasswordEncoder bCryptPasswordEncoder() {
+    return new BCryptPasswordEncoder();
   }
 
   @Bean

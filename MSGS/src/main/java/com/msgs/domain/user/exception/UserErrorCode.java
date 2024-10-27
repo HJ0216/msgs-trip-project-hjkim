@@ -20,6 +20,7 @@ public enum UserErrorCode implements ErrorCode {
   // 로그인
   CHECK_LOGIN_ID_OR_PASSWORD(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호를 확인해주세요."),
   NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
+  INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "잘못된 자격 증명입니다."),
 
   // JWT
   MALFORMED_JWT(HttpStatus.BAD_REQUEST, "잘못된 JWT 형식입니다."),

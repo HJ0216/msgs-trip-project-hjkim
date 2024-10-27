@@ -17,6 +17,7 @@ public class UserRepository {
     List<User> users = em.createQuery("select u from User u where u.email = :email", User.class)
                          .setParameter("email", email)
                          .getResultList();
+    
     return users.stream().findFirst();
   }
 

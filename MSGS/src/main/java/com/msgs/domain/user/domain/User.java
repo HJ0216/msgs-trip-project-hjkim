@@ -47,7 +47,7 @@ public class User extends BaseEntity {
   @Column(length = 30)
   private String nickname;
 
-  @Column(length = 30)
+  @Column(length = 60)
   private String password;
 
   private String imagePath;
