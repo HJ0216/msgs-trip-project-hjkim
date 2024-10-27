@@ -10,6 +10,7 @@ import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Builder
 @AllArgsConstructor
@@ -20,6 +21,8 @@ public class SignUpRequestDTO {
   private static final String PHONE_REGEX = "^01([0|1|6|7|8|9])(\\d{3}|\\d{4})\\d{4}$";
   private static final String NICKNAME_REGEX = "^[A-Za-zㄱ-힣0-9]{2,8}$";
   private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*[!@#$%^&*()-_+=])(?=.*\\d).{8,20}$";
+
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
   @NotNull(message = "회원 타입은 필수 값입니다.")
   private String userType;
@@ -45,7 +48,7 @@ public class SignUpRequestDTO {
   private String role;
 
   public String getRole() {
-    return role == null || role.isEmpty() ? "USER" : role;
+    return role == null || role.isEmpty() ? "ROLE_USER" : role;
   }
 
   public User toEntity() {
@@ -55,7 +58,7 @@ public class SignUpRequestDTO {
                .email(email)
                .phone(phone)
                .nickname(nickname)
-               .password(password)
+               .password(bCryptPasswordEncoder.encode(password))
                .role(getRole())
                .build();
   }
