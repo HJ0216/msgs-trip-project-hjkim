@@ -6,6 +6,7 @@
 ## 📒마실가실 리팩토링 일지
 | <div style="width:70px">Date</div> | <div>Description</div> |
 | ---------- | --- |
+| 2024.10.08 | [API 문서화 도구: Spring REST Docs 적용](#api-문서화-도구-spring-rest-docs-적용) <br/> Github Issue 및 PR Template 적용 |
 | 2024.10.03 | [로그 설정 추가](#로그-설정-추가) |
 | 2024.09.29 | [회원가입 입력값 검증을 GlobalUtils → DTO 내 검증으로 변경](#회원가입-입력값-검증) |
 | 2024.09.18 | [Spring Security url별 필터 적용 기능 추가](#spring-security-특정-url을-제외한-필터-적용) |
@@ -394,6 +395,53 @@ public class UserService {
     log.info("Generating token for user: {}", user.getEmail());
 
     return tokenInfo;
+  }
+}
+```
+
+
+
+### API 문서화 도구: Spring REST Docs 적용
+* API 테스트와 문서화가 동시에 이루어져서, 테스트에서 보장된 API 결과를 문서화
+```java
+@SpringBootTest
+@ExtendWith({RestDocumentationExtension.class})
+@AutoConfigureMockMvc
+class UserControllerTest {
+
+  @Autowired
+  MockMvc mockMvc;
+  @Autowired
+  ObjectMapper objectMapper;
+  @MockBean
+  UserService userService;
+
+  @BeforeEach
+  void setUp(WebApplicationContext webApplicationContext,
+      RestDocumentationContextProvider restDocumentation) {
+    this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                                  .apply(documentationConfiguration(restDocumentation))
+                                  .alwaysDo(print())
+                                  .alwaysDo(document("users/{method-name}",
+                                      preprocessRequest(prettyPrint()),
+                                      preprocessResponse(prettyPrint())))
+                                  .addFilters(new CharacterEncodingFilter("UTF-8", true))
+                                  .build();
+  }
+
+  @Test
+  @DisplayName("회원 가입: 성공")
+  void createSuccess() throws Exception {
+    // given
+    SignUpRequestDTO signUpDto = createSignUpRequestDTO();
+
+    // when
+    ResultActions result = mockMvc.perform(post("/api/v2/users/new")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(signUpDto)));
+
+    // then
+    result.andExpect(status().isCreated());
   }
 }
 ```
