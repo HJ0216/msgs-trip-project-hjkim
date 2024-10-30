@@ -1,5 +1,6 @@
 package com.msgs.global.config;
 
+import com.msgs.global.common.jwt.JWTUtils;
 import com.msgs.global.common.jwt.JwtAuthenticationFilter;
 import com.msgs.global.common.jwt.JwtTokenProvider;
 import com.msgs.global.common.jwt.LoginFilter;
@@ -29,6 +30,7 @@ public class SecurityConfig {
 
   private final AuthenticationConfiguration authenticationConfiguration;
   private final JwtTokenProvider jwtTokenProvider;
+  private final JWTUtils jwtUtils;
 
 
   // 스프링 시큐리티의 인증을 담당
@@ -78,7 +80,8 @@ public class SecurityConfig {
 
     // 사용자 로그인 필터 추가: UsernamePasswordAuthenticationFilter 위치에 추가
     // 사용자 로그인 필터 추가: /api/v2/users/login 경로에 맞춰 설정
-    LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration));
+    LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration),
+        jwtUtils);
     loginFilter.setFilterProcessesUrl("/api/v2/users/login");
     http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 

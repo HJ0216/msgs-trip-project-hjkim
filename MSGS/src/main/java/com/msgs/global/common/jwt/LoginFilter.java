@@ -9,12 +9,15 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Slf4j
@@ -23,6 +26,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   private final AuthenticationManager authenticationManager;
   private final ObjectMapper objectMapper = new ObjectMapper();
+
+  private final JWTUtils jwtUtils;
 
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request,
@@ -55,6 +60,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
       FilterChain chain,
       Authentication authentication) {
     log.info("Success Login");
+
+    UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal(); // 현재 인증된 사용자에 대한 주요 정보를 반환
+
+    String username = userPrinciple.getUsername();
+
+    Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+    Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
+    GrantedAuthority authority = iterator.next();
+    String role = authority.getAuthority();
+
+    String token = jwtUtils.generateJwt(username, role, 60 * 1L);
+    response.addHeader("Authorization", "Bearer " + token);
   }
 
   @Override
@@ -62,6 +79,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
       HttpServletResponse response,
       AuthenticationException failed) {
     log.error("Login failed: ", failed);
+
+    response.setStatus(401);
   }
 
 }
