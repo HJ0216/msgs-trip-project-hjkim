@@ -17,7 +17,7 @@ public class JWTUtils {
 
   public JWTUtils(@Value("${jwt.secret}") String secret) {
     // decode: Base64로 인코딩된 문자열을 원래의 바이트 배열로 복원
-    byte[] byteSecretKey = Decoders.BASE64.decode(secret)S;
+    byte[] byteSecretKey = Decoders.BASE64.decode(secret);
     key = Keys.hmacShaKeyFor(byteSecretKey);
 
     // getBytes: 문자열을 특정 문자 인코딩(예: UTF-8)에 따라 바이트 배열로 변환

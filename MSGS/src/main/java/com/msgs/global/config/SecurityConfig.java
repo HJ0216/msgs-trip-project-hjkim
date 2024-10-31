@@ -1,5 +1,6 @@
 package com.msgs.global.config;
 
+import com.msgs.global.common.jwt.JWTFilter;
 import com.msgs.global.common.jwt.JWTUtils;
 import com.msgs.global.common.jwt.JwtAuthenticationFilter;
 import com.msgs.global.common.jwt.JwtTokenProvider;
@@ -77,6 +78,9 @@ public class SecurityConfig {
     // JWT 인증 필터 추가: 예외 처리 필터 이후에 추가
 //    http.addFilterAfter(new JwtAuthenticationFilter(jwtTokenProvider),
 //        ExceptionHandlerFilter.class);
+
+    //
+    http.addFilterBefore(new JWTFilter(jwtUtils), LoginFilter.class);
 
     // 사용자 로그인 필터 추가: UsernamePasswordAuthenticationFilter 위치에 추가
     // 사용자 로그인 필터 추가: /api/v2/users/login 경로에 맞춰 설정
