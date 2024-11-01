@@ -8,10 +8,15 @@ import com.msgs.domain.user.dto.request.UpdateUserPasswordRequestDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.jwt.TokenInfo;
 import jakarta.validation.Valid;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -47,6 +52,16 @@ public class UserController {
   @GetMapping("/me")
   @ResponseStatus(HttpStatus.OK)
   public UserDTO findMyInfo() {
+    String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+    Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
+    GrantedAuthority authority = iterator.next();
+    String role = authority.getAuthority();
+
+    log.info("username: {}, role: {}", username, role);
+
     return userService.findMyInfo();
   }
 
