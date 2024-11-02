@@ -7,7 +7,6 @@ import com.msgs.global.common.jwt.JwtTokenProvider;
 import com.msgs.global.common.jwt.LoginFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,6 +55,23 @@ public class SecurityConfig {
     http.cors(httpSecurityCorsConfigurer ->
         corsConfigurationSource()
     );
+
+//    http.cors((cors) -> cors.configurationSource(new CorsConfigurationSource() {
+//      @Override
+//      public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//
+//        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+//        configuration.setAllowedMethods(Collections.singletonList("*"));
+//        configuration.setAllowCredentials(true);
+//        configuration.setAllowedHeaders(Collections.singletonList("*"));
+//        configuration.setMaxAge(3600L);
+//
+//        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+//
+//        return configuration;
+//      }
+//    }));
 
     // 세션 관리 설정: 상태 저장하지 않는 무상태(stateless) 설정
     http.sessionManagement(sessionManagement ->
@@ -149,11 +165,17 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("*"));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-    configuration.setAllowedHeaders(List.of("*"));
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+    configuration.setAllowCredentials(true); // 자격 증명(쿠키, 인증 헤더 등)을 포함한 요청을 허용할지 설정
+    configuration.setAllowedHeaders(Arrays.asList("*"));
+    configuration.setMaxAge(3600L);
+    // preflight: CORS(Cross-Origin Resource Sharing) 요청 시 브라우저가 보내는 사전 요청
+    // preflight 요청 결과를 캐시하는 시간(초 단위)
+    // 브라우저는 한 번의 preflight 요청 후 1시간 동안 같은 출처에서 동일한 요청을 보낼 때 추가로 preflight 요청을 보내지 않고 캐시된 결과를 사용
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(); // URL 패턴별로 CORS 설정을 적용
     source.registerCorsConfiguration("/**", configuration); // 모든 경로에 대해 위에서 정의한 CORS 설정을 적용
     return source;
   }
