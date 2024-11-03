@@ -5,6 +5,7 @@ import static com.msgs.domain.user.exception.UserErrorCode.INVALID_CREDENTIALS;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msgs.domain.user.dto.request.LoginRequestDTO;
 import com.msgs.global.common.error.BusinessException;
+import com.msgs.global.common.redis.RedisUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,10 +27,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
-  private final AuthenticationManager authenticationManager;
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private static final long ACCESS_TOKEN_EXPIRY = 600000L; // 10분
+  private static final long REFRESH_TOKEN_EXPIRY = 3600000L; // 1시간
 
+  private final AuthenticationManager authenticationManager;
   private final JWTUtils jwtUtils;
+  private final RedisUtils redisUtils;
+
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request,
@@ -82,8 +87,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     GrantedAuthority authority = iterator.next();
     String role = authority.getAuthority();
 
-    String accessToken = jwtUtils.generateJwt("access", username, role, 600000L);
-    String refreshToken = jwtUtils.generateJwt("refresh", username, role, 86400000L);
+    String accessToken = jwtUtils.generateJwt("access", username, role, ACCESS_TOKEN_EXPIRY);
+    String refreshToken = jwtUtils.generateJwt("refresh", username, role, REFRESH_TOKEN_EXPIRY);
+
+    // refresh token 저장
+    redisUtils.set("RT:" + refreshToken, username, REFRESH_TOKEN_EXPIRY);
 
     response.setHeader("Authorization", "Bearer " + accessToken);
     response.addCookie(generateCookie("refresh", refreshToken));
@@ -92,7 +100,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   private Cookie generateCookie(String key, String value) {
     Cookie cookie = new Cookie(key, value);
-    cookie.setMaxAge(24 * 60 * 60); // 1시간
+    cookie.setMaxAge((int) REFRESH_TOKEN_EXPIRY / 1000); // 1시간
 //    cookie.setSecure(true); // 쿠키가 HTTPS 연결을 통해서만 전송되도록 설정
 //    cookie.setPath("/"); // 쿠키가 사용할 수 있는 URL 경로를 지정
     cookie.setHttpOnly(true);

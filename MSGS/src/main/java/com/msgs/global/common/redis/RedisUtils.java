@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class RedisUtil {
+public class RedisUtils {
 
   private final RedisTemplate<String, Object> redisTemplate;
   // Redis와의 기본적인 데이터 상호작용을 처리하는 객체
@@ -19,10 +19,10 @@ public class RedisUtil {
     redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer(o.getClass()));
     redisTemplate.opsForValue().set(key, o, milliseconds, TimeUnit.MILLISECONDS);
     // Redis에 데이터를 저장
-    // key: Redis에 저장할 때 사용할 키 값
-    // o: 저장할 객체
     // opsForValue: String을 쉽게 Serialize / Deserialize 해주는 interface
     // 자바 언어에서 사용되는 Object 또는 Data를 다른 컴퓨터의 자바 시스템에서도 사용 할수 있도록 바이트 스트림(stream of bytes) 형태로 연속전인(serial) 데이터로 변환하는 포맷 변환 기술
+    // key: Redis에 저장할 때 사용할 키 값
+    // o: 저장할 객체
   }
 
   public Object get(String key) {

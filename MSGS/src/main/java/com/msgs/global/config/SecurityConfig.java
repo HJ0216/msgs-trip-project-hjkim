@@ -1,10 +1,12 @@
 package com.msgs.global.config;
 
+import com.msgs.global.common.jwt.CustomLogoutFilter;
 import com.msgs.global.common.jwt.JWTFilter;
 import com.msgs.global.common.jwt.JWTUtils;
 import com.msgs.global.common.jwt.JwtAuthenticationFilter;
 import com.msgs.global.common.jwt.JwtTokenProvider;
 import com.msgs.global.common.jwt.LoginFilter;
+import com.msgs.global.common.redis.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,7 +34,7 @@ public class SecurityConfig {
   private final AuthenticationConfiguration authenticationConfiguration;
   private final JwtTokenProvider jwtTokenProvider;
   private final JWTUtils jwtUtils;
-
+  private final RedisUtils redisUtils;
 
   // 스프링 시큐리티의 인증을 담당
   @Bean
@@ -80,12 +83,17 @@ public class SecurityConfig {
 
     http.authorizeHttpRequests(auth ->
         auth
-            .requestMatchers("/api/v2/users/new", "/api/v2/users/login")
-            .permitAll() // 회원가입과 로그인은 인증 없이 접근 가능
-            .requestMatchers("/api/v2/users/me", "/api/v2/users/nickname",
-                "/api/v2/users/password", "/api/v2/users/logout",
-                "/api/v2/users/reissue").hasRole("USER") // 특정 엔드포인트에 대해 USER 역할이 필요
-            .anyRequest().permitAll() // 나머지 요청은 모두 접근 허용
+            .requestMatchers("/api/v2/users/new"
+                , "/api/v2/users/login"
+                , "/api/v2/users/reissue"
+                , "/api/v2/users/re-issue").permitAll()
+            // 회원가입과 로그인은 인증 없이 접근 가능, reissue는 AT의 유효시간이 만료되었으므로 권한이 없음 -> permitAll 처리해야 함
+            .requestMatchers("/api/v2/users/me"
+                , "/api/v2/users/nickname"
+                , "/api/v2/users/password"
+                , "/api/v2/users/logout").hasRole("USER")
+            // 특정 엔드포인트에 대해 USER 역할이 필요
+            .anyRequest().authenticated()
     );
 
     // 필터 체인에 예외 처리 필터 추가: UsernamePasswordAuthenticationFilter 이전에 추가
@@ -100,10 +108,14 @@ public class SecurityConfig {
 
     // 사용자 로그인 필터 추가: UsernamePasswordAuthenticationFilter 위치에 추가
     // 사용자 로그인 필터 추가: /api/v2/users/login 경로에 맞춰 설정
-    LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration),
-        jwtUtils);
+    LoginFilter loginFilter = new LoginFilter(
+        authenticationManager(authenticationConfiguration)
+        , jwtUtils
+        , redisUtils);
     loginFilter.setFilterProcessesUrl("/api/v2/users/login");
     http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+
+    http.addFilterBefore(new CustomLogoutFilter(jwtUtils, redisUtils), LogoutFilter.class);
 
     // 구성된 필터 체인 빌드
     return http.build();

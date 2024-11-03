@@ -18,7 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
-
+  
   private final JWTUtils jwtUtils;
 
   @Override
