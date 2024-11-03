@@ -26,6 +26,19 @@ public class JWTUtils {
 
   }
 
+  public String getCategory(String token) {
+    return Jwts.parserBuilder()
+               .setSigningKey(key)
+               .build()
+               .parseClaimsJws(token)
+               .getBody()
+               .get("category", String.class);
+
+    // parseClaimsJws: JWS (JSON Web Signature) 형식의 토큰을 파싱
+    // 제공된 비밀 키를 사용하여 토큰의 유효성을 확인
+    // parseClaimsJwt: JWT 형식의 토큰을 파싱하지만, 서명 검증을 수행하지 않음
+  }
+
   public String getUsername(String token) {
     return Jwts.parserBuilder()
                .setSigningKey(key)
@@ -54,8 +67,9 @@ public class JWTUtils {
                .before(new Date());
   }
 
-  public String generateJwt(String username, String role, Long expiredMs) {
+  public String generateJwt(String category, String username, String role, Long expiredMs) {
     Claims claims = Jwts.claims();
+    claims.put("category", category);
     claims.put("username", username);
     claims.put("role", role);
 

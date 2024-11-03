@@ -30,7 +30,8 @@ public enum UserErrorCode implements ErrorCode {
   VALID_ACCESS_TOKEN(HttpStatus.OK, "Access Token의 유효기간이 남아있습니다."),
   LOGOUT_MEMBER(HttpStatus.UNAUTHORIZED, "로그아웃한 회원입니다."),
   INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Access Token입니다."),
-  INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh Token입니다."),
+  INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "유효하지 않은 Refresh Token입니다."),
+  REFRESH_TOKEN_IS_NULL(HttpStatus.BAD_REQUEST, "Refresh Token 값이 없습니다."),
   NOT_FOUND_AUTHORITY(HttpStatus.FORBIDDEN, "존재하지 않는 권한입니다."),
   ;
 

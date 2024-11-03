@@ -2,7 +2,9 @@ package com.msgs.domain.user.service;
 
 import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PASSWORD;
 import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
+import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
+import static com.msgs.domain.user.exception.UserErrorCode.INVALID_REFRESH_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
@@ -13,6 +15,7 @@ import com.msgs.domain.user.dto.request.LoginRequestDTO;
 import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.repository.UserRepository;
 import com.msgs.global.common.error.BusinessException;
+import com.msgs.global.common.jwt.JWTUtils;
 import com.msgs.global.common.jwt.JwtTokenProvider;
 import com.msgs.global.common.jwt.SecurityUtils;
 import com.msgs.global.common.jwt.TokenInfo;
@@ -35,9 +38,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
+  private static final long ACCESS_TOKEN_EXPIRY = 600000L; // 10분
+  private static final long REFRESH_TOKEN_EXPIRY = 3600000L; // 1시간
+
   private final AuthenticationManagerBuilder authenticationManagerBuilder;
   private final UserRepository userRepository;
   private final JwtTokenProvider jwtTokenProvider;
+  private final JWTUtils jwtUtils;
   private final RedisUtil redisUtil;
 
   @Transactional
@@ -50,7 +57,7 @@ public class UserService {
 
   public void emailDuplicateCheck(String email) {
     if (userRepository.findByEmail(email).isPresent()) {
-      log.warn("Email duplication check failed. Email: {}", email);
+      log.info("Email duplication check failed. Email: {}", email);
       throw new BusinessException(DUPLICATED_EMAIL);
     }
   }
@@ -58,14 +65,13 @@ public class UserService {
   public TokenInfo login(LoginRequestDTO loginRequestDTO) {
     User user = userRepository.findByEmail(loginRequestDTO.getEmail()).orElseThrow(
         () -> {
-          log.warn("User not found for email: {}", loginRequestDTO.getEmail());
+          log.info("User not found for email: {}", loginRequestDTO.getEmail());
           throw new BusinessException(NOT_FOUND_MEMBER);
         });
 
     // 비밀번호 일치 여부 비교
-    // TODO: 240915, passwordEncoder 적용
     if (!loginRequestDTO.getPassword().equals(user.getPassword())) {
-      log.warn("Password validation failed for user: {}", loginRequestDTO.getEmail());
+      log.info("Password validation failed for user: {}", loginRequestDTO.getEmail());
       throw new BusinessException(CHECK_LOGIN_ID_OR_PASSWORD);
     }
 
@@ -94,7 +100,7 @@ public class UserService {
 
     User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
         () -> {
-          log.warn("User not found for email: {}", authentication.getName());
+          log.info("User not found for email: {}", authentication.getName());
           throw new BusinessException(NOT_FOUND_MEMBER);
         });
 
@@ -105,13 +111,13 @@ public class UserService {
     try {
       jwtTokenProvider.getExpiration(reissueRequestDto.getAccessToken());
 
-      log.warn("Valid access token used for reissue: {}", reissueRequestDto.getAccessToken());
+      log.info("Valid access token used for reissue: {}", reissueRequestDto.getAccessToken());
       throw new BusinessException(VALID_ACCESS_TOKEN);
     } catch (ExpiredJwtException e) {
       // Redis에 Refresh Token 존재 확인
       boolean hasStoredRefreshToken = redisUtil.hasKey("RT:" + reissueRequestDto.getRefreshToken());
       if (!hasStoredRefreshToken) {
-        log.warn("Refresh token not found or expired in Redis. RefreshToken: {}",
+        log.info("Refresh token not found or expired in Redis. RefreshToken: {}",
             reissueRequestDto.getRefreshToken());
         throw new BusinessException(LOGOUT_MEMBER);
       }
@@ -119,7 +125,7 @@ public class UserService {
       String email = (String) redisUtil.get("RT:" + reissueRequestDto.getRefreshToken());
       User user = userRepository.findByEmail(email).orElseThrow(
           () -> {
-            log.warn("User not found for email: {}", email);
+            log.info("User not found for email: {}", email);
             throw new BusinessException(NOT_FOUND_MEMBER);
           });
 
@@ -136,6 +142,36 @@ public class UserService {
       log.info("Successfully reissued access token for user: {}", user.getEmail());
       return jwtTokenProvider.generateAccessToken(userDetails);
     }
+  }
+
+  public TokenInfo reissueToken(String refreshToken) {
+    try {
+      jwtUtils.isExpired(refreshToken);
+    } catch (ExpiredJwtException e) {
+      log.info("Refresh token expired: {}", refreshToken);
+      throw new BusinessException(EXPIRED_JWT);
+    }
+
+    String category = jwtUtils.getCategory(refreshToken);
+
+    if (!category.equals("refresh")) {
+      log.info("Invalid refresh token detected: {}", refreshToken);
+      throw new BusinessException(INVALID_REFRESH_TOKEN);
+    }
+
+    String username = jwtUtils.getUsername(refreshToken);
+    String role = jwtUtils.getRole(refreshToken);
+
+    String newAccessToken = jwtUtils.generateJwt("access", username, role, ACCESS_TOKEN_EXPIRY);
+    String newRefreshToken = jwtUtils.generateJwt("refresh", username, role, REFRESH_TOKEN_EXPIRY);
+
+    log.info("New access and refresh tokens generated for user: {}", username);
+
+    return TokenInfo.builder()
+                    .grantType("Bearer ")
+                    .accessToken(newAccessToken)
+                    .refreshToken(newRefreshToken)
+                    .build();
   }
 
   public void logout(TokenInfo logoutRequestDto) {

@@ -1,11 +1,13 @@
 package com.msgs.global.common.jwt;
 
 import com.msgs.domain.user.domain.User;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +25,7 @@ public class JWTFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
 
+/*
     // request에서 Authorization 헤더를 찾음
     String authorization = request.getHeader("Authorization");
 
@@ -59,6 +62,61 @@ public class JWTFilter extends OncePerRequestFilter {
     SecurityContextHolder.getContext().setAuthentication(authToken);
     // SecurityContext에 인증된 사용자 정보를 저장
     // 이후 요청 처리 과정에서 현재 요청을 보낸 사용자가 누구인지, 어떤 권한을 가지고 있는지를 참조할 수 있게 함
+
+    filterChain.doFilter(request, response);
+*/
+
+    String authorization = request.getHeader("Authorization");
+
+    // 토큰이 없을 경우, 다음 필터로 넘김
+    if (authorization == null || !authorization.startsWith("Bearer ")) {
+      log.warn("Access Token is null");
+
+      filterChain.doFilter(request, response);
+
+      return;
+    }
+
+    String accessToken = authorization.split(" ")[1];
+
+    try {
+      jwtUtils.isExpired(accessToken);
+
+    } catch (ExpiredJwtException e) {
+      PrintWriter writer = response.getWriter();
+      writer.println("Access Token expired");
+
+      // 다음 필터로 넘기지 않고 바로 응답코드를 발생시킴
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return;
+    }
+
+    // Access Token 확인
+    String category = jwtUtils.getCategory(accessToken);
+
+    if (!category.equals("access")) {
+      PrintWriter writer = response.getWriter();
+      writer.println("Invalid Access Token");
+
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+
+    // 세션 생성
+    String username = jwtUtils.getUsername(accessToken);
+    String role = jwtUtils.getRole(accessToken);
+
+    User findUser = User.builder()
+                        .email(username)
+                        .role(role)
+                        .build();
+
+    UserPrinciple userPrinciple = UserPrinciple.builder()
+                                               .user(findUser)
+                                               .build();
+
+    Authentication authToken = new UsernamePasswordAuthenticationToken(userPrinciple, null,
+        userPrinciple.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(authToken);
 
     filterChain.doFilter(request, response);
   }

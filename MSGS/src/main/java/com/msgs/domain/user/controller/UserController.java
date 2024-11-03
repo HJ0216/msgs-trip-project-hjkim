@@ -1,16 +1,22 @@
 package com.msgs.domain.user.controller;
 
+import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
+
 import com.msgs.domain.user.dto.UserDTO;
 import com.msgs.domain.user.dto.request.LoginRequestDTO;
 import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.dto.request.UpdateUserNicknameRequestDTO;
 import com.msgs.domain.user.dto.request.UpdateUserPasswordRequestDTO;
 import com.msgs.domain.user.service.UserService;
+import com.msgs.global.common.error.BusinessException;
+import com.msgs.global.common.jwt.JWTUtils;
 import com.msgs.global.common.jwt.TokenInfo;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,8 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserService userService;
-
-  private final Random random = new Random();
+  private final JWTUtils jwtUtils;
 
   @PostMapping("/new")
   @ResponseStatus(HttpStatus.CREATED)
@@ -69,6 +74,41 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   public TokenInfo reissue(@RequestBody TokenInfo reissueRequestDto) {
     return userService.reissue(reissueRequestDto);
+  }
+
+  @PostMapping("/re-issue")
+  @ResponseStatus(HttpStatus.OK)
+  public void reIssue(HttpServletRequest request, HttpServletResponse response) {
+    String refreshToken = null;
+
+    Cookie[] cookies = request.getCookies();
+    for (Cookie cookie : cookies) {
+      if (cookie.getName().equals("refresh")) {
+        refreshToken = cookie.getValue();
+      }
+    }
+
+    if (refreshToken == null) {
+      throw new BusinessException(REFRESH_TOKEN_IS_NULL);
+    }
+
+    TokenInfo tokenInfo = userService.reissueToken(refreshToken);
+
+    response.setHeader("Authorization", tokenInfo.getGrantType() + tokenInfo.getAccessToken());
+    response.addCookie(createCookie("refresh", tokenInfo.getRefreshToken()));
+  }
+
+  private Cookie createCookie(String key, String value) {
+    Cookie cookie = new Cookie(key, value);
+    cookie.setMaxAge(1 * 60 * 60); // 1시간
+//    cookie.setSecure(true); // 쿠키가 HTTPS 연결을 통해서만 전송되도록 설정
+//    cookie.setPath("/"); // 쿠키가 사용할 수 있는 URL 경로를 지정
+    cookie.setHttpOnly(true);
+    // 쿠키를 JavaScript와 같은 클라이언트 측, 스크립트에서 접근할 수 없도록 설정
+    // JavaScript의 document.cookie를 사용해 쿠키의 값을 읽거나 수정할 수 없음
+    // XSS(크로스 사이트 스크립팅) 공격으로부터 쿠키를 보호하는 데 도움
+
+    return cookie;
   }
 
   @PostMapping("/logout")
