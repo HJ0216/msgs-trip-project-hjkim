@@ -7,6 +7,7 @@ import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_REFRESH_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
+import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
 import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
 
 import com.msgs.domain.user.domain.User;
@@ -19,7 +20,7 @@ import com.msgs.global.common.jwt.JWTUtils;
 import com.msgs.global.common.jwt.JwtTokenProvider;
 import com.msgs.global.common.jwt.SecurityUtils;
 import com.msgs.global.common.jwt.TokenInfo;
-import com.msgs.global.common.redis.RedisUtil;
+import com.msgs.global.common.redis.RedisUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class UserService {
   private final UserRepository userRepository;
   private final JwtTokenProvider jwtTokenProvider;
   private final JWTUtils jwtUtils;
-  private final RedisUtil redisUtil;
+  private final RedisUtils redisUtils;
 
   @Transactional
   public void create(SignUpRequestDTO signUpRequestDTO) {
@@ -115,14 +116,15 @@ public class UserService {
       throw new BusinessException(VALID_ACCESS_TOKEN);
     } catch (ExpiredJwtException e) {
       // Redis에 Refresh Token 존재 확인
-      boolean hasStoredRefreshToken = redisUtil.hasKey("RT:" + reissueRequestDto.getRefreshToken());
+      boolean hasStoredRefreshToken = redisUtils.hasKey(
+          "RT:" + reissueRequestDto.getRefreshToken());
       if (!hasStoredRefreshToken) {
         log.info("Refresh token not found or expired in Redis. RefreshToken: {}",
             reissueRequestDto.getRefreshToken());
         throw new BusinessException(LOGOUT_MEMBER);
       }
 
-      String email = (String) redisUtil.get("RT:" + reissueRequestDto.getRefreshToken());
+      String email = (String) redisUtils.get("RT:" + reissueRequestDto.getRefreshToken());
       User user = userRepository.findByEmail(email).orElseThrow(
           () -> {
             log.info("User not found for email: {}", email);
@@ -159,11 +161,22 @@ public class UserService {
       throw new BusinessException(INVALID_REFRESH_TOKEN);
     }
 
+    // Redis에 RT 저장 확인
+    boolean isExistRefreshToken = redisUtils.hasKey("RT:" + refreshToken);
+    if (!isExistRefreshToken) {
+      log.info("Refresh token not found or expired in Redis: {}", refreshToken);
+      throw new BusinessException(REFRESH_TOKEN_IS_NULL);
+    }
+
     String username = jwtUtils.getUsername(refreshToken);
     String role = jwtUtils.getRole(refreshToken);
 
     String newAccessToken = jwtUtils.generateJwt("access", username, role, ACCESS_TOKEN_EXPIRY);
     String newRefreshToken = jwtUtils.generateJwt("refresh", username, role, REFRESH_TOKEN_EXPIRY);
+
+    // Redis에 새로운 Token 값 저장
+    redisUtils.delete("RT:" + refreshToken);
+    redisUtils.set("RT:" + newRefreshToken, username, REFRESH_TOKEN_EXPIRY);
 
     log.info("New access and refresh tokens generated for user: {}", username);
 
@@ -181,12 +194,12 @@ public class UserService {
       throw new BusinessException(INVALID_ACCESS_TOKEN);
     }
 
-    if (redisUtil.get("RT:" + logoutRequestDto.getRefreshToken()) != null) {
-      redisUtil.delete("RT:" + logoutRequestDto.getRefreshToken());
+    if (redisUtils.get("RT:" + logoutRequestDto.getRefreshToken()) != null) {
+      redisUtils.delete("RT:" + logoutRequestDto.getRefreshToken());
     }
 
     Long expiration = jwtTokenProvider.getExpiration(logoutRequestDto.getAccessToken());
-    redisUtil.setBlackList("AT:" + logoutRequestDto.getAccessToken(), "logout", expiration);
+    redisUtils.setBlackList("AT:" + logoutRequestDto.getAccessToken(), "logout", expiration);
 
     log.info("Logout successful for accessToken: {}", logoutRequestDto.getAccessToken());
   }
