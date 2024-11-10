@@ -22,8 +22,6 @@ public class SignUpRequestDTO {
   private static final String NICKNAME_REGEX = "^[A-Za-zㄱ-힣0-9]{2,8}$";
   private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*[!@#$%^&*()-_+=])(?=.*\\d).{8,20}$";
 
-  private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
   @NotNull(message = "회원 타입은 필수 값입니다.")
   private String userType;
 
@@ -51,7 +49,7 @@ public class SignUpRequestDTO {
     return role == null || role.isEmpty() ? "ROLE_USER" : role;
   }
 
-  public User toEntity() {
+  public User toEntity(BCryptPasswordEncoder bCryptPasswordEncoder) {
     return User.builder()
                .status(userType.substring(0, 1).toUpperCase())
                .userType(UserType.valueOf(userType.toUpperCase()))

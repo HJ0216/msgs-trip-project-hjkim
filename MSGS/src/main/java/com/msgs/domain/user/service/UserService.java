@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ public class UserService {
   private static final long REFRESH_TOKEN_EXPIRY = 3600000L; // 1시간
 
   private final AuthenticationManagerBuilder authenticationManagerBuilder;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
   private final UserRepository userRepository;
   private final JWTUtils jwtUtils;
   private final RedisUtils redisUtils;
@@ -40,7 +42,7 @@ public class UserService {
   @Transactional
   public void create(SignUpRequestDTO signUpRequestDTO) {
     emailDuplicateCheck(signUpRequestDTO.getEmail());
-    userRepository.save(signUpRequestDTO.toEntity());
+    userRepository.save(signUpRequestDTO.toEntity(bCryptPasswordEncoder));
 
     log.info("User successfully created for email: {}", signUpRequestDTO.getEmail());
   }
