@@ -3,13 +3,11 @@ package com.msgs.domain.user.controller;
 import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
 
 import com.msgs.domain.user.dto.UserDTO;
-import com.msgs.domain.user.dto.request.LoginRequestDTO;
 import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.dto.request.UpdateUserNicknameRequestDTO;
 import com.msgs.domain.user.dto.request.UpdateUserPasswordRequestDTO;
 import com.msgs.domain.user.service.UserService;
 import com.msgs.global.common.error.BusinessException;
-import com.msgs.global.common.jwt.JWTUtils;
 import com.msgs.global.common.jwt.TokenInfo;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserService userService;
-  private final JWTUtils jwtUtils;
 
   @PostMapping("/new")
   @ResponseStatus(HttpStatus.CREATED)
@@ -48,13 +45,15 @@ public class UserController {
     userService.create(signUpRequestDTO);
   }
 
+/*  LoginFilter로 대체
+
   @PostMapping("/login")
   @ResponseStatus(HttpStatus.OK)
   public TokenInfo login(@Valid @RequestBody LoginRequestDTO loginRequestDto) {
     return userService.login(loginRequestDto);
-  }
+  }*/
 
-  @GetMapping("/me")
+  @GetMapping("/my")
   @ResponseStatus(HttpStatus.OK)
   public UserDTO findMyInfo() {
     String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -70,11 +69,13 @@ public class UserController {
     return userService.findMyInfo();
   }
 
+/*  re-issue API로 대체
+
   @PostMapping("/reissue")
   @ResponseStatus(HttpStatus.OK)
   public TokenInfo reissue(@RequestBody TokenInfo reissueRequestDto) {
     return userService.reissue(reissueRequestDto);
-  }
+  }*/
 
   @PostMapping("/re-issue")
   @ResponseStatus(HttpStatus.OK)
@@ -111,11 +112,13 @@ public class UserController {
     return cookie;
   }
 
+/*  LogoutFilter로 대체
+
   @PostMapping("/logout")
   @ResponseStatus(HttpStatus.OK)
-  public void logout(@RequestBody TokenInfo logoutRequestDto) {
+  public void logOut(@RequestBody TokenInfo logoutRequestDto) {
     userService.logout(logoutRequestDto);
-  }
+  }*/
 
   @PatchMapping("/nickname")
   @ResponseStatus(HttpStatus.OK)

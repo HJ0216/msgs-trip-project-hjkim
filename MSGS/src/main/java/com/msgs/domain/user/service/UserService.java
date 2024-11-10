@@ -1,35 +1,25 @@
 package com.msgs.domain.user.service;
 
-import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PASSWORD;
 import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
 import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
-import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_REFRESH_TOKEN;
-import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
-import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
 
 import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.dto.UserDTO;
-import com.msgs.domain.user.dto.request.LoginRequestDTO;
 import com.msgs.domain.user.dto.request.SignUpRequestDTO;
 import com.msgs.domain.user.repository.UserRepository;
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.jwt.JWTUtils;
-import com.msgs.global.common.jwt.JwtTokenProvider;
-import com.msgs.global.common.jwt.SecurityUtils;
 import com.msgs.global.common.jwt.TokenInfo;
 import com.msgs.global.common.redis.RedisUtils;
 import io.jsonwebtoken.ExpiredJwtException;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +34,6 @@ public class UserService {
 
   private final AuthenticationManagerBuilder authenticationManagerBuilder;
   private final UserRepository userRepository;
-  private final JwtTokenProvider jwtTokenProvider;
   private final JWTUtils jwtUtils;
   private final RedisUtils redisUtils;
 
@@ -63,7 +52,7 @@ public class UserService {
     }
   }
 
-  public TokenInfo login(LoginRequestDTO loginRequestDTO) {
+/*  public TokenInfo login(LoginRequestDTO loginRequestDTO) {
     User user = userRepository.findByEmail(loginRequestDTO.getEmail()).orElseThrow(
         () -> {
           log.info("User not found for email: {}", loginRequestDTO.getEmail());
@@ -94,7 +83,7 @@ public class UserService {
     log.info("Generating token for user: {}", user.getEmail());
 
     return tokenInfo;
-  }
+  }*/
 
   public UserDTO findMyInfo() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -108,7 +97,7 @@ public class UserService {
     return UserDTO.toUserDTO(user);
   }
 
-  public TokenInfo reissue(TokenInfo reissueRequestDto) {
+/*  public TokenInfo reissue(TokenInfo reissueRequestDto) {
     try {
       jwtTokenProvider.getExpiration(reissueRequestDto.getAccessToken());
 
@@ -144,7 +133,7 @@ public class UserService {
       log.info("Successfully reissued access token for user: {}", user.getEmail());
       return jwtTokenProvider.generateAccessToken(userDetails);
     }
-  }
+  }*/
 
   public TokenInfo reissueToken(String refreshToken) {
     try {
@@ -187,7 +176,7 @@ public class UserService {
                     .build();
   }
 
-  public void logout(TokenInfo logoutRequestDto) {
+/*  public void logout(TokenInfo logoutRequestDto) {
     if (!jwtTokenProvider.isValidAccessToken(logoutRequestDto.getAccessToken())) {
       log.warn("Invalid access token detected during logout: {}",
           logoutRequestDto.getAccessToken());
@@ -202,7 +191,7 @@ public class UserService {
     redisUtils.setBlackList("AT:" + logoutRequestDto.getAccessToken(), "logout", expiration);
 
     log.info("Logout successful for accessToken: {}", logoutRequestDto.getAccessToken());
-  }
+  }*/
 
   @Transactional
   public void updateNickname(String newNickname) {

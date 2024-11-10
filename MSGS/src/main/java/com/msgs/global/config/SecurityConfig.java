@@ -3,11 +3,8 @@ package com.msgs.global.config;
 import com.msgs.global.common.jwt.CustomLogoutFilter;
 import com.msgs.global.common.jwt.JWTFilter;
 import com.msgs.global.common.jwt.JWTUtils;
-import com.msgs.global.common.jwt.JwtAuthenticationFilter;
-import com.msgs.global.common.jwt.JwtTokenProvider;
 import com.msgs.global.common.jwt.LoginFilter;
 import com.msgs.global.common.redis.RedisUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,9 +19,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 @Configuration // 스프링의 환경설정 파일임을 의미하는 애너테이션
 @EnableWebSecurity // 모든 요청 URL이 스프링 시큐리티의 제어를 받도록 만드는 애너테이션
@@ -32,7 +31,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   private final AuthenticationConfiguration authenticationConfiguration;
-  private final JwtTokenProvider jwtTokenProvider;
   private final JWTUtils jwtUtils;
   private final RedisUtils redisUtils;
 
@@ -59,6 +57,7 @@ public class SecurityConfig {
         corsConfigurationSource()
     );
 
+    // corsConfigurationSource()로 변경
 //    http.cors((cors) -> cors.configurationSource(new CorsConfigurationSource() {
 //      @Override
 //      public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
@@ -88,10 +87,9 @@ public class SecurityConfig {
                 , "/api/v2/users/reissue"
                 , "/api/v2/users/re-issue").permitAll()
             // 회원가입과 로그인은 인증 없이 접근 가능, reissue는 AT의 유효시간이 만료되었으므로 권한이 없음 -> permitAll 처리해야 함
-            .requestMatchers("/api/v2/users/me"
+            .requestMatchers("/api/v2/users/my"
                 , "/api/v2/users/nickname"
-                , "/api/v2/users/password"
-                , "/api/v2/users/logout").hasRole("USER")
+                , "/api/v2/users/password").hasRole("USER")
             // 특정 엔드포인트에 대해 USER 역할이 필요
             .anyRequest().authenticated()
     );
@@ -102,8 +100,7 @@ public class SecurityConfig {
     // JWT 인증 필터 추가: 예외 처리 필터 이후에 추가
 //    http.addFilterAfter(new JwtAuthenticationFilter(jwtTokenProvider),
 //        ExceptionHandlerFilter.class);
-
-    //
+    http.addFilterBefore(characterEncodingFilter(), CsrfFilter.class);
     http.addFilterBefore(new JWTFilter(jwtUtils), LoginFilter.class);
 
     // 사용자 로그인 필터 추가: UsernamePasswordAuthenticationFilter 위치에 추가
@@ -157,16 +154,25 @@ public class SecurityConfig {
 //    }
 
   // 특정 경로에 대해 특정 보안 필터 제외
-  public JwtAuthenticationFilter jwtAuthenticationFilterForSpecificUrls() {
-    return new JwtAuthenticationFilter(jwtTokenProvider) {
-      @Override
-      protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return !("/api/v2/users/login".equals(path) || "/api/v2/users/me".equals(path)
-            || "/api/v2/users/nickname".equals(path) || "/api/v2/users/password".equals(path)
-            || "/api/v2/users/reissue".equals(path) || "/api/v2/users/logout".equals(path));
-      }
-    };
+//  public JwtAuthenticationFilter jwtAuthenticationFilterForSpecificUrls() {
+//    return new JwtAuthenticationFilter(jwtTokenProvider) {
+//      @Override
+//      protected boolean shouldNotFilter(HttpServletRequest request) {
+//        String path = request.getServletPath();
+//        return !("/api/v2/users/login".equals(path) || "/api/v2/users/me".equals(path)
+//            || "/api/v2/users/nickname".equals(path) || "/api/v2/users/password".equals(path)
+//            || "/api/v2/users/reissue".equals(path) || "/api/v2/users/logout".equals(path));
+//      }
+//    };
+//  }
+
+  // CharacterEncodingFilter Bean 생성
+  @Bean
+  public CharacterEncodingFilter characterEncodingFilter() {
+    CharacterEncodingFilter filter = new CharacterEncodingFilter();
+    filter.setEncoding("UTF-8");
+    filter.setForceEncoding(true);
+    return filter;
   }
 
   @Bean
