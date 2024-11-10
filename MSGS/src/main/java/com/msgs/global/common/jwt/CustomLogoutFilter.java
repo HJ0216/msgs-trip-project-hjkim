@@ -1,5 +1,9 @@
 package com.msgs.global.common.jwt;
 
+import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
+import static com.msgs.domain.user.exception.UserErrorCode.MALFORMED_JWT;
+import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
+
 import com.msgs.global.common.redis.RedisUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -15,6 +19,8 @@ import org.springframework.web.filter.GenericFilterBean;
 
 @RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilterBean {
+
+  private static final String REFRESH_TOKEN_KEY = "refresh";
 
   private final JWTUtils jwtUtils;
   private final RedisUtils redisUtils;
@@ -32,56 +38,61 @@ public class CustomLogoutFilter extends GenericFilterBean {
     String requestUri = request.getRequestURI();
     if (!requestUri.matches("^\\/api\\/v2\\/users\\/logout$")) {
       filterChain.doFilter(request, response);
+
       return;
     }
 
     String requestMethod = request.getMethod();
     if (!requestMethod.equals("POST")) {
       filterChain.doFilter(request, response);
+
       return;
     }
 
-    // Cookie에 담긴 Refresh Token 제거
     String refreshToken = null;
 
     Cookie[] cookies = request.getCookies();
     for (Cookie cookie : cookies) {
-      if (cookie.getName().equals("refresh")) {
+      if (cookie.getName().equals(REFRESH_TOKEN_KEY)) {
         refreshToken = cookie.getValue();
       }
     }
 
     if (refreshToken == null) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.setStatus(REFRESH_TOKEN_IS_NULL.getHttpStatus().value());
+
       return;
     }
 
     try {
       jwtUtils.isExpired(refreshToken);
     } catch (ExpiredJwtException e) {
-      // TODO: LOGOUT EXCEPTION으로 수정
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.setStatus(EXPIRED_JWT.getHttpStatus().value());
+
       return;
     }
 
     String category = jwtUtils.getCategory(refreshToken);
-    if (!category.startsWith("refresh")) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+    if (!category.startsWith(REFRESH_TOKEN_KEY)) {
+      response.setStatus(MALFORMED_JWT.getHttpStatus().value());
+
       return;
     }
 
     // Redis에 RT 저장 확인
     boolean isExistRefreshToken = redisUtils.hasKey("RT:" + refreshToken);
+
     if (!isExistRefreshToken) {
-      // TODO: LOGOUT EXCEPTION으로 수정
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.setStatus(REFRESH_TOKEN_IS_NULL.getHttpStatus().value());
+
       return;
     }
 
     // 로그아웃
     redisUtils.delete("RT:" + refreshToken);
 
-    Cookie cookie = new Cookie("refresh", null);
+    Cookie cookie = new Cookie(REFRESH_TOKEN_KEY, null);
     cookie.setMaxAge(0);
     cookie.setHttpOnly(true);
 

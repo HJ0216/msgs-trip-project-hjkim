@@ -1,6 +1,10 @@
 package com.msgs.global.common.jwt;
 
+import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
+import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
+
 import com.msgs.domain.user.domain.User;
+import com.msgs.global.common.error.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,7 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
-  
+
   private final JWTUtils jwtUtils;
 
   @Override
@@ -87,7 +91,8 @@ public class JWTFilter extends OncePerRequestFilter {
       writer.println("Access Token expired");
 
       // 다음 필터로 넘기지 않고 바로 응답코드를 발생시킴
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      setResponse(response, EXPIRED_JWT);
       return;
     }
 
@@ -98,7 +103,8 @@ public class JWTFilter extends OncePerRequestFilter {
       PrintWriter writer = response.getWriter();
       writer.println("Invalid Access Token");
 
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      setResponse(response, INVALID_ACCESS_TOKEN);
     }
 
     // 세션 생성
@@ -119,5 +125,20 @@ public class JWTFilter extends OncePerRequestFilter {
     SecurityContextHolder.getContext().setAuthentication(authToken);
 
     filterChain.doFilter(request, response);
+  }
+
+  private void setResponse(HttpServletResponse response, ErrorCode errorCode) {
+    // Encoding 설정: CharacterEncodingFilter로 대체
+//    response.setHeader("Content-Type", "text/plain; charset=UTF-8");
+//    response.setCharacterEncoding("UTF-8");
+//    response.setContentType("text/plain; charset=UTF-8");
+
+    response.setStatus(errorCode.getHttpStatus().value());
+    try {
+      PrintWriter writer = response.getWriter();
+      response.getWriter().write(errorCode.getMessage());
+    } catch (IOException e) {
+      log.warn(e.getMessage());
+    }
   }
 }

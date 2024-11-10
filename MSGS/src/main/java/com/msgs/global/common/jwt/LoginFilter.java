@@ -68,18 +68,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
       Authentication authentication) {
     log.info("Success Login");
 
-/*    UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal(); // 현재 인증된 사용자에 대한 주요 정보를 반환
-
-    String username = userPrinciple.getUsername();
-
-    Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-    Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
-    GrantedAuthority authority = iterator.next();
-    String role = authority.getAuthority();
-
-    String token = jwtUtils.generateJwt(username, role, 60 * 60 * 60 * 1L);
-    response.addHeader("Authorization", "Bearer " + token);*/
-
     String username = authentication.getName(); // email
 
     Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -115,9 +103,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
   protected void unsuccessfulAuthentication(HttpServletRequest request,
       HttpServletResponse response,
       AuthenticationException failed) {
-    log.error("Login failed: ", failed);
+    log.error("Login failed: ", failed.getMessage());
 
-    response.setStatus(401);
+    response.setStatus(INVALID_CREDENTIALS.getHttpStatus().value());
   }
 
 }
