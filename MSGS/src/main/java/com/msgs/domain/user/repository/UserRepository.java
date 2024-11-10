@@ -17,7 +17,15 @@ public class UserRepository {
     List<User> users = em.createQuery("select u from User u where u.email = :email", User.class)
                          .setParameter("email", email)
                          .getResultList();
-    
+
+    return users.stream().findFirst();
+  }
+
+  public Optional<User> findByPhone(String phone) {
+    List<User> users = em.createQuery("select u from User u where u.phone = :phone", User.class)
+                         .setParameter("phone", phone)
+                         .getResultList();
+
     return users.stream().findFirst();
   }
 
@@ -29,4 +37,5 @@ public class UserRepository {
     User user = em.find(User.class, id);
     return Optional.ofNullable(user);
   }
+
 }

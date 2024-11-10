@@ -10,10 +10,11 @@ import org.springframework.http.HttpStatus;
 public enum UserErrorCode implements ErrorCode {
   // 회원 가입
   EMAIL_VALIDATION(HttpStatus.BAD_REQUEST, "이메일 형식이 맞지 않습니다."),
-  DUPLICATED_EMAIL(HttpStatus.CONFLICT, "이미 존재하는 이메일 입니다."),
+  DUPLICATED_EMAIL(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),
   PASSWORD_VALIDATION(HttpStatus.BAD_REQUEST, "비밀번호 형식이 맞지 않습니다."),
   PASSWORD_CONFIRM_VALIDATION(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인이 맞지 않습니다."),
   PHONE_NUMBER_VALIDATION(HttpStatus.BAD_REQUEST, "휴대폰 형식이 맞지 않습니다."),
+  DUPLICATED_PHONE_NUMBER(HttpStatus.CONFLICT, "이미 존재하는 휴대폰 번호입니다."),
   NICKNAME_VALIDATION(HttpStatus.BAD_REQUEST, "닉네임 형식이 맞지 않습니다."),
   USERTYPE_VALIDATION(HttpStatus.BAD_REQUEST, "회원 타입이 올바르지 않습니다."),
 

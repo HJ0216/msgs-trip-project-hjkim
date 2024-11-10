@@ -1,6 +1,7 @@
 package com.msgs.domain.user.service;
 
 import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_EMAIL;
+import static com.msgs.domain.user.exception.UserErrorCode.DUPLICATED_PHONE_NUMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_REFRESH_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
@@ -42,6 +43,7 @@ public class UserService {
   @Transactional
   public void create(SignUpRequestDTO signUpRequestDTO) {
     emailDuplicateCheck(signUpRequestDTO.getEmail());
+    phoneDuplicateCheck(signUpRequestDTO.getPhone());
     userRepository.save(signUpRequestDTO.toEntity(bCryptPasswordEncoder));
 
     log.info("User successfully created for email: {}", signUpRequestDTO.getEmail());
@@ -51,6 +53,13 @@ public class UserService {
     if (userRepository.findByEmail(email).isPresent()) {
       log.info("Email duplication check failed. Email: {}", email);
       throw new BusinessException(DUPLICATED_EMAIL);
+    }
+  }
+
+  private void phoneDuplicateCheck(String phone) {
+    if (userRepository.findByPhone(phone).isPresent()) {
+      log.info("Phone duplication check failed. Phone: {}", phone);
+      throw new BusinessException(DUPLICATED_PHONE_NUMBER);
     }
   }
 
