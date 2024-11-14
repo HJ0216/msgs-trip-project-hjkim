@@ -26,6 +26,8 @@ public class User extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+//  @GeneratedValue(strategy = GenerationType.TABLE, generator = "my_table_generator")
+//  @TableGenerator(name = "my_table_generator", allocationSize = 1)
   @Column(name = "user_id")
   private Integer id;
 
