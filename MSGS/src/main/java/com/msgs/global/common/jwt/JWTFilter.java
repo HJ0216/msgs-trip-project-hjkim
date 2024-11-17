@@ -72,6 +72,12 @@ public class JWTFilter extends OncePerRequestFilter {
 
     String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
 
+    // re-issue 요청인 경우, Access Token 유효성 검사를 건너뜀
+    if (request.getRequestURI().equals("/api/v2/users/re-issue")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     // 토큰이 없을 경우, 다음 필터로 넘김
     if (authorization == null || !authorization.startsWith("Bearer ")) {
       log.warn("Access Token is null");

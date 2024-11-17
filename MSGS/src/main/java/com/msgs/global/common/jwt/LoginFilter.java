@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,8 +28,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
-  private static final long ACCESS_TOKEN_EXPIRY = 600000L; // 10분
-  private static final long REFRESH_TOKEN_EXPIRY = 3600000L; // 1시간
+  private static final long ACCESS_TOKEN_EXPIRY = 30000L; // 1분
+  private static final long REFRESH_TOKEN_EXPIRY = 600000L; // 10분
 
   private final AuthenticationManager authenticationManager;
   private final JWTUtils jwtUtils;
@@ -57,7 +58,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     } catch (IOException e) {
       log.error("Failed to parse authentication request body", e);
-      
+
       throw new BusinessException(INVALID_CREDENTIALS);
     }
   }
@@ -82,7 +83,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     // refresh token 저장
     redisUtils.set("RT:" + refreshToken, username, REFRESH_TOKEN_EXPIRY);
 
-    response.setHeader("Authorization", "Bearer " + accessToken);
+    response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
     response.addCookie(generateCookie("refresh", refreshToken));
     response.setStatus(HttpStatus.OK.value());
   }

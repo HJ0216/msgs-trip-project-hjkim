@@ -6,6 +6,7 @@ import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_REFRESH_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
+import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
 
 import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.dto.UserDTO;
@@ -146,7 +147,9 @@ public class UserService {
     }
   }*/
 
-  public TokenInfo reissueToken(String refreshToken) {
+  public TokenInfo reissueToken(String accessToken, String refreshToken) {
+    validateAccessToken(accessToken);
+
     try {
       jwtUtils.isExpired(refreshToken);
     } catch (ExpiredJwtException e) {
@@ -185,6 +188,18 @@ public class UserService {
                     .accessToken(newAccessToken)
                     .refreshToken(newRefreshToken)
                     .build();
+  }
+
+  public void validateAccessToken(String accessToken) {
+    try {
+      jwtUtils.isExpired(accessToken);
+    } catch (ExpiredJwtException e) {
+      log.info("Access token expired: {}", accessToken);
+      return;
+    }
+
+    log.info("Access token is still valid, re-issue is not allowed: {}", accessToken);
+    throw new BusinessException(VALID_ACCESS_TOKEN);
   }
 
 /*  public void logout(TokenInfo logoutRequestDto) {

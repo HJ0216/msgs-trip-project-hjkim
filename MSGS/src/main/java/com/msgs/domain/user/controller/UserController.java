@@ -1,5 +1,6 @@
 package com.msgs.domain.user.controller;
 
+import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
 
 import com.msgs.domain.user.dto.UserDTO;
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -56,9 +58,10 @@ public class UserController {
   @GetMapping("/my")
   @ResponseStatus(HttpStatus.OK)
   public UserDTO findMyInfo() {
-    String username = SecurityContextHolder.getContext().getAuthentication().getName();
-
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    String username = authentication.getName();
+
     Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
     Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
     GrantedAuthority authority = iterator.next();
@@ -80,6 +83,15 @@ public class UserController {
   @PostMapping("/re-issue")
   @ResponseStatus(HttpStatus.OK)
   public void reIssue(HttpServletRequest request, HttpServletResponse response) {
+    // Access token 유효성 검사
+    String accessToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+    if (accessToken == null || !accessToken.startsWith("Bearer ")) {
+      throw new BusinessException(INVALID_ACCESS_TOKEN);
+    }
+
+    accessToken = accessToken.substring(7); // "Bearer " 제거
+    log.info("Received Access Token: {}", accessToken);
+
     String refreshToken = null;
 
     Cookie[] cookies = request.getCookies();
@@ -93,15 +105,15 @@ public class UserController {
       throw new BusinessException(REFRESH_TOKEN_IS_NULL);
     }
 
-    TokenInfo tokenInfo = userService.reissueToken(refreshToken);
-
-    response.setHeader("Authorization", tokenInfo.getGrantType() + tokenInfo.getAccessToken());
+    TokenInfo tokenInfo = userService.reissueToken(accessToken, refreshToken);
+    response.setHeader(HttpHeaders.AUTHORIZATION,
+        tokenInfo.getGrantType() + tokenInfo.getAccessToken());
     response.addCookie(createCookie("refresh", tokenInfo.getRefreshToken()));
   }
 
   private Cookie createCookie(String key, String value) {
     Cookie cookie = new Cookie(key, value);
-    cookie.setMaxAge(1 * 60 * 60); // 1시간
+    cookie.setMaxAge(1 * 10 * 60); // 10분
 //    cookie.setSecure(true); // 쿠키가 HTTPS 연결을 통해서만 전송되도록 설정
 //    cookie.setPath("/"); // 쿠키가 사용할 수 있는 URL 경로를 지정
     cookie.setHttpOnly(true);
