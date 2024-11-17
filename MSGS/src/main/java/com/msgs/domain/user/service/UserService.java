@@ -247,11 +247,10 @@ public class UserService {
           throw new BusinessException(NOT_FOUND_MEMBER);
         });
 
-    user.setPassword(newPassword);
+    user.setPassword(bCryptPasswordEncoder.encode(newPassword));
 
     userRepository.save(user);
 
-    log.info("Password updated successfully. User email: {}, New password: {}",
-        authentication.getName(), newPassword);
+    log.info("Password updated successfully.");
   }
 }

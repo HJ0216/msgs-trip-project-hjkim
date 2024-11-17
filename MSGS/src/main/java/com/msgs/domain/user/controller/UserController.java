@@ -14,8 +14,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -92,18 +94,15 @@ public class UserController {
     accessToken = accessToken.substring(7); // "Bearer " 제거
     log.info("Received Access Token: {}", accessToken);
 
-    String refreshToken = null;
-
-    Cookie[] cookies = request.getCookies();
-    for (Cookie cookie : cookies) {
-      if (cookie.getName().equals("refresh")) {
-        refreshToken = cookie.getValue();
-      }
-    }
-
-    if (refreshToken == null) {
-      throw new BusinessException(REFRESH_TOKEN_IS_NULL);
-    }
+    Cookie refreshTokenCookie = Optional.ofNullable(request.getCookies())
+                                        .flatMap(cookies -> Arrays.stream(cookies)
+                                                                  .filter(cookie -> cookie.getName()
+                                                                                          .equals(
+                                                                                              "refresh"))
+                                                                  .findFirst())
+                                        .orElseThrow(
+                                            () -> new BusinessException(REFRESH_TOKEN_IS_NULL));
+    String refreshToken = refreshTokenCookie.getValue();
 
     TokenInfo tokenInfo = userService.reissueToken(accessToken, refreshToken);
     response.setHeader(HttpHeaders.AUTHORIZATION,

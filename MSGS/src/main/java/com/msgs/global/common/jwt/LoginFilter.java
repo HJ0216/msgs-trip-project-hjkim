@@ -1,5 +1,6 @@
 package com.msgs.global.common.jwt;
 
+import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PASSWORD;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_CREDENTIALS;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,8 +49,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
       String email = loginRequestDto.getEmail();
       String password = loginRequestDto.getPassword();
-
-      log.info("username: {}, password: {}", email, password);
 
       UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
           email, password, null);
@@ -105,9 +104,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
   protected void unsuccessfulAuthentication(HttpServletRequest request,
       HttpServletResponse response,
       AuthenticationException failed) {
-    log.error("Login failed: ", failed.getMessage());
+    log.error("Login failed: ", failed.getClass());
 
-    throw new BusinessException(INVALID_CREDENTIALS);
+    throw new BusinessException(CHECK_LOGIN_ID_OR_PASSWORD);
   }
 
 }
