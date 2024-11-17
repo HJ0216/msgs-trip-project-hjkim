@@ -1,10 +1,13 @@
 package com.msgs.global.common.jwt;
 
+import com.msgs.domain.user.exception.UserErrorCode;
+import com.msgs.global.common.error.BusinessException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import java.security.Key;
 import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,13 +61,17 @@ public class JWTUtils {
   }
 
   public Boolean isExpired(String token) {
-    return Jwts.parserBuilder()
-               .setSigningKey(key)
-               .build()
-               .parseClaimsJws(token)
-               .getBody()
-               .getExpiration()
-               .before(new Date());
+    try {
+      return Jwts.parserBuilder()
+                 .setSigningKey(key)
+                 .build()
+                 .parseClaimsJws(token)
+                 .getBody()
+                 .getExpiration()
+                 .before(new Date());
+    } catch (SignatureException e) {
+      throw new BusinessException(UserErrorCode.INVALID_ACCESS_TOKEN);
+    }
   }
 
   public String generateJwt(String category, String username, String role, Long expiredMs) {

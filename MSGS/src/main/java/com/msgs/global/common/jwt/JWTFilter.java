@@ -4,16 +4,16 @@ import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
 
 import com.msgs.domain.user.domain.User;
-import com.msgs.global.common.error.ErrorCode;
+import com.msgs.global.common.error.BusinessException;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -70,7 +70,7 @@ public class JWTFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
 */
 
-    String authorization = request.getHeader("Authorization");
+    String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
 
     // 토큰이 없을 경우, 다음 필터로 넘김
     if (authorization == null || !authorization.startsWith("Bearer ")) {
@@ -87,24 +87,17 @@ public class JWTFilter extends OncePerRequestFilter {
       jwtUtils.isExpired(accessToken);
 
     } catch (ExpiredJwtException e) {
-      PrintWriter writer = response.getWriter();
-      writer.println("Access Token expired");
-
       // 다음 필터로 넘기지 않고 바로 응답코드를 발생시킴
-//      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      setResponse(response, EXPIRED_JWT);
-      return;
+//      setResponse(response, EXPIRED_JWT);
+      throw new BusinessException(EXPIRED_JWT);
     }
 
     // Access Token 확인
     String category = jwtUtils.getCategory(accessToken);
 
     if (!category.equals("access")) {
-      PrintWriter writer = response.getWriter();
-      writer.println("Invalid Access Token");
-
-//      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      setResponse(response, INVALID_ACCESS_TOKEN);
+//      setResponse(response, INVALID_ACCESS_TOKEN);
+      throw new BusinessException(INVALID_ACCESS_TOKEN);
     }
 
     // 세션 생성
@@ -125,20 +118,5 @@ public class JWTFilter extends OncePerRequestFilter {
     SecurityContextHolder.getContext().setAuthentication(authToken);
 
     filterChain.doFilter(request, response);
-  }
-
-  private void setResponse(HttpServletResponse response, ErrorCode errorCode) {
-    // Encoding 설정: CharacterEncodingFilter로 대체
-//    response.setHeader("Content-Type", "text/plain; charset=UTF-8");
-//    response.setCharacterEncoding("UTF-8");
-//    response.setContentType("text/plain; charset=UTF-8");
-
-    response.setStatus(errorCode.getHttpStatus().value());
-    try {
-      PrintWriter writer = response.getWriter();
-      response.getWriter().write(errorCode.getMessage());
-    } catch (IOException e) {
-      log.warn(e.getMessage());
-    }
   }
 }

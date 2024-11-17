@@ -4,6 +4,7 @@ import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.MALFORMED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
 
+import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.redis.RedisUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
 @RequiredArgsConstructor
@@ -59,34 +61,30 @@ public class CustomLogoutFilter extends GenericFilterBean {
     }
 
     if (refreshToken == null) {
-      response.setStatus(REFRESH_TOKEN_IS_NULL.getHttpStatus().value());
-
-      return;
+//      response.setStatus(REFRESH_TOKEN_IS_NULL.getHttpStatus().value());
+      throw new BusinessException(REFRESH_TOKEN_IS_NULL);
     }
 
     try {
       jwtUtils.isExpired(refreshToken);
     } catch (ExpiredJwtException e) {
-      response.setStatus(EXPIRED_JWT.getHttpStatus().value());
-
-      return;
+//      response.setStatus(EXPIRED_JWT.getHttpStatus().value());
+      throw new BusinessException(EXPIRED_JWT);
     }
 
     String category = jwtUtils.getCategory(refreshToken);
 
     if (!category.startsWith(REFRESH_TOKEN_KEY)) {
-      response.setStatus(MALFORMED_JWT.getHttpStatus().value());
-
-      return;
+//      response.setStatus(MALFORMED_JWT.getHttpStatus().value());
+      throw new BusinessException(MALFORMED_JWT);
     }
 
     // Redis에 RT 저장 확인
     boolean isExistRefreshToken = redisUtils.hasKey("RT:" + refreshToken);
 
     if (!isExistRefreshToken) {
-      response.setStatus(REFRESH_TOKEN_IS_NULL.getHttpStatus().value());
-
-      return;
+//      response.setStatus(REFRESH_TOKEN_IS_NULL.getHttpStatus().value());
+      throw new BusinessException(REFRESH_TOKEN_IS_NULL);
     }
 
     // 로그아웃
@@ -95,8 +93,11 @@ public class CustomLogoutFilter extends GenericFilterBean {
     Cookie cookie = new Cookie(REFRESH_TOKEN_KEY, null);
     cookie.setMaxAge(0);
     cookie.setHttpOnly(true);
-
     response.addCookie(cookie);
+
+    // 현재 요청을 보낸 사용자의 인증 정보 초기화
+    SecurityContextHolder.clearContext();
+
     response.setStatus(HttpServletResponse.SC_OK);
   }
 }

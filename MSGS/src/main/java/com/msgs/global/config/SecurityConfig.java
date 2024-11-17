@@ -1,6 +1,7 @@
 package com.msgs.global.config;
 
 import com.msgs.global.common.jwt.CustomLogoutFilter;
+import com.msgs.global.common.jwt.ExceptionHandlerFilter;
 import com.msgs.global.common.jwt.JWTFilter;
 import com.msgs.global.common.jwt.JWTUtils;
 import com.msgs.global.common.jwt.LoginFilter;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -33,6 +35,17 @@ public class SecurityConfig {
   private final AuthenticationConfiguration authenticationConfiguration;
   private final JWTUtils jwtUtils;
   private final RedisUtils redisUtils;
+
+  private static final String[] PERMIT_ALL_URL = {
+      "/api/v2/users/new"
+      , "/api/v2/users/login"
+      , "/api/v2/users/re-issue"
+  };
+  private static final String[] NEED_ROLE_URL = {
+      "/api/v2/users/my"
+      , "/api/v2/users/nickname"
+      , "/api/v2/users/password"
+  };
 
   // 스프링 시큐리티의 인증을 담당
   @Bean
@@ -82,14 +95,9 @@ public class SecurityConfig {
 
     http.authorizeHttpRequests(auth ->
         auth
-            .requestMatchers("/api/v2/users/new"
-                , "/api/v2/users/login"
-                , "/api/v2/users/reissue"
-                , "/api/v2/users/re-issue").permitAll()
+            .requestMatchers(PERMIT_ALL_URL).permitAll()
             // 회원가입과 로그인은 인증 없이 접근 가능, reissue는 AT의 유효시간이 만료되었으므로 권한이 없음 -> permitAll 처리해야 함
-            .requestMatchers("/api/v2/users/my"
-                , "/api/v2/users/nickname"
-                , "/api/v2/users/password").hasRole("USER")
+            .requestMatchers(NEED_ROLE_URL).hasRole("USER")
             // 특정 엔드포인트에 대해 USER 역할이 필요
             .anyRequest().authenticated()
     );
@@ -113,6 +121,8 @@ public class SecurityConfig {
     http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 
     http.addFilterBefore(new CustomLogoutFilter(jwtUtils, redisUtils), LogoutFilter.class);
+
+    http.addFilterAfter(new ExceptionHandlerFilter(), SecurityContextPersistenceFilter.class);
 
     // 구성된 필터 체인 빌드
     return http.build();

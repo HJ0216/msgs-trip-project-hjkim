@@ -57,6 +57,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     } catch (IOException e) {
       log.error("Failed to parse authentication request body", e);
+      
       throw new BusinessException(INVALID_CREDENTIALS);
     }
   }
@@ -105,7 +106,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
       AuthenticationException failed) {
     log.error("Login failed: ", failed.getMessage());
 
-    response.setStatus(INVALID_CREDENTIALS.getHttpStatus().value());
+    throw new BusinessException(INVALID_CREDENTIALS);
   }
 
 }
