@@ -2,9 +2,11 @@ package com.msgs.global.common.jwt;
 
 import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
+import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
 
 import com.msgs.domain.user.domain.User;
 import com.msgs.global.common.error.BusinessException;
+import com.msgs.global.common.redis.RedisUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +25,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
+  private static final String REISSUE_URL = "/api/v2/users/re-issue";
+
   private final JWTUtils jwtUtils;
+  private final RedisUtils redisUtils;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -73,7 +78,7 @@ public class JWTFilter extends OncePerRequestFilter {
     String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
 
     // re-issue 요청인 경우, Access Token 유효성 검사를 건너뜀
-    if (request.getRequestURI().equals("/api/v2/users/re-issue")) {
+    if (request.getRequestURI().equals(REISSUE_URL)) {
       filterChain.doFilter(request, response);
       return;
     }
@@ -104,6 +109,12 @@ public class JWTFilter extends OncePerRequestFilter {
     if (!category.equals("access")) {
 //      setResponse(response, INVALID_ACCESS_TOKEN);
       throw new BusinessException(INVALID_ACCESS_TOKEN);
+    }
+
+    Object blackList = redisUtils.getBlackList("AT:" + accessToken);
+
+    if (blackList != null && blackList.equals("logout")) {
+      throw new BusinessException(LOGOUT_MEMBER);
     }
 
     // 세션 생성

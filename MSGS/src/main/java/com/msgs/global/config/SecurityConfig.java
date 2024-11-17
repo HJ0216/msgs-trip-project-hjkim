@@ -109,7 +109,7 @@ public class SecurityConfig {
 //    http.addFilterAfter(new JwtAuthenticationFilter(jwtTokenProvider),
 //        ExceptionHandlerFilter.class);
     http.addFilterBefore(characterEncodingFilter(), CsrfFilter.class);
-    http.addFilterBefore(new JWTFilter(jwtUtils), LoginFilter.class);
+    http.addFilterBefore(new JWTFilter(jwtUtils, redisUtils), LoginFilter.class);
 
     // 사용자 로그인 필터 추가: UsernamePasswordAuthenticationFilter 위치에 추가
     // 사용자 로그인 필터 추가: /api/v2/users/login 경로에 맞춰 설정

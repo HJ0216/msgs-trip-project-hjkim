@@ -3,6 +3,7 @@ package com.msgs.global.common.jwt;
 import com.msgs.domain.user.exception.UserErrorCode;
 import com.msgs.global.common.error.BusinessException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -43,21 +44,29 @@ public class JWTUtils {
   }
 
   public String getUsername(String token) {
-    return Jwts.parserBuilder()
-               .setSigningKey(key)
-               .build()
-               .parseClaimsJws(token)
-               .getBody()
-               .get("username", String.class);
+    try {
+      return Jwts.parserBuilder()
+                 .setSigningKey(key)
+                 .build()
+                 .parseClaimsJws(token)
+                 .getBody()
+                 .get("username", String.class);
+    } catch (ExpiredJwtException e) {
+      throw new BusinessException(UserErrorCode.EXPIRED_JWT);
+    }
   }
 
   public String getRole(String token) {
-    return Jwts.parserBuilder()
-               .setSigningKey(key)
-               .build()
-               .parseClaimsJws(token)
-               .getBody()
-               .get("role", String.class);
+    try {
+      return Jwts.parserBuilder()
+                 .setSigningKey(key)
+                 .build()
+                 .parseClaimsJws(token)
+                 .getBody()
+                 .get("role", String.class);
+    } catch (ExpiredJwtException e) {
+      throw new BusinessException(UserErrorCode.EXPIRED_JWT);
+    }
   }
 
   public Boolean isExpired(String token) {
@@ -72,6 +81,19 @@ public class JWTUtils {
     } catch (SignatureException e) {
       throw new BusinessException(UserErrorCode.INVALID_ACCESS_TOKEN);
     }
+  }
+
+  public Long getExpiration(String token) {
+    Date expiration = Jwts.parserBuilder()
+                          .setSigningKey(key)
+                          .build()
+                          .parseClaimsJws(token)
+                          .getBody()
+                          .getExpiration();
+
+    long now = new Date().getTime();
+
+    return (expiration.getTime() - now);
   }
 
   public String generateJwt(String category, String username, String role, Long expiredMs) {
