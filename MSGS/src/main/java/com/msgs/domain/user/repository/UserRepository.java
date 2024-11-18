@@ -13,6 +13,11 @@ public class UserRepository {
 
   private final EntityManager em;
 
+  public Optional<User> findById(Integer id) {
+    User user = em.find(User.class, id);
+    return Optional.ofNullable(user);
+  }
+
   public Optional<User> findByEmail(String email) {
     List<User> users = em.createQuery("select u from User u where u.email = :email", User.class)
                          .setParameter("email", email)
@@ -32,10 +37,5 @@ public class UserRepository {
   public void save(User user) {
     em.persist(user);
   }
-
-  public Optional<User> findById(Integer id) {
-    User user = em.find(User.class, id);
-    return Optional.ofNullable(user);
-  }
-
+  
 }

@@ -25,6 +25,7 @@ public class UserDTO {
   private String nickname;
   private String password;
   private String imagePath;
+  private boolean isUsed;
   private LocalDateTime createdDate;
   private LocalDateTime updatedDate;
 
@@ -39,6 +40,7 @@ public class UserDTO {
                   .nickname(u.getNickname())
                   .password(u.getPassword())
                   .imagePath(u.getImagePath())
+                  .isUsed(u.isUsed())
                   .createdDate(u.getCreatedDate())
                   .updatedDate(u.getUpdatedDate())
                   .build();

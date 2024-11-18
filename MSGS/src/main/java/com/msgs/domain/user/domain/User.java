@@ -54,6 +54,9 @@ public class User extends BaseEntity {
 
   private String imagePath;
 
+  @Column(nullable = false)
+  private boolean isUsed;
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

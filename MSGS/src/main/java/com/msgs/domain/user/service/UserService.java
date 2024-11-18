@@ -253,4 +253,20 @@ public class UserService {
 
     log.info("Password updated successfully.");
   }
+
+  public void withdraw() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
+        () -> {
+          log.warn("User not found for email: {}", authentication.getName());
+          throw new BusinessException(NOT_FOUND_MEMBER);
+        });
+
+    user.setUsed(false); // 롬복이나 일반 자바 코드 모두 setter 이름에 is를 포함하지 않음
+
+    userRepository.save(user);
+
+    log.info("User account deleted successfully.");
+  }
 }

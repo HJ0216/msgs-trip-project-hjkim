@@ -25,7 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -143,8 +142,9 @@ public class UserController {
     userService.updatePassword(request.getPassword());
   }
 
-  @DeleteMapping()
-  public void deleteAccount() {
-
+  @PatchMapping("/withdrawal")
+  @ResponseStatus(HttpStatus.OK)
+  public void withdraw() {
+    userService.withdraw();
   }
 }
