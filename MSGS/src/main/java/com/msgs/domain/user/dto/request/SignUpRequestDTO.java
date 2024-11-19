@@ -45,8 +45,6 @@ public class SignUpRequestDTO {
 
   private String role;
 
-  private boolean isUsed = true;
-
   public String getRole() {
     return role == null || role.isEmpty() ? "ROLE_USER" : role;
   }
@@ -60,7 +58,7 @@ public class SignUpRequestDTO {
                .nickname(nickname)
                .password(bCryptPasswordEncoder.encode(password))
                .role(getRole())
-               .isUsed(isUsed)
+               .isUsed(true)
                .build();
   }
 
@@ -88,12 +86,11 @@ public class SignUpRequestDTO {
         Objects.equals(phone, that.phone) &&
         Objects.equals(nickname, that.nickname) &&
         Objects.equals(password, that.password) &&
-        Objects.equals(confirmPassword, that.confirmPassword) &&
-        Objects.equals(isUsed, that.isUsed);
+        Objects.equals(confirmPassword, that.confirmPassword);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userType, email, phone, nickname, password, confirmPassword, isUsed);
+    return Objects.hash(userType, email, phone, nickname, password, confirmPassword);
   }
 }

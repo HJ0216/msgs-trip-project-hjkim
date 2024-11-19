@@ -45,6 +45,7 @@ public class UserService {
   public void create(SignUpRequestDTO signUpRequestDTO) {
     emailDuplicateCheck(signUpRequestDTO.getEmail());
     phoneDuplicateCheck(signUpRequestDTO.getPhone());
+
     userRepository.save(signUpRequestDTO.toEntity(bCryptPasswordEncoder));
 
     log.info("User successfully created for email: {}", signUpRequestDTO.getEmail());
@@ -254,6 +255,7 @@ public class UserService {
     log.info("Password updated successfully.");
   }
 
+  @Transactional
   public void withdraw() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -263,10 +265,10 @@ public class UserService {
           throw new BusinessException(NOT_FOUND_MEMBER);
         });
 
-    user.setUsed(false); // 롬복이나 일반 자바 코드 모두 setter 이름에 is를 포함하지 않음
+    user.setIsUsed(false); // 롬복이나 일반 자바 코드 모두 setter 이름에 is를 포함하지 않음
 
     userRepository.save(user);
 
-    log.info("User account deleted successfully.");
+    log.info("User account({}) deleted successfully.", user.getEmail());
   }
 }
