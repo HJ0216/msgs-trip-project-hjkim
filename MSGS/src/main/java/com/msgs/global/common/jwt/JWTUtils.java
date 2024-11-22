@@ -21,13 +21,9 @@ public class JWTUtils {
 
   public JWTUtils(@Value("${jwt.secret}") String secret) {
     // decode: Base64로 인코딩된 문자열을 원래의 바이트 배열로 복원
+    // 서명 검증 시, 인코딩된 키를 디코딩해서 원본값을 사용하는데, 인코딩된 키 값으로 서명을 수행하면 서명 불일치 문제가 발생할 수 있음
     byte[] byteSecretKey = Decoders.BASE64.decode(secret);
     key = Keys.hmacShaKeyFor(byteSecretKey);
-
-    // getBytes: 문자열을 특정 문자 인코딩(예: UTF-8)에 따라 바이트 배열로 변환
-    // 문자열을 다른 데이터 형식(바이트 배열)으로 단순히 바꾸는 것
-//    key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-
   }
 
   public String getCategory(String token) {

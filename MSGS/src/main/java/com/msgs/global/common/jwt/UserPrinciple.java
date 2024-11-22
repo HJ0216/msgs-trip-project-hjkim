@@ -1,8 +1,8 @@
 package com.msgs.global.common.jwt;
 
 import com.msgs.domain.user.domain.User;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class UserPrinciple implements UserDetails {
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     // 계정의 권한 목록
-    Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+/*    Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
     grantedAuthorities.add(new GrantedAuthority() {
       @Override
       public String getAuthority() {
@@ -27,7 +27,10 @@ public class UserPrinciple implements UserDetails {
       }
     });
 
-    return grantedAuthorities;
+    return grantedAuthorities;*/
+
+    // 단일 역할
+    return Collections.singletonList(() -> user.getRole());
   }
 
   @Override

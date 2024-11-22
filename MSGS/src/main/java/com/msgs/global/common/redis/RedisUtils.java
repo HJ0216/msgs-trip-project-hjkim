@@ -15,8 +15,8 @@ public class RedisUtils {
   // 일반 데이터를 저장하고 조회하는 데 사용
   private final RedisTemplate<String, Object> redisBlackListTemplate;
 
-  public void set(String key, Object o, long milliseconds) {
-    redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer(o.getClass()));
+  public <T> void set(String key, T o, long milliseconds) {
+    redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(o.getClass()));
     redisTemplate.opsForValue().set(key, o, milliseconds, TimeUnit.MILLISECONDS);
     // Redis에 데이터를 저장
     // opsForValue: String을 쉽게 Serialize / Deserialize 해주는 interface
@@ -38,8 +38,8 @@ public class RedisUtils {
     return Boolean.TRUE.equals(redisTemplate.hasKey(key));
   }
 
-  public void setBlackList(String key, Object o, long milliseconds) {
-    redisBlackListTemplate.setValueSerializer(new Jackson2JsonRedisSerializer(o.getClass()));
+  public <T> void setBlackList(String key, T o, long milliseconds) {
+    redisBlackListTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(o.getClass()));
     redisBlackListTemplate.opsForValue().set(key, o, milliseconds, TimeUnit.MILLISECONDS);
   }
 
