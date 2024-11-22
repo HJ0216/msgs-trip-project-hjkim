@@ -2,6 +2,7 @@ package com.msgs.global.common.jwt;
 
 import static com.msgs.domain.user.exception.UserErrorCode.CHECK_LOGIN_ID_OR_PASSWORD;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_CREDENTIALS;
+import static com.msgs.global.common.error.CommonErrorCode.REDIS_CONNECTION_ERROR;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msgs.domain.user.dto.request.LoginRequestDTO;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,7 +31,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
-  private static final long ACCESS_TOKEN_EXPIRY = 30000L; // 1분
+  private static final long ACCESS_TOKEN_EXPIRY = 60000L; // 2분
   private static final long REFRESH_TOKEN_EXPIRY = 600000L; // 10분
 
   private final AuthenticationManager authenticationManager;
@@ -80,7 +82,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     String refreshToken = jwtUtils.generateJwt("refresh", username, role, REFRESH_TOKEN_EXPIRY);
 
     // refresh token 저장
-    redisUtils.set("RT:" + refreshToken, username, REFRESH_TOKEN_EXPIRY);
+    try {
+      redisUtils.set("RT:" + refreshToken, username, REFRESH_TOKEN_EXPIRY);
+    } catch (RedisConnectionFailureException e) {
+      log.error("Redis connection failed", e);
+      throw new BusinessException(REDIS_CONNECTION_ERROR);
+    }
 
     response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
     response.addCookie(generateCookie("refresh", refreshToken));

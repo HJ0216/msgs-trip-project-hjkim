@@ -5,6 +5,7 @@ import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.MALFORMED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
+import static com.msgs.global.common.error.CommonErrorCode.REDIS_CONNECTION_ERROR;
 
 import com.msgs.global.common.error.BusinessException;
 import com.msgs.global.common.redis.RedisUtils;
@@ -18,10 +19,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
+@Slf4j
 @RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilterBean {
 
@@ -83,14 +87,24 @@ public class CustomLogoutFilter extends GenericFilterBean {
     }
 
     // Redis에 RT 저장 확인
-    boolean isExistRefreshToken = redisUtils.hasKey("RT:" + refreshToken);
+    try {
+      boolean isExistRefreshToken = redisUtils.hasKey("RT:" + refreshToken);
 
-    if (!isExistRefreshToken) {
+      if (!isExistRefreshToken) {
 //      response.setStatus(REFRESH_TOKEN_IS_NULL.getHttpStatus().value());
-      throw new BusinessException(LOGOUT_MEMBER);
+        throw new BusinessException(LOGOUT_MEMBER);
+      }
+    } catch (RedisConnectionFailureException e) {
+      log.error("Redis connection failed", e);
+      throw new BusinessException(REDIS_CONNECTION_ERROR);
     }
 
-    redisUtils.delete("RT:" + refreshToken);
+    try {
+      redisUtils.delete("RT:" + refreshToken);
+    } catch (RedisConnectionFailureException e) {
+      log.error("Redis connection failed", e);
+      throw new BusinessException(REDIS_CONNECTION_ERROR);
+    }
 
     String accessToken = request.getHeader(HttpHeaders.AUTHORIZATION);
     if (accessToken == null || !accessToken.startsWith("Bearer ")) {
@@ -100,7 +114,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
     accessToken = accessToken.substring(7); // "Bearer " 제거
 
     Long expiration = jwtUtils.getExpiration(accessToken);
-    redisUtils.setBlackList("AT:" + accessToken, "logout", expiration);
+
+    try {
+      redisUtils.setBlackList("AT:" + accessToken, "logout", expiration);
+    } catch (RedisConnectionFailureException e) {
+      log.error("Redis connection failed", e);
+      throw new BusinessException(REDIS_CONNECTION_ERROR);
+    }
 
     Cookie cookie = new Cookie(REFRESH_TOKEN_KEY, null);
     cookie.setMaxAge(0);

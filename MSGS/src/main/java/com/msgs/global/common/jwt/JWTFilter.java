@@ -3,6 +3,7 @@ package com.msgs.global.common.jwt;
 import static com.msgs.domain.user.exception.UserErrorCode.EXPIRED_JWT;
 import static com.msgs.domain.user.exception.UserErrorCode.INVALID_ACCESS_TOKEN;
 import static com.msgs.domain.user.exception.UserErrorCode.LOGOUT_MEMBER;
+import static com.msgs.global.common.error.CommonErrorCode.REDIS_CONNECTION_ERROR;
 
 import com.msgs.domain.user.domain.User;
 import com.msgs.global.common.error.BusinessException;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -111,10 +113,15 @@ public class JWTFilter extends OncePerRequestFilter {
       throw new BusinessException(INVALID_ACCESS_TOKEN);
     }
 
-    Object blackList = redisUtils.getBlackList("AT:" + accessToken);
+    try {
+      Object blackList = redisUtils.getBlackList("AT:" + accessToken);
 
-    if (blackList != null && blackList.equals("logout")) {
-      throw new BusinessException(LOGOUT_MEMBER);
+      if (blackList != null && blackList.equals("logout")) {
+        throw new BusinessException(LOGOUT_MEMBER);
+      }
+    } catch (RedisConnectionFailureException e) {
+      log.error("Redis connection failed", e);
+      throw new BusinessException(REDIS_CONNECTION_ERROR);
     }
 
     // 세션 생성

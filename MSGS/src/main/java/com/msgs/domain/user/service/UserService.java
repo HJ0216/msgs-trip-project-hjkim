@@ -7,6 +7,7 @@ import static com.msgs.domain.user.exception.UserErrorCode.INVALID_REFRESH_TOKEN
 import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
 import static com.msgs.domain.user.exception.UserErrorCode.REFRESH_TOKEN_IS_NULL;
 import static com.msgs.domain.user.exception.UserErrorCode.VALID_ACCESS_TOKEN;
+import static com.msgs.global.common.error.CommonErrorCode.REDIS_CONNECTION_ERROR;
 
 import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.dto.UserDTO;
@@ -19,6 +20,7 @@ import com.msgs.global.common.redis.RedisUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -99,13 +101,7 @@ public class UserService {
   }*/
 
   public UserDTO findMyInfo() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
-        () -> {
-          log.info("User not found for email: {}", authentication.getName());
-          throw new BusinessException(NOT_FOUND_MEMBER);
-        });
+    User user = getAuthenticatedUser();
 
     return UserDTO.toUserDTO(user);
   }
@@ -166,10 +162,16 @@ public class UserService {
     }
 
     // Redis에 RT 저장 확인
-    boolean isExistRefreshToken = redisUtils.hasKey("RT:" + refreshToken);
-    if (!isExistRefreshToken) {
-      log.info("Refresh token not found or expired in Redis: {}", refreshToken);
-      throw new BusinessException(REFRESH_TOKEN_IS_NULL);
+    try {
+      boolean isExistRefreshToken = redisUtils.hasKey("RT:" + refreshToken);
+
+      if (!isExistRefreshToken) {
+        log.info("Refresh token not found or expired in Redis: {}", refreshToken);
+        throw new BusinessException(REFRESH_TOKEN_IS_NULL);
+      }
+    } catch (RedisConnectionFailureException e) {
+      log.error("Redis connection failed", e);
+      throw new BusinessException(REDIS_CONNECTION_ERROR);
     }
 
     String username = jwtUtils.getUsername(refreshToken);
@@ -179,8 +181,13 @@ public class UserService {
     String newRefreshToken = jwtUtils.generateJwt("refresh", username, role, REFRESH_TOKEN_EXPIRY);
 
     // Redis에 새로운 Token 값 저장
-    redisUtils.delete("RT:" + refreshToken);
-    redisUtils.set("RT:" + newRefreshToken, username, REFRESH_TOKEN_EXPIRY);
+    try {
+      redisUtils.delete("RT:" + refreshToken);
+      redisUtils.set("RT:" + newRefreshToken, username, REFRESH_TOKEN_EXPIRY);
+    } catch (RedisConnectionFailureException e) {
+      log.error("Redis connection failed", e);
+      throw new BusinessException(REDIS_CONNECTION_ERROR);
+    }
 
     log.info("New access and refresh tokens generated for user: {}", username);
 
@@ -222,32 +229,18 @@ public class UserService {
 
   @Transactional
   public void updateNickname(String newNickname) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
-        () -> {
-          log.warn("User not found for email: {}", authentication.getName());
-          throw new BusinessException(NOT_FOUND_MEMBER);
-        });
-
+    User user = getAuthenticatedUser();
     user.setNickname(newNickname);
 
     userRepository.save(user);
 
     log.info("Nickname updated successfully. User email: {}, New nickname: {}",
-        authentication.getName(), newNickname);
+        user.getEmail(), newNickname);
   }
 
   @Transactional
   public void updatePassword(String newPassword) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
-        () -> {
-          log.warn("User not found for email: {}", authentication.getName());
-          throw new BusinessException(NOT_FOUND_MEMBER);
-        });
-
+    User user = getAuthenticatedUser();
     user.setPassword(bCryptPasswordEncoder.encode(newPassword));
 
     userRepository.save(user);
@@ -257,18 +250,21 @@ public class UserService {
 
   @Transactional
   public void withdraw() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    User user = userRepository.findByEmail(authentication.getName()).orElseThrow(
-        () -> {
-          log.warn("User not found for email: {}", authentication.getName());
-          throw new BusinessException(NOT_FOUND_MEMBER);
-        });
-
-    user.setIsUsed(false); // 롬복이나 일반 자바 코드 모두 setter 이름에 is를 포함하지 않음
+    User user = getAuthenticatedUser();
+    user.setIsUsed(false);
 
     userRepository.save(user);
 
     log.info("User account({}) deleted successfully.", user.getEmail());
+  }
+
+  private User getAuthenticatedUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    return userRepository.findByEmail(authentication.getName()).orElseThrow(
+        () -> {
+          log.info("User not found for email: {}", authentication.getName());
+          throw new BusinessException(NOT_FOUND_MEMBER);
+        });
   }
 }
