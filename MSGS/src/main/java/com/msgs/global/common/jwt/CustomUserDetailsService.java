@@ -1,10 +1,7 @@
 package com.msgs.global.common.jwt;
 
-import static com.msgs.domain.user.exception.UserErrorCode.NOT_FOUND_MEMBER;
-
 import com.msgs.domain.user.domain.User;
 import com.msgs.domain.user.repository.UserRepository;
-import com.msgs.global.common.error.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,7 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     User user = userRepository.findByEmail(email).orElseThrow(() ->
-        new BusinessException(NOT_FOUND_MEMBER));
+        new UsernameNotFoundException("Authentication failed"));
 
     return UserPrinciple.builder()
                         .user(user)

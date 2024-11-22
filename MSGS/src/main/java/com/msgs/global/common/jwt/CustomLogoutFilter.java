@@ -95,15 +95,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
         throw new BusinessException(LOGOUT_MEMBER);
       }
     } catch (RedisConnectionFailureException e) {
-      log.error("Redis connection failed", e);
-      throw new BusinessException(REDIS_CONNECTION_ERROR);
+      handleRedisConnectionFailure(e);
     }
 
     try {
       redisUtils.delete("RT:" + refreshToken);
     } catch (RedisConnectionFailureException e) {
-      log.error("Redis connection failed", e);
-      throw new BusinessException(REDIS_CONNECTION_ERROR);
+      handleRedisConnectionFailure(e);
     }
 
     String accessToken = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -118,8 +116,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     try {
       redisUtils.setBlackList("AT:" + accessToken, "logout", expiration);
     } catch (RedisConnectionFailureException e) {
-      log.error("Redis connection failed", e);
-      throw new BusinessException(REDIS_CONNECTION_ERROR);
+      handleRedisConnectionFailure(e);
     }
 
     Cookie cookie = new Cookie(REFRESH_TOKEN_KEY, null);
@@ -131,5 +128,10 @@ public class CustomLogoutFilter extends GenericFilterBean {
     SecurityContextHolder.clearContext();
 
     response.setStatus(HttpServletResponse.SC_OK);
+  }
+
+  private void handleRedisConnectionFailure(RedisConnectionFailureException e) {
+    log.error("Redis connection failed", e);
+    throw new BusinessException(REDIS_CONNECTION_ERROR);
   }
 }

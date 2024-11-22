@@ -20,7 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.context.SecurityContextPersistenceFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -122,7 +122,7 @@ public class SecurityConfig {
 
     http.addFilterBefore(new CustomLogoutFilter(jwtUtils, redisUtils), LogoutFilter.class);
 
-    http.addFilterAfter(new ExceptionHandlerFilter(), SecurityContextPersistenceFilter.class);
+    http.addFilterAfter(new ExceptionHandlerFilter(), SecurityContextHolderFilter.class);
 
     // 구성된 필터 체인 빌드
     return http.build();

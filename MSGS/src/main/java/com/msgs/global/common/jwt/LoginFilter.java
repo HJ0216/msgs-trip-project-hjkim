@@ -58,7 +58,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
       return authenticationManager.authenticate(authToken);
 
     } catch (IOException e) {
-      log.error("Failed to parse authentication request body", e);
+      log.error("Failed to parse authentication request body {}", e);
 
       throw new BusinessException(INVALID_CREDENTIALS);
     }
@@ -85,7 +85,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     try {
       redisUtils.set("RT:" + refreshToken, username, REFRESH_TOKEN_EXPIRY);
     } catch (RedisConnectionFailureException e) {
-      log.error("Redis connection failed", e);
+      log.error("Redis connection failed {}", e.getMessage());
       throw new BusinessException(REDIS_CONNECTION_ERROR);
     }
 
@@ -111,9 +111,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
   protected void unsuccessfulAuthentication(HttpServletRequest request,
       HttpServletResponse response,
       AuthenticationException failed) {
-    log.error("Login failed: ", failed.getClass());
+    log.error("Login failed: {}", failed.getMessage());
 
     throw new BusinessException(CHECK_LOGIN_ID_OR_PASSWORD);
   }
-
 }

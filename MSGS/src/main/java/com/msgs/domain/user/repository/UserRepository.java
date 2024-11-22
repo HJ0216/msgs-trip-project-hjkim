@@ -19,7 +19,9 @@ public class UserRepository {
   }
 
   public Optional<User> findByEmail(String email) {
-    List<User> users = em.createQuery("select u from User u where u.email = :email", User.class)
+    List<User> users = em.createQuery(
+                             "select u from User u where u.email = :email and u.isUsed = true",
+                             User.class)
                          .setParameter("email", email)
                          .getResultList();
 
@@ -27,7 +29,8 @@ public class UserRepository {
   }
 
   public Optional<User> findByPhone(String phone) {
-    List<User> users = em.createQuery("select u from User u where u.phone = :phone", User.class)
+    List<User> users = em.createQuery(
+                             "select u from User u where u.phone = :phone and u.isUsed = true", User.class)
                          .setParameter("phone", phone)
                          .getResultList();
 
@@ -37,5 +40,5 @@ public class UserRepository {
   public void save(User user) {
     em.persist(user);
   }
-  
+
 }
