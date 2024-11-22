@@ -11,6 +11,7 @@ endif::[]
 
 = API 문서
 
+
 == `POST /api/v2/users/new` - 회원가입
 
 HTTP request:
@@ -18,6 +19,7 @@ include::{snippets}/users/create-success/http-request.adoc[]
 
 HTTP response:
 include::{snippets}/users/create-success/http-response.adoc[]
+
 
 == `POST /api/v2/users/login` - 로그인
 
@@ -27,6 +29,7 @@ include::{snippets}/users/login-success/http-request.adoc[]
 HTTP response:
 include::{snippets}/users/login-success/http-response.adoc[]
 
+
 == `GET /api/v2/users/me` - 회원 정보 조회
 
 HTTP request:
@@ -34,6 +37,7 @@ include::{snippets}/users/find-my-info-success/http-request.adoc[]
 
 HTTP response:
 include::{snippets}/users/find-my-info-success/http-response.adoc[]
+
 
 == `POST /api/v2/users/reissue` - 토큰 재발급
 
@@ -43,6 +47,7 @@ include::{snippets}/users/reissue-success/http-request.adoc[]
 HTTP response:
 include::{snippets}/users/reissue-success/http-response.adoc[]
 
+
 == `POST /api/v2/users/logout` - 로그아웃
 
 HTTP request:
@@ -50,3 +55,12 @@ include::{snippets}/users/logout-success/http-request.adoc[]
 
 HTTP response:
 include::{snippets}/users/logout-success/http-response.adoc[]
+
+
+== `PATCH /api/v2/users/nickname` - 닉네임 수정
+
+HTTP request:
+include::{snippets}/users/update-nickname-success/http-request.adoc[]
+
+HTTP response:
+include::{snippets}/users/update-nickname-success/http-response.adoc[]

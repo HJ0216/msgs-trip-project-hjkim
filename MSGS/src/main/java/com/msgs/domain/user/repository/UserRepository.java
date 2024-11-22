@@ -13,10 +13,27 @@ public class UserRepository {
 
   private final EntityManager em;
 
+  public Optional<User> findById(Integer id) {
+    User user = em.find(User.class, id);
+    return Optional.ofNullable(user);
+  }
+
   public Optional<User> findByEmail(String email) {
-    List<User> users = em.createQuery("select u from User u where u.email = :email", User.class)
+    List<User> users = em.createQuery(
+                             "select u from User u where u.email = :email and u.isUsed = true",
+                             User.class)
                          .setParameter("email", email)
                          .getResultList();
+
+    return users.stream().findFirst();
+  }
+
+  public Optional<User> findByPhone(String phone) {
+    List<User> users = em.createQuery(
+                             "select u from User u where u.phone = :phone and u.isUsed = true", User.class)
+                         .setParameter("phone", phone)
+                         .getResultList();
+
     return users.stream().findFirst();
   }
 
@@ -24,8 +41,4 @@ public class UserRepository {
     em.persist(user);
   }
 
-  public Optional<User> findById(Integer id) {
-    User user = em.find(User.class, id);
-    return Optional.ofNullable(user);
-  }
 }

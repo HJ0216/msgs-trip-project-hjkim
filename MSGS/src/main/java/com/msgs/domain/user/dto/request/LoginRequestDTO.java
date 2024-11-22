@@ -1,11 +1,13 @@
-package com.msgs.domain.user.dto;
+package com.msgs.domain.user.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 public class LoginRequestDTO {

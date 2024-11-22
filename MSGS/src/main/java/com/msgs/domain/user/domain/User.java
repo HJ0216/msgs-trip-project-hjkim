@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,9 @@ import lombok.Setter;
 public class User extends BaseEntity {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+//  @GeneratedValue(strategy = GenerationType.TABLE, generator = "my_table_generator")
+//  @TableGenerator(name = "my_table_generator", allocationSize = 1)
   @Column(name = "user_id")
   private Integer id;
 
@@ -46,10 +49,13 @@ public class User extends BaseEntity {
   @Column(length = 30)
   private String nickname;
 
-  @Column(length = 30)
+  @Column(length = 60)
   private String password;
 
   private String imagePath;
+
+  @Column(nullable = false)
+  private Boolean isUsed;
 
   @Override
   public boolean equals(Object o) {

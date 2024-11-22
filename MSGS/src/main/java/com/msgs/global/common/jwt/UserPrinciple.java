@@ -2,38 +2,45 @@ package com.msgs.global.common.jwt;
 
 import com.msgs.domain.user.domain.User;
 import java.util.Collection;
-import java.util.Set;
-import lombok.AllArgsConstructor;
+import java.util.Collections;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Builder
 public class UserPrinciple implements UserDetails {
 
-  private String email;
-  transient private String password; // 직렬화 과정에서 제외
-  transient private User user; // 직렬화 과정에서 제외
-  private Set<GrantedAuthority> authorities;
+  private final User user;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return authorities; // 계정의 권한 목록
+    // 계정의 권한 목록
+/*    Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+    grantedAuthorities.add(new GrantedAuthority() {
+      @Override
+      public String getAuthority() {
+        return user.getRole();
+      }
+    });
+
+    return grantedAuthorities;*/
+
+    // 단일 역할
+    return Collections.singletonList(() -> user.getRole());
   }
 
   @Override
   public String getUsername() {
-    return email; // 계정의 고유한 값 리턴
+    return user.getEmail(); // 계정의 고유한 값 리턴
   }
 
   @Override
   public String getPassword() {
-    return password; // 계정의 비밀번호 리턴
+    return user.getPassword(); // 계정의 비밀번호 리턴
   }
 
   @Override
