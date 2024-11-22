@@ -17,8 +17,6 @@ public enum UserErrorCode implements ErrorCode {
   DUPLICATED_PHONE_NUMBER(HttpStatus.CONFLICT, "이미 존재하는 휴대폰 번호입니다."),
   NICKNAME_VALIDATION(HttpStatus.BAD_REQUEST, "닉네임 형식이 맞지 않습니다."),
   USERTYPE_VALIDATION(HttpStatus.BAD_REQUEST, "회원 타입이 올바르지 않습니다."),
-  UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
-      "지원하지 않는 Content-Type입니다. application/json 형식으로 요청해주세요."),
 
   // 로그인
   CHECK_LOGIN_ID_OR_PASSWORD(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호를 확인해주세요."),

@@ -1,13 +1,11 @@
 package com.msgs.global.common.error;
 
-import com.msgs.domain.user.exception.UserErrorCode;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler;
@@ -20,33 +18,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   public static ResponseEntity<Object> handleBusiness(BusinessException e) {
     log.error("Business Exception: {}", e.getMessage());
 
-    ErrorCode errorCode = e.getErrorCode();
-    return handleExceptionInternal(errorCode);
-  }
-
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException e) {
-    log.error("IllegalArgument Exception: {}", e.getMessage());
-
-    ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
-    return handleExceptionInternal(errorCode, e.getMessage());
-  }
-
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Object> handleMethodArgumentNotValid(
-      MethodArgumentNotValidException e) {
-    log.error("Validation Exception: {}", e.getMessage());
-
-    ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
-    return handleExceptionInternal(e, errorCode);
-  }
-
-  @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<Object> handleAccessDenied(AccessDeniedException e) {
-    log.error("Access Denied Exception: {}", e.getMessage());
-
-    ErrorCode errorCode = UserErrorCode.INVALID_ACCESS_TOKEN;
-    return handleExceptionInternal(errorCode);
+    return handleExceptionInternal(e.getErrorCode());
   }
 
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -54,16 +26,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       HttpMediaTypeNotSupportedException e) {
     log.error("Unsupported Media Type Exception: {}", e.getMessage());
 
-    ErrorCode errorCode = UserErrorCode.UNSUPPORTED_MEDIA_TYPE;
-    return handleExceptionInternal(errorCode);
+    return handleExceptionInternal(CommonErrorCode.UNSUPPORTED_MEDIA_TYPE);
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<Object> handleHttpRequestMethodNotSupported(
+      HttpRequestMethodNotSupportedException e) {
+    log.error("Method Not Supported Exception: {}", e.getMessage());
+
+    return handleExceptionInternal(CommonErrorCode.METHOD_NOT_SUPPORTED);
   }
 
   @ExceptionHandler({Exception.class})
   public static ResponseEntity<Object> handleAllException(Exception e) {
     log.error("Internal Server Error", e);
 
-    ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
-    return handleExceptionInternal(errorCode);
+    return handleExceptionInternal(CommonErrorCode.INTERNAL_SERVER_ERROR);
   }
 
   private static ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode) {
@@ -102,6 +80,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                .map(
                                                                    ErrorResponse.ValidationError::of)
                                                                .toList();
+
     return ErrorResponse.builder()
                         .code(errorCode.name())
                         .message(errorCode.getMessage())
