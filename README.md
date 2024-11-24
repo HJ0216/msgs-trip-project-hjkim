@@ -1,7 +1,7 @@
 # 🏗️공사 중 마실가실
 마실가실 프로젝트는 23년 6월에 개발한 국내 여행 일정 생성 및 여행 후기 커뮤니티 사이트입니다.  
 공사 중 마실가실 프로젝트는 '1년이 지난 후, 나는 얼마만큼 프로젝트에서 개선할 부분을 찾을 수 있을까?' 라는 작은 의문에서 시작되었습니다.  
-코드 리팩토링 및 추가 기능 구현과 관련된 구체적인 내용은 [`🚀리팩토링 일지`](https://github.com/HJ0216/msgs-trip-project-hj/blob/main/refactoring_log.md) 또는 [`🔗마실가실 리팩토링 블로그`](https://hj0216.tistory.com/category/PlayGround/%EB%A7%88%EC%8B%A4%EA%B0%80%EC%8B%A4%20%EB%A6%AC%ED%8C%A9%ED%86%A0%EB%A7%81)를 클릭해주세요.
+코드 리팩토링 및 추가 기능 구현과 관련된 구체적인 내용은 [`🚀리팩토링 일지`](https://github.com/HJ0216/msgs-trip-project-hj/blob/developer/refactoring_log.md) 또는 [`🔗마실가실 리팩토링 블로그`](https://hj0216.tistory.com/category/PlayGround/%EB%A7%88%EC%8B%A4%EA%B0%80%EC%8B%A4%20%EB%A6%AC%ED%8C%A9%ED%86%A0%EB%A7%81)를 클릭해주세요.
 
 
 ## 📜사용 기술 및 라이브러리
