@@ -53,6 +53,22 @@ gradlew.bat bootRun
 
 
 
+## Branch 관리
+### Branch 전략
+Git-Flow 브랜치 전략에 따라 기능별로 브랜치를 나누어 작업  
+* main: 제품으로 출시될 수 있는 브랜치
+* develop: 다음 출시 버전을 개발하는 브랜치, feature에서 PR이 완료된 브랜치를 Merge
+* feature: 기능을 개발하는 브랜치
+* fix : 출시 버전에서 발생한 버그를 수정하는 브랜치
+
+### 개발 Flow
+* 작업 시작 시: develop -> feature로 분기
+  * feature/{issue-number}-기능요약 (feature/77-login-authentication)
+* 작업 및 테스트 완료 시: develop에 feature 병합
+* 상용 배포 시: develop -> main으로 병합
+
+
+
 ## 💡커밋 규칙
 ### 커밋 메시지 형식
 > 50자를 넘기지 않게 명령형으로 작성  
@@ -70,16 +86,23 @@ CommitType : #issueNumber Subject
 ### 커밋 타입
 
 | 커밋 타입   | 설명                       |
-| ---------- | ---------------------------|
+| ---------- | --------------------------|
 | ✨Feat     | 기능 추가                  |
 | 🐛Fix      | 버그 수정                  |
-| 🎨Style    | 코드 포맷팅, 함수명 수정 등 |
+| 🎨Style    | 코드 포맷팅, 함수명 수정 등  |
 | ♻️Refactor | 코드 리펙토링              |
 | 🧹Chore    | 그 외 자잘한 수정          |
 | 💡Comment  | 주석 추가 및 수정          |
 | ✅Test     | 테스트 코드 작성 및 수정    |
 | 📝Docs     | 문서 작성 및 수정          |
 
+
+## 코드 스타일
+* [intellij-java-google-style](https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml) 적용
+* IntelliJ에서 적용 시, 아래 설정 적용
+  * Reformat code: 저장 시마다 formmating 적용
+  * Optimize imports: 사용하지 않는 import문 제거
+* 일부 파일 코드 스타일을 적용하지 않을 경우, Do not Formatter에 해당 파일 추가
 
 
 
